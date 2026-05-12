@@ -72,6 +72,28 @@ bin\Release\net8.0-windows\publish\win-x64\
 dotnet publish KanbanForOne.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true
 ```
 
+## 制作安装包
+
+项目提供了一个基于 Windows IExpress 的安装包构建脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1
+```
+
+脚本会先发布 `win-x64` 自包含版本，再生成安装器：
+
+```text
+artifacts\installer\Kanban41_Setup_v0.1.0.exe
+```
+
+安装器会将应用安装到当前用户目录：
+
+```text
+%LocalAppData%\Programs\Kanban41
+```
+
+安装后会创建开始菜单快捷方式和桌面快捷方式，并在 Windows“应用和功能”中注册卸载入口。卸载时会移除程序文件和快捷方式，但会保留 `Kanban41.db`、`attachments/` 和 `backups/`，避免误删本地看板数据。
+
 ## 数据存储
 
 当前实现会把数据保存在应用 EXE 所在目录，便于连同程序目录一起迁移或备份。
