@@ -1,0 +1,105 @@
+<UserControl x:Class="KanbanForOne.Controls.AttachmentListControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Focusable="False">
+    <Grid Focusable="False">
+        <Border Padding="12"
+                CornerRadius="12"
+                Background="#66FFFFFF"
+                BorderThickness="0"
+                Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CollectionEmptyToVisibilityConverter}}">
+            <TextBlock Text="&#x6682;&#x65E0;&#x9644;&#x4EF6;"
+                       FontSize="11"
+                       HorizontalAlignment="Center"
+                       Foreground="{StaticResource TextSecondaryBrush}" />
+        </Border>
+
+        <ItemsControl ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                      Focusable="False"
+                      Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CollectionEmptyToVisibilityConverter}, ConverterParameter=Invert}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Margin="0,0,0,7"
+                            Padding="10"
+                            CornerRadius="12"
+                            Background="#66FFFFFF"
+                            BorderThickness="0">
+                        <Grid Focusable="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Border Width="24"
+                                    Height="24"
+                                    CornerRadius="8"
+                                    Background="#8CFFFFFF"
+                                    VerticalAlignment="Center">
+                                <TextBlock Text="&#x6587;"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Border>
+
+                            <StackPanel Grid.Column="1"
+                                        Margin="3,0,10,0"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="{Binding OriginalFileName}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis" />
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,3,0,0">
+                                    <TextBlock Text="{Binding FileSizeBytes, Converter={StaticResource AttachmentSizeConverter}}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text=" · "
+                                               FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                    <TextBlock Text="{Binding CreatedAt, Converter={StaticResource DateDisplayConverter}}"
+                                               FontSize="10"
+                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <Button Content="&#x6253;&#x5F00;"
+                                        Command="{Binding OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        MinWidth="38"
+                                        Height="26"
+                                        FontSize="11"
+                                        FocusVisualStyle="{x:Null}" />
+                                <Button Content="&#x5B9A;&#x4F4D;"
+                                        Command="{Binding RevealCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        MinWidth="38"
+                                        Height="26"
+                                        FontSize="11"
+                                        Margin="4,0,0,0"
+                                        FocusVisualStyle="{x:Null}" />
+                                <Button Content="&#x5220;&#x9664;"
+                                        Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        Foreground="#9A3412"
+                                        MinWidth="38"
+                                        Height="26"
+                                        FontSize="11"
+                                        Margin="4,0,0,0"
+                                        FocusVisualStyle="{x:Null}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

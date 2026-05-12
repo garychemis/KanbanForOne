@@ -1,0 +1,27 @@
+<UserControl x:Class="KanbanForOne.Controls.TagChipEditorControl"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinHeight="30">
+    <Border x:Name="Container"
+            Padding="0"
+            CornerRadius="10"
+            Background="{Binding EditorBackground, ElementName=Root}"
+            BorderBrush="{Binding EditorBorderBrush, ElementName=Root}"
+            BorderThickness="1">
+        <WrapPanel x:Name="TagsPanel"
+                   VerticalAlignment="Center">
+            <TextBox x:Name="InputBox"
+                     MinWidth="74"
+                     MaxWidth="180"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     Foreground="{StaticResource TextPrimaryBrush}"
+                     FontSize="12"
+                     Padding="4,4"
+                     VerticalContentAlignment="Center"
+                     KeyDown="OnInputKeyDown"
+                     LostKeyboardFocus="OnInputLostKeyboardFocus" />
+        </WrapPanel>
+    </Border>
+</UserControl>

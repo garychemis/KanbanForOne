@@ -1,0 +1,79 @@
+<UserControl x:Class="KanbanForOne.Controls.BoardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:KanbanForOne.Controls"
+             xmlns:models="clr-namespace:KanbanForOne.Models">
+    <UserControl.Resources>
+        <DataTemplate x:Key="TaskCardTemplate">
+            <controls:TaskCardControl OpenCommand="{Binding DataContext.OpenTaskCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
+        </DataTemplate>
+
+        <DataTemplate x:Key="NoteCardTemplate">
+            <controls:NoteCardControl OpenCommand="{Binding DataContext.OpenNoteCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource MainContentBackgroundBrush}">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      Padding="26,28,26,28">
+            <StackPanel Orientation="Horizontal">
+                <controls:KanbanColumnControl Width="300"
+                                              Title="待办"
+                                              Subtitle="计划中但尚未开始"
+                                              ColumnKind="{x:Static models:KanbanColumnKind.Todo}"
+                                              ItemsSource="{Binding TodoTasks}"
+                                              ItemTemplate="{StaticResource TaskCardTemplate}"
+                                              AddCommand="{Binding CreateTaskCommand}"
+                                              AddCommandParameter="{x:Static models:KanbanColumnKind.Todo}"
+                                              DropCommand="{Binding MoveCardCommand}"
+                                              Margin="0,0,20,0" />
+
+                <controls:KanbanColumnControl Width="300"
+                                              Title="进行中"
+                                              Subtitle="当前正在处理"
+                                              ColumnKind="{x:Static models:KanbanColumnKind.Doing}"
+                                              ItemsSource="{Binding DoingTasks}"
+                                              ItemTemplate="{StaticResource TaskCardTemplate}"
+                                              AddCommand="{Binding CreateTaskCommand}"
+                                              AddCommandParameter="{x:Static models:KanbanColumnKind.Doing}"
+                                              DropCommand="{Binding MoveCardCommand}"
+                                              Margin="0,0,20,0" />
+
+                <controls:KanbanColumnControl Width="300"
+                                              Title="卡住"
+                                              Subtitle="遇到阻碍或等待"
+                                              ColumnKind="{x:Static models:KanbanColumnKind.Blocked}"
+                                              ItemsSource="{Binding BlockedTasks}"
+                                              ItemTemplate="{StaticResource TaskCardTemplate}"
+                                              AddCommand="{Binding CreateTaskCommand}"
+                                              AddCommandParameter="{x:Static models:KanbanColumnKind.Blocked}"
+                                              DropCommand="{Binding MoveCardCommand}"
+                                              Margin="0,0,20,0" />
+
+                <controls:KanbanColumnControl Width="300"
+                                              Title="完成"
+                                              Subtitle="已经处理完成"
+                                              ColumnKind="{x:Static models:KanbanColumnKind.Done}"
+                                              ItemsSource="{Binding DoneTasks}"
+                                              ItemTemplate="{StaticResource TaskCardTemplate}"
+                                              AddCommand="{Binding CreateTaskCommand}"
+                                              AddCommandParameter="{x:Static models:KanbanColumnKind.Done}"
+                                              DropCommand="{Binding MoveCardCommand}"
+                                              Margin="0,0,20,0" />
+
+                <controls:KanbanColumnControl Width="300"
+                                              Title="备忘录"
+                                              Subtitle="灵感、备忘和随手记"
+                                              ColumnKind="{x:Static models:KanbanColumnKind.Notes}"
+                                              ItemsSource="{Binding Notes}"
+                                              ItemTemplate="{StaticResource NoteCardTemplate}"
+                                              AddCommand="{Binding CreateNoteCommand}"
+                                              AddCommandParameter="{x:Static models:KanbanColumnKind.Notes}"
+                                              DropCommand="{Binding MoveCardCommand}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

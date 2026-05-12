@@ -1,0 +1,61 @@
+<UserControl x:Class="KanbanForOne.Controls.NoteCardControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AllowDrop="True"
+             PreviewMouseLeftButtonDown="OnPreviewMouseLeftButtonDown"
+             MouseMove="OnMouseMove"
+             MouseLeftButtonUp="OnMouseLeftButtonUp"
+             MouseEnter="OnMouseEnter"
+             MouseLeave="OnMouseLeave"
+             DragEnter="OnFileDragEnter"
+             DragOver="OnFileDragOver"
+             DragLeave="OnFileDragLeave"
+             Drop="OnFileDrop">
+    <Grid Margin="0,0,0,14">
+        <Border x:Name="CardBorder"
+                Style="{StaticResource CardBorderStyle}"
+                Background="{StaticResource NoteCardBackgroundBrush}"
+                BorderBrush="{StaticResource NoteCardBorderBrush}"
+                CornerRadius="8"
+                MinHeight="88"
+                RenderTransformOrigin="0.5,0.5">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="LiftTransform" />
+            </Border.RenderTransform>
+
+            <StackPanel Margin="18,16,18,14">
+                <TextBlock Text="{Binding Title}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="#4A3F22"
+                           TextWrapping="Wrap" />
+
+                <TextBlock Text="{Binding UpdatedAt, Converter={StaticResource DateDisplayConverter}, StringFormat=日期 {0}}"
+                           Margin="0,9,0,0"
+                           FontSize="11"
+                           Foreground="#8A7A44" />
+
+                <TextBlock Text="{Binding TagsDisplay}"
+                           Margin="0,12,0,0"
+                           FontSize="11"
+                           Foreground="#8A7A44"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </Border>
+
+        <Border x:Name="DropHint"
+                Visibility="Collapsed"
+                CornerRadius="8"
+                Background="#CCFFF9DB"
+                BorderBrush="#D6B63F"
+                BorderThickness="1"
+                IsHitTestVisible="False">
+            <TextBlock Text="释放文件以保存为附件"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Foreground="#7C5B00" />
+        </Border>
+    </Grid>
+</UserControl>

@@ -1,0 +1,108 @@
+<Window x:Class="KanbanForOne.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:KanbanForOne.Controls"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        mc:Ignorable="d"
+        Title="Kanban41"
+        Height="900"
+        Width="1440"
+        MinHeight="720"
+        MinWidth="1100"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{StaticResource AppBackgroundBrush}">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="0"
+                            ResizeBorderThickness="6"
+                            CornerRadius="14"
+                            GlassFrameThickness="0"
+                            UseAeroCaptionButtons="False" />
+    </shell:WindowChrome.WindowChrome>
+
+    <Border CornerRadius="14"
+            Background="{StaticResource AppBackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrushSoft}"
+            BorderThickness="1"
+            SnapsToDevicePixels="True">
+        <Grid PreviewMouseLeftButtonDown="OnWindowRootPreviewMouseLeftButtonDown"
+              ClipToBounds="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="236" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <controls:SideNavControl Grid.Column="0" />
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="64" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <controls:TopNavControl Grid.Row="0" />
+                    <Grid Grid.Row="1">
+                        <controls:BoardView Visibility="{Binding IsBoardViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:CalendarView Visibility="{Binding IsCalendarViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:BackupView Visibility="{Binding IsBackupViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:SettingsView Visibility="{Binding IsSettingsViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <Border Background="#330F172A"
+                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+
+            <Border Width="520"
+                    HorizontalAlignment="Right"
+                    Background="Transparent"
+                    BorderThickness="0">
+                <Border.RenderTransform>
+                    <TranslateTransform X="520" />
+                </Border.RenderTransform>
+                <Border.Style>
+                    <Style TargetType="{x:Type Border}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Setter Property="Opacity" Value="0" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDrawerOpen}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                                <Setter Property="Opacity" Value="1" />
+                                <DataTrigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                             From="520"
+                                                             To="0"
+                                                             Duration="0:0:0.18" />
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                             From="0"
+                                                             To="1"
+                                                             Duration="0:0:0.14" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </DataTrigger.EnterActions>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40"
+                                      ShadowDepth="12"
+                                      Direction="180"
+                                      Opacity="0.18" />
+                </Border.Effect>
+
+                <Grid>
+                    <controls:TaskDrawerControl SelectedTask="{Binding SelectedTask}"
+                                                Visibility="{Binding IsTaskDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                    <controls:NoteDrawerControl SelectedNote="{Binding SelectedNote}"
+                                                Visibility="{Binding IsNoteDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

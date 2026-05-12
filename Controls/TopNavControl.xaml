@@ -1,0 +1,151 @@
+<UserControl x:Class="KanbanForOne.Controls.TopNavControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:KanbanForOne.Controls">
+    <UserControl.Resources>
+        <Style x:Key="TopTabButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Height" Value="44" />
+            <Setter Property="Padding" Value="0,0" />
+            <Setter Property="Margin" Value="0,0,22,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border BorderThickness="0,0,0,2"
+                                Background="Transparent">
+                            <Border.BorderBrush>
+                                <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}"
+                                              ConverterParameter="#111827|#00FFFFFF">
+                                    <Binding Path="DataContext.CurrentFilter"
+                                             RelativeSource="{RelativeSource TemplatedParent}" />
+                                    <Binding Path="CommandParameter"
+                                             RelativeSource="{RelativeSource TemplatedParent}" />
+                                </MultiBinding>
+                            </Border.BorderBrush>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#111827" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WindowCloseButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Foreground" Value="#7F1D1D" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FEE2E2" />
+                                <Setter Property="BorderBrush" Value="#FECACA" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#FECACA" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Background="{StaticResource TopNavBackgroundBrush}"
+            BorderBrush="{StaticResource BorderBrushSoft}"
+            BorderThickness="0,0,0,1">
+        <Grid Margin="26,0,18,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <Button Content="看板"
+                        Command="{Binding ChangeFilterCommand}"
+                        CommandParameter="Board"
+                        Style="{StaticResource TopTabButtonStyle}" />
+                <Button Content="日历"
+                        Command="{Binding ChangeFilterCommand}"
+                        CommandParameter="Calendar"
+                        Style="{StaticResource TopTabButtonStyle}" />
+            </StackPanel>
+
+            <controls:SearchBoxControl Grid.Column="2"
+                                       Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+            <Border Grid.Column="4"
+                    Visibility="{Binding HasNotification, Converter={StaticResource BooleanToVisibilityConverterEx}}"
+                    Padding="12,7"
+                    CornerRadius="10"
+                    Background="#EDF7F0"
+                    BorderBrush="#CDE7D4"
+                    BorderThickness="1"
+                    VerticalAlignment="Center"
+                    MaxWidth="160">
+                <TextBlock Text="{Binding NotificationText}"
+                           FontSize="12"
+                           Foreground="#2F6B3F"
+                           TextTrimming="CharacterEllipsis" />
+            </Border>
+
+            <Button Grid.Column="6"
+                    Content="⚙"
+                    Command="{Binding ChangeFilterCommand}"
+                    CommandParameter="Settings"
+                    Style="{StaticResource IconButtonStyle}"
+                    ToolTip="设置" />
+
+            <StackPanel Grid.Column="8"
+                        Grid.ColumnSpan="3"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <Button Content="−"
+                        Click="OnMinimizeClick"
+                        Style="{StaticResource IconButtonStyle}"
+                        Width="34"
+                        Height="30"
+                        ToolTip="最小化" />
+                <Button Content="□"
+                        Click="OnMaximizeClick"
+                        Style="{StaticResource IconButtonStyle}"
+                        Width="34"
+                        Height="30"
+                        Margin="4,0,0,0"
+                        ToolTip="最大化/还原" />
+                <Button Content="×"
+                        Click="OnCloseClick"
+                        Style="{StaticResource WindowCloseButtonStyle}"
+                        Width="34"
+                        Height="30"
+                        Margin="4,0,0,0"
+                        ToolTip="关闭" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

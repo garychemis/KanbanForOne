@@ -1,0 +1,175 @@
+<UserControl x:Class="KanbanForOne.Controls.NoteDrawerControl"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:KanbanForOne.Controls">
+    <Border Style="{StaticResource DrawerPanelStyle}"
+            Background="{StaticResource DrawerNoteBackgroundBrush}">
+    <Grid Style="{StaticResource DrawerRootStyle}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Style="{StaticResource DrawerHeaderStyle}">
+            <Grid Focusable="False">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Focusable="False">
+                    <Border Padding="12,5"
+                            CornerRadius="999"
+                            Background="#F1E7B8">
+                        <TextBlock Text="&#x5907;&#x5FD8;&#x5F55;"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="#6B5B2E" />
+                    </Border>
+
+                    <Border Margin="8,0,0,0"
+                            Padding="10,5"
+                            CornerRadius="999"
+                            Background="#73FFFFFF"
+                            Visibility="{Binding HasUnsavedNoteChanges, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                    </Border>
+                </StackPanel>
+
+                <Button Grid.Column="1"
+                        Content="&#xD7;"
+                        Command="{Binding CloseDrawerCommand}"
+                        Style="{StaticResource DrawerCloseButtonStyle}"
+                        ToolTip="&#x5173;&#x95ED;" />
+
+                <TextBox Grid.Row="1"
+                         Grid.ColumnSpan="2"
+                         Margin="0,18,42,0"
+                         Text="{Binding NoteTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DrawerTitleTextBoxStyle}" />
+
+                <TextBlock Grid.Row="2"
+                           Grid.ColumnSpan="2"
+                           Margin="0,8,0,0"
+                           FontSize="12"
+                           Foreground="{StaticResource DrawerMutedBrush}">
+                    <Run Text="&#x66F4;&#x65B0;&#x4E8E; " />
+                    <Run Text="{Binding SelectedNote.UpdatedAt, ElementName=Root, StringFormat={}{0:yyyy/M/d HH:mm}}" />
+                </TextBlock>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1"
+                      Padding="32,24,32,28"
+                      Focusable="False"
+                      FocusVisualStyle="{x:Null}"
+                      BorderThickness="0"
+                      VerticalScrollBarVisibility="Auto">
+            <StackPanel Focusable="False">
+                <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
+                    <Grid Margin="0,0,0,12"
+                          Focusable="False">
+                        <TextBlock Text="&#x6807;&#x7B7E;"
+                                   Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
+                        <Button Content="+ &#x6DFB;&#x52A0;"
+                                Click="OnAddTagClick"
+                                Style="{StaticResource DrawerSecondaryButtonStyle}"
+                                Height="30"
+                                MinWidth="66"
+                                Padding="10,0"
+                                FontSize="12"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                ToolTip="&#x6DFB;&#x52A0;&#x6807;&#x7B7E;" />
+                    </Grid>
+                    <controls:TagChipEditorControl x:Name="NoteTagEditor"
+                                                   Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                   EditorBackground="Transparent"
+                                                   EditorBorderBrush="Transparent"
+                                                   ChipBackground="#8CFFFFFF"
+                                                   ChipForeground="#6B5B2E" />
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
+                    <TextBlock Text="&#x5185;&#x5BB9;"
+                               Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
+                    <controls:MarkdownEditorControl Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                    Style="{StaticResource DrawerDescriptionEditorStyle}"
+                                                    EditorBackground="#99FFFFFF"
+                                                    EditorBorderBrush="Transparent"
+                                                    EditorMinHeight="280" />
+                </StackPanel>
+
+                <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}"
+                            Margin="0">
+                    <Grid Margin="0,0,0,12"
+                          Focusable="False">
+                        <TextBlock Text="{Binding SelectedNote.AttachmentCount, ElementName=Root, StringFormat=&#x9644;&#x4EF6; {0}}"
+                                   Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
+                        <Button Content="+ &#x6DFB;&#x52A0;"
+                                Command="{Binding PickFilesCommand}"
+                                CommandParameter="{Binding SelectedNote, ElementName=Root}"
+                                Style="{StaticResource DrawerSecondaryButtonStyle}"
+                                Height="30"
+                                MinWidth="66"
+                                Padding="10,0"
+                                FontSize="12"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                ToolTip="&#x6DFB;&#x52A0;&#x9644;&#x4EF6;" />
+                    </Grid>
+                    <controls:AttachmentDropZoneControl Owner="{Binding SelectedNote, ElementName=Root}"
+                                                        AttachFilesCommand="{Binding AttachFilesCommand}"
+                                                        TitleText="&#x62D6;&#x62FD;&#x6587;&#x4EF6;&#x5230;&#x8FD9;&#x91CC;&#x4E0A;&#x4F20;"
+                                                        HelperText="&#x652F;&#x6301;&#x6587;&#x6863;&#x3001;&#x56FE;&#x7247;&#x3001;&#x538B;&#x7F29;&#x5305;&#x7B49;&#x9644;&#x4EF6;"
+                                                        DropHintText="&#x91CA;&#x653E;&#x6587;&#x4EF6;&#x4EE5;&#x4FDD;&#x5B58;&#x4E3A;&#x9644;&#x4EF6;"
+                                                        Style="{StaticResource BorderlessAttachmentDropZoneStyle}" />
+                    <controls:AttachmentListControl ItemsSource="{Binding SelectedNote.Attachments, ElementName=Root}"
+                                                    OpenCommand="{Binding OpenAttachmentCommand}"
+                                                    RevealCommand="{Binding RevealAttachmentCommand}"
+                                                    DeleteCommand="{Binding DeleteAttachmentCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"
+                Style="{StaticResource DrawerFooterStyle}">
+            <Grid Focusable="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button Content="&#x5220;&#x9664;"
+                        Command="{Binding DeleteNoteCommand}"
+                        Style="{StaticResource DrawerDangerButtonStyle}" />
+
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal">
+                    <Button Content="&#x53D6;&#x6D88;"
+                            Command="{Binding CloseDrawerCommand}"
+                            Style="{StaticResource DrawerSecondaryButtonStyle}"
+                            Margin="0,0,10,0" />
+                    <Button Content="&#x4FDD;&#x5B58;"
+                            Command="{Binding SaveNoteCommand}"
+                            Style="{StaticResource DrawerPrimaryButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+    </Border>
+</UserControl>

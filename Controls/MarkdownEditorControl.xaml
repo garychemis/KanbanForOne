@@ -1,0 +1,37 @@
+<UserControl x:Class="KanbanForOne.Controls.MarkdownEditorControl"
+             x:Name="Root"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:KanbanForOne.Controls">
+    <Border CornerRadius="{Binding EditorCornerRadius, ElementName=Root}"
+            Background="{Binding EditorBackground, ElementName=Root}"
+            BorderBrush="{Binding EditorBorderBrush, ElementName=Root}"
+            BorderThickness="{Binding EditorBorderThickness, ElementName=Root}">
+        <Grid PreviewMouseLeftButtonDown="OnEditorHostPreviewMouseLeftButtonDown"
+              Focusable="False">
+            <controls:MarkdownViewerControl x:Name="RenderedView"
+                                            Markdown="{Binding Text, ElementName=Root}"
+                                            ViewerBackground="Transparent"
+                                            ViewerBorderBrush="Transparent"
+                                            MinHeight="{Binding EditorMinHeight, ElementName=Root}"
+                                            Cursor="IBeam" />
+
+            <TextBox x:Name="Editor"
+                     Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     MinHeight="{Binding EditorMinHeight, ElementName=Root}"
+                     Padding="{Binding EditorPadding, ElementName=Root}"
+                     Background="{Binding EditorBackground, ElementName=Root}"
+                     BorderThickness="0"
+                     FocusVisualStyle="{x:Null}"
+                     Foreground="#242424"
+                     FontSize="14"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     VerticalContentAlignment="Top"
+                     Visibility="Collapsed"
+                     LostKeyboardFocus="OnEditorLostKeyboardFocus"
+                     KeyDown="OnEditorKeyDown" />
+        </Grid>
+    </Border>
+</UserControl>
