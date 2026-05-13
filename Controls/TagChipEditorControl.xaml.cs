@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -41,7 +40,6 @@ public partial class TagChipEditorControl : UserControl
         typeof(TagChipEditorControl),
         new PropertyMetadata(BrushFrom("#4B5563")));
 
-    private static readonly Regex TagRegex = new(@"#?[\p{L}\p{N}_-]+", RegexOptions.Compiled);
     private readonly List<string> _tags = [];
     private bool _isSyncing;
 
@@ -188,7 +186,7 @@ public partial class TagChipEditorControl : UserControl
         var label = new TextBlock
         {
             Text = FormatTagForDisplay(tag),
-            FontSize = 11,
+            FontSize = 10,
             FontWeight = FontWeights.SemiBold,
             Foreground = ChipForeground,
             VerticalAlignment = VerticalAlignment.Center
@@ -197,10 +195,10 @@ public partial class TagChipEditorControl : UserControl
         var removeButton = new Button
         {
             Content = "×",
-            Width = 14,
-            Height = 14,
+            Width = 12,
+            Height = 12,
             Padding = new Thickness(0),
-            Margin = new Thickness(5, 0, 0, 0),
+            Margin = new Thickness(4, 0, 0, 0),
             BorderThickness = new Thickness(0),
             Background = Brushes.Transparent,
             Foreground = ChipForeground,
@@ -225,9 +223,9 @@ public partial class TagChipEditorControl : UserControl
 
         return new Border
         {
-            Padding = new Thickness(9, 4, 6, 4),
-            Margin = new Thickness(0, 0, 7, 7),
-            CornerRadius = new CornerRadius(10),
+            Padding = new Thickness(7, 3, 5, 3),
+            Margin = new Thickness(0, 0, 5, 5),
+            CornerRadius = new CornerRadius(4),
             Background = ChipBackground,
             Child = content
         };
@@ -240,9 +238,9 @@ public partial class TagChipEditorControl : UserControl
             yield break;
         }
 
-        foreach (Match match in TagRegex.Matches(text))
+        foreach (var item in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var tag = match.Value.Trim().TrimStart('#').Trim('-', '_');
+            var tag = item.Trim();
 
             if (!string.IsNullOrWhiteSpace(tag))
             {
@@ -258,6 +256,6 @@ public partial class TagChipEditorControl : UserControl
 
     private static string FormatTagForDisplay(string tag)
     {
-        return tag.StartsWith('#') ? tag : $"#{tag}";
+        return tag;
     }
 }

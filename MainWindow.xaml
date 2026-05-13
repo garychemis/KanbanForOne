@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="Kanban41"
         Height="900"
-        Width="1440"
+        Width="1512"
         MinHeight="720"
         MinWidth="1100"
         WindowStyle="None"
@@ -36,7 +36,7 @@
               ClipToBounds="True">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="236" />
+                    <ColumnDefinition Width="204" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 

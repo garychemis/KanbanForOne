@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:KanbanForOne.Controls"
              xmlns:models="clr-namespace:KanbanForOne.Models"
-             MinWidth="280"
+             MinWidth="232"
              MaxWidth="360">
     <Border x:Name="ColumnBorder"
             AllowDrop="True"
@@ -12,8 +12,10 @@
             DragLeave="OnDragLeave"
             Drop="OnDrop"
             Background="Transparent"
-            BorderThickness="0"
-            Padding="0">
+            BorderBrush="Transparent"
+            BorderThickness="1"
+            CornerRadius="8"
+            Padding="4">
         <DockPanel>
             <Grid DockPanel.Dock="Top"
                   Margin="0,0,0,18">
@@ -79,6 +81,30 @@
                                              Message="点击右上角 + 添加一张卡片。"
                                              Visibility="Collapsed"
                                              Margin="0,4,0,0" />
+
+                    <Border x:Name="DropPlaceholder"
+                            Visibility="Collapsed"
+                            Height="58"
+                            Margin="0,2,0,0"
+                            CornerRadius="6"
+                            Background="#EAF2FF"
+                            BorderBrush="#3B82F6"
+                            BorderThickness="1"
+                            IsHitTestVisible="False"
+                            VerticalAlignment="Top">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="12"
+                                              ShadowDepth="3"
+                                              Direction="270"
+                                              Opacity="0.08" />
+                        </Border.Effect>
+                        <TextBlock Text="释放到这里"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="#1D4ED8" />
+                    </Border>
                 </Grid>
             </ScrollViewer>
         </DockPanel>

@@ -8,23 +8,24 @@
              Drop="OnDrop">
     <Grid>
         <Border x:Name="DropBorder"
-                MinHeight="92"
-                Padding="18"
-                CornerRadius="18"
-                BorderThickness="0"
-                Background="#80FFFFFF">
+                MinHeight="62"
+                Padding="10"
+                CornerRadius="4"
+                BorderBrush="{StaticResource DrawerSoftDividerBrush}"
+                BorderThickness="1"
+                Background="{StaticResource DrawerSoftSurfaceBrush}">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                 <TextBlock Text="{Binding TitleText, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                           FontSize="12"
+                           FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource TextPrimaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            TextWrapping="Wrap" />
                 <TextBlock Text="{Binding HelperText, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                           Margin="0,6,0,0"
-                           FontSize="11"
+                           Margin="0,3,0,0"
+                           FontSize="10"
                            Foreground="{StaticResource TextSecondaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
@@ -34,9 +35,10 @@
 
         <Border x:Name="DropHint"
                 Visibility="Collapsed"
-                CornerRadius="12"
-                Background="#E6FFFFFF"
-                BorderThickness="0"
+                CornerRadius="4"
+                Background="#F8FAFC"
+                BorderBrush="{StaticResource DrawerSoftDividerBrush}"
+                BorderThickness="1"
                 IsHitTestVisible="False">
             <TextBlock Text="{Binding DropHintText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        HorizontalAlignment="Center"

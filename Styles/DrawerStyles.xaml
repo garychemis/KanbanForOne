@@ -2,17 +2,17 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:KanbanForOne.Controls"
                     xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework">
-    <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#2D3035" />
-    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#2D3035" />
-    <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#F4F5F6" />
-    <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#D3D7DE" />
-    <SolidColorBrush x:Key="DrawerMutedBrush" Color="#AEB6C2" />
-    <SolidColorBrush x:Key="DrawerSoftDividerBrush" Color="#3DFFFFFF" />
-    <SolidColorBrush x:Key="DrawerSoftSurfaceBrush" Color="#22FFFFFF" />
-    <SolidColorBrush x:Key="DrawerStrongSurfaceBrush" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#F7F8FA" />
+    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#FFF9E8" />
+    <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#1F2937" />
+    <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#334155" />
+    <SolidColorBrush x:Key="DrawerMutedBrush" Color="#64748B" />
+    <SolidColorBrush x:Key="DrawerSoftDividerBrush" Color="#D6DEE8" />
+    <SolidColorBrush x:Key="DrawerSoftSurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="DrawerStrongSurfaceBrush" Color="#E9EEF5" />
 
     <Style x:Key="DrawerPanelStyle" TargetType="{x:Type Border}">
-        <Setter Property="CornerRadius" Value="28,0,0,28" />
+        <Setter Property="CornerRadius" Value="10,0,0,10" />
         <Setter Property="Background" Value="{StaticResource DrawerPanelBackgroundBrush}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Focusable" Value="False" />
@@ -26,7 +26,7 @@
     </Style>
 
     <Style x:Key="DrawerHeaderStyle" TargetType="{x:Type Border}">
-        <Setter Property="Padding" Value="34,32,34,22" />
+        <Setter Property="Padding" Value="24,20,24,12" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Focusable" Value="False" />
@@ -34,9 +34,9 @@
     </Style>
 
     <Style x:Key="DrawerFooterStyle" TargetType="{x:Type Border}">
-        <Setter Property="Padding" Value="26,17" />
-        <Setter Property="MinHeight" Value="86" />
-        <Setter Property="Background" Value="#22FFFFFF" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="MinHeight" Value="54" />
+        <Setter Property="Background" Value="#EEF2F7" />
         <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
         <Setter Property="Focusable" Value="False" />
@@ -44,7 +44,7 @@
     </Style>
 
     <Style x:Key="DrawerTitleTextBoxStyle" TargetType="{x:Type TextBox}">
-        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextPrimaryBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource DrawerTextPrimaryBrush}" />
@@ -65,7 +65,7 @@
     </Style>
 
     <Style x:Key="BorderlessDrawerSectionStyle" TargetType="{x:Type StackPanel}">
-        <Setter Property="Margin" Value="0,0,0,28" />
+        <Setter Property="Margin" Value="0,0,0,14" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     </Style>
@@ -74,7 +74,7 @@
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource DrawerMutedBrush}" />
-        <Setter Property="Margin" Value="0,0,0,11" />
+        <Setter Property="Margin" Value="0,0,0,7" />
     </Style>
 
     <Style x:Key="DrawerSectionTitleStyle"
@@ -82,10 +82,10 @@
            BasedOn="{StaticResource BorderlessDrawerSectionTitleStyle}" />
 
     <Style x:Key="DrawerSegmentToggleStyle" TargetType="{x:Type RadioButton}">
-        <Setter Property="Height" Value="40" />
-        <Setter Property="MinWidth" Value="86" />
-        <Setter Property="Margin" Value="0,0,8,8" />
-        <Setter Property="Padding" Value="15,0" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="MinWidth" Value="68" />
+        <Setter Property="Margin" Value="0,0,6,6" />
+        <Setter Property="Padding" Value="10,0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextSecondaryBrush}" />
@@ -95,9 +95,10 @@
                 <ControlTemplate TargetType="{x:Type RadioButton}">
                     <Border x:Name="Chrome"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="14"
+                            CornerRadius="4"
                             Background="{StaticResource DrawerSoftSurfaceBrush}"
-                            BorderThickness="0">
+                            BorderBrush="{StaticResource DrawerSoftDividerBrush}"
+                            BorderThickness="1">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
@@ -108,7 +109,7 @@
                             <Setter Property="Foreground" Value="{StaticResource DrawerTextPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#2EFFFFFF" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#F3F6FA" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.55" />
@@ -133,12 +134,12 @@
            BasedOn="{StaticResource DrawerSegmentToggleStyle}" />
 
     <Style x:Key="DrawerStatusChipButtonStyle" TargetType="{x:Type RadioButton}">
-        <Setter Property="Height" Value="40" />
-        <Setter Property="MinWidth" Value="86" />
-        <Setter Property="Margin" Value="0,0,8,8" />
-        <Setter Property="Padding" Value="15,0" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="MinWidth" Value="68" />
+        <Setter Property="Margin" Value="0,0,6,6" />
+        <Setter Property="Padding" Value="10,0" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontSize" Value="11" />
         <Setter Property="Foreground">
             <Setter.Value>
                 <Binding Path="Tag"
@@ -166,7 +167,7 @@
                 <ControlTemplate TargetType="{x:Type RadioButton}">
                     <Border x:Name="Chrome"
                             Padding="{TemplateBinding Padding}"
-                            CornerRadius="14"
+                            CornerRadius="4"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="1"
@@ -207,7 +208,7 @@
     </Style>
 
     <Style x:Key="DrawerScrollBarThumbStyle" TargetType="{x:Type primitives:Thumb}">
-        <Setter Property="Background" Value="#66FFFFFF" />
+        <Setter Property="Background" Value="#CBD5E1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type primitives:Thumb}">
@@ -217,10 +218,10 @@
                             Background="{TemplateBinding Background}" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbChrome" Property="Background" Value="#8CFFFFFF" />
+                            <Setter TargetName="ThumbChrome" Property="Background" Value="#94A3B8" />
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbChrome" Property="Background" Value="#B3FFFFFF" />
+                            <Setter TargetName="ThumbChrome" Property="Background" Value="#64748B" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -258,11 +259,12 @@
     </Style>
 
     <Style x:Key="BorderlessDateCardStyle" TargetType="{x:Type Border}">
-        <Setter Property="Height" Value="76" />
-        <Setter Property="Padding" Value="16,12" />
-        <Setter Property="CornerRadius" Value="18" />
+        <Setter Property="Height" Value="58" />
+        <Setter Property="Padding" Value="10,8" />
+        <Setter Property="CornerRadius" Value="4" />
         <Setter Property="Background" Value="{StaticResource DrawerSoftSurfaceBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Focusable" Value="False" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     </Style>
@@ -333,10 +335,11 @@
     </Style>
 
     <Style x:Key="DrawerDescriptionTextBoxStyle" TargetType="{x:Type TextBox}">
-        <Setter Property="MinHeight" Value="200" />
-        <Setter Property="Padding" Value="20" />
+        <Setter Property="MinHeight" Value="260" />
+        <Setter Property="Padding" Value="14" />
         <Setter Property="Background" Value="{StaticResource DrawerSoftSurfaceBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextPrimaryBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource DrawerTextPrimaryBrush}" />
         <Setter Property="FontSize" Value="14" />
@@ -349,7 +352,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
                     <Border Background="{TemplateBinding Background}"
-                            CornerRadius="20">
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="0">
                         <ScrollViewer x:Name="PART_ContentHost"
                                       Margin="{TemplateBinding Padding}" />
                     </Border>
@@ -365,16 +370,16 @@
     <Style x:Key="DrawerDescriptionEditorStyle" TargetType="{x:Type controls:MarkdownEditorControl}">
         <Setter Property="EditorBackground" Value="{StaticResource DrawerSoftSurfaceBrush}" />
         <Setter Property="EditorForeground" Value="{StaticResource DrawerTextPrimaryBrush}" />
-        <Setter Property="EditorBorderBrush" Value="Transparent" />
-        <Setter Property="EditorBorderThickness" Value="0" />
-        <Setter Property="EditorCornerRadius" Value="20" />
-        <Setter Property="EditorPadding" Value="20" />
-        <Setter Property="EditorMinHeight" Value="220" />
+        <Setter Property="EditorBorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+        <Setter Property="EditorBorderThickness" Value="1" />
+        <Setter Property="EditorCornerRadius" Value="0" />
+        <Setter Property="EditorPadding" Value="14" />
+        <Setter Property="EditorMinHeight" Value="300" />
     </Style>
 
     <Style x:Key="BorderlessAttachmentDropZoneStyle" TargetType="{x:Type controls:AttachmentDropZoneControl}">
-        <Setter Property="Margin" Value="0,0,0,12" />
-        <Setter Property="MinHeight" Value="92" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="MinHeight" Value="64" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     </Style>
 
@@ -383,13 +388,14 @@
            BasedOn="{StaticResource BorderlessAttachmentDropZoneStyle}" />
 
     <Style x:Key="DrawerGhostButtonStyle" TargetType="{x:Type Button}">
-        <Setter Property="Height" Value="46" />
-        <Setter Property="MinWidth" Value="92" />
-        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="MinWidth" Value="72" />
+        <Setter Property="Padding" Value="12,0" />
         <Setter Property="Background" Value="{StaticResource DrawerSoftSurfaceBrush}" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextSecondaryBrush}" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -398,13 +404,15 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="Chrome"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="16">
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#2EFFFFFF" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#F3F6FA" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DrawerStrongSurfaceBrush}" />
@@ -430,23 +438,26 @@
     <Style x:Key="DrawerDangerButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DrawerGhostButtonStyle}">
-        <Setter Property="Background" Value="#3A252A" />
-        <Setter Property="Foreground" Value="#FDA4AF" />
+        <Setter Property="Background" Value="#FFF1F2" />
+        <Setter Property="BorderBrush" Value="#FECDD3" />
+        <Setter Property="Foreground" Value="#BE123C" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="Chrome"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="16">
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#4A2C33" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#FFE4E6" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#5B333B" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#FECDD3" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.55" />
@@ -465,27 +476,33 @@
     <Style x:Key="DrawerPrimaryButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DrawerGhostButtonStyle}">
-        <Setter Property="Background" Value="#E7E1D5" />
-        <Setter Property="Foreground" Value="#1E2329" />
-        <Setter Property="MinWidth" Value="122" />
+        <Setter Property="Background" Value="#1F2937" />
+        <Setter Property="BorderBrush" Value="#1F2937" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Setter Property="MinWidth" Value="86" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="Chrome"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="16">
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#F0E9DC" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#334155" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#334155" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#D6CBB9" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#111827" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#111827" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Chrome" Property="Background" Value="#E7E1D5" />
+                            <Setter TargetName="Chrome" Property="Background" Value="#94A3B8" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#94A3B8" />
                             <Setter Property="Opacity" Value="0.44" />
                             <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
@@ -502,9 +519,9 @@
     <Style x:Key="DrawerCloseButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource IconButtonStyle}">
-        <Setter Property="Width" Value="38" />
-        <Setter Property="Height" Value="38" />
-        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="FontSize" Value="16" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextSecondaryBrush}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
@@ -516,7 +533,7 @@
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="13">
+                            CornerRadius="4">
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>

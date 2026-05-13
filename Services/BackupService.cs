@@ -20,9 +20,7 @@ public sealed class BackupService
 {
     public async Task<BackupResult> CreateBackupAsync()
     {
-        Directory.CreateDirectory(AppPaths.DataRoot);
-        Directory.CreateDirectory(AppPaths.AttachmentRoot);
-        Directory.CreateDirectory(AppPaths.BackupRoot);
+        AppPaths.EnsureStorageLayout();
 
         var backupPath = CreateUniqueBackupPath();
         var attachmentCount = await Task.Run(() => CreateBackupArchive(backupPath));
@@ -45,9 +43,7 @@ public sealed class BackupService
             throw new FileNotFoundException("备份文件不存在。", sourceBackupPath);
         }
 
-        Directory.CreateDirectory(AppPaths.DataRoot);
-        Directory.CreateDirectory(AppPaths.AttachmentRoot);
-        Directory.CreateDirectory(AppPaths.BackupRoot);
+        AppPaths.EnsureStorageLayout();
 
         return await Task.Run(() => RestoreBackup(sourceBackupPath));
     }
@@ -111,7 +107,7 @@ public sealed class BackupService
         var stagingRoot = Path.Combine(AppPaths.DataRoot, ".restore-staging", Guid.NewGuid().ToString("N"));
         var extractRoot = Path.Combine(stagingRoot, "extract");
         var oldRoot = Path.Combine(stagingRoot, "old");
-        var oldDatabasePath = Path.Combine(oldRoot, "Kanban41.db");
+        var oldDatabasePath = Path.Combine(oldRoot, "db", "Kanban41.db");
         var oldAttachmentRoot = Path.Combine(oldRoot, "attachments");
 
         Directory.CreateDirectory(extractRoot);

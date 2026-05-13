@@ -137,9 +137,7 @@ public sealed class DatabaseService
 
     private void EnsureStorageDirectories()
     {
-        Directory.CreateDirectory(DataDirectory);
-        Directory.CreateDirectory(AttachmentDirectory);
-        Directory.CreateDirectory(BackupDirectory);
+        AppPaths.EnsureStorageLayout();
     }
 
     private static async Task InitializeSchemaAsync(SqliteConnection connection)

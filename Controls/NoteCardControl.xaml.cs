@@ -67,7 +67,16 @@ public partial class NoteCardControl : UserControl
         _isDraggingCard = true;
         var data = new DataObject();
         data.SetData(DragDropFormats.NoteCard, note);
-        DragDrop.DoDragDrop(this, data, DragDropEffects.Move);
+
+        ApplyDraggingVisualState();
+        try
+        {
+            DragDrop.DoDragDrop(this, data, DragDropEffects.Move);
+        }
+        finally
+        {
+            ResetVisualState();
+        }
     }
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -86,6 +95,12 @@ public partial class NoteCardControl : UserControl
 
     private void OnMouseEnter(object sender, MouseEventArgs e)
     {
+        if (_isDraggingCard)
+        {
+            return;
+        }
+
+        Cursor = Cursors.Hand;
         LiftTransform.Y = -2;
         CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#E0CE76")!;
         CardBorder.Effect = new DropShadowEffect
@@ -152,6 +167,10 @@ public partial class NoteCardControl : UserControl
 
     private void ResetVisualState()
     {
+        Cursor = Cursors.Hand;
+        DragScaleTransform.ScaleX = 1;
+        DragScaleTransform.ScaleY = 1;
+        DragRotateTransform.Angle = 0;
         LiftTransform.Y = 0;
         CardBorder.BorderBrush = (Brush)FindResource("NoteCardBorderBrush");
         CardBorder.Effect = new DropShadowEffect
@@ -160,6 +179,23 @@ public partial class NoteCardControl : UserControl
             ShadowDepth = 4,
             Direction = 270,
             Opacity = 0.05
+        };
+    }
+
+    private void ApplyDraggingVisualState()
+    {
+        Cursor = Cursors.SizeAll;
+        DragScaleTransform.ScaleX = 1.02;
+        DragScaleTransform.ScaleY = 1.02;
+        DragRotateTransform.Angle = -0.6;
+        LiftTransform.Y = -3;
+        CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#C3A737")!;
+        CardBorder.Effect = new DropShadowEffect
+        {
+            BlurRadius = 24,
+            ShadowDepth = 10,
+            Direction = 270,
+            Opacity = 0.16
         };
     }
 }

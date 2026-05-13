@@ -347,7 +347,7 @@ public sealed class TagDisplayConverter : IValueConverter
             return string.Empty;
         }
 
-        return tag.StartsWith('#') ? tag : $"#{tag}";
+        return tag;
     }
 }
 

@@ -155,6 +155,7 @@ public partial class KanbanColumnControl : UserControl
         if (card is null)
         {
             e.Effects = DragDropEffects.None;
+            ResetDragState();
             return;
         }
 
@@ -167,6 +168,13 @@ public partial class KanbanColumnControl : UserControl
         {
             ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#9BA7B4")!;
             ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#F0F3F6")!;
+            ShowDropPlaceholder(e);
+        }
+        else
+        {
+            ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#FCA5A5")!;
+            ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#FFF1F2")!;
+            DropPlaceholder.Visibility = Visibility.Collapsed;
         }
 
         e.Handled = true;
@@ -189,8 +197,27 @@ public partial class KanbanColumnControl : UserControl
 
     private void ResetDragState()
     {
-        ColumnBorder.BorderBrush = (Brush)FindResource("BorderBrushSoft");
+        ColumnBorder.BorderBrush = Brushes.Transparent;
         ColumnBorder.Background = (Brush)FindResource("ColumnBackgroundBrush");
+        DropPlaceholder.Visibility = Visibility.Collapsed;
+        DropPlaceholder.Margin = new Thickness(0, 2, 0, 0);
+    }
+
+    private void ShowDropPlaceholder(DragEventArgs e)
+    {
+        var dropIndex = GetDropIndex(e);
+        var top = 2d;
+
+        for (var index = 0; index < dropIndex; index++)
+        {
+            if (CardItems.ItemContainerGenerator.ContainerFromIndex(index) is FrameworkElement container)
+            {
+                top += container.ActualHeight;
+            }
+        }
+
+        DropPlaceholder.Margin = new Thickness(0, top, 0, 0);
+        DropPlaceholder.Visibility = Visibility.Visible;
     }
 
     private int GetDropIndex(DragEventArgs e)

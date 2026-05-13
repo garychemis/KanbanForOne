@@ -28,22 +28,22 @@
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Focusable="False">
-                    <Border Padding="12,5"
-                            CornerRadius="999"
+                    <Border Padding="8,3"
+                            CornerRadius="4"
                             Background="#F1E7B8">
                         <TextBlock Text="&#x5907;&#x5FD8;&#x5F55;"
-                                   FontSize="12"
+                                   FontSize="11"
                                    FontWeight="SemiBold"
                                    Foreground="#6B5B2E" />
                     </Border>
 
                     <Border Margin="8,0,0,0"
-                            Padding="10,5"
-                            CornerRadius="999"
-                            Background="#73FFFFFF"
+                            Padding="8,3"
+                            CornerRadius="4"
+                            Background="{StaticResource DrawerStrongSurfaceBrush}"
                             Visibility="{Binding HasUnsavedNoteChanges, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                         <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
-                                   FontSize="12"
+                                   FontSize="11"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextSecondaryBrush}" />
                     </Border>
@@ -57,14 +57,14 @@
 
                 <TextBox Grid.Row="1"
                          Grid.ColumnSpan="2"
-                         Margin="0,18,42,0"
+                         Margin="0,10,36,0"
                          Text="{Binding NoteTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource DrawerTitleTextBoxStyle}" />
 
                 <TextBlock Grid.Row="2"
                            Grid.ColumnSpan="2"
-                           Margin="0,8,0,0"
-                           FontSize="12"
+                           Margin="0,4,0,0"
+                           FontSize="11"
                            Foreground="{StaticResource DrawerMutedBrush}">
                     <Run Text="&#x66F4;&#x65B0;&#x4E8E; " />
                     <Run Text="{Binding SelectedNote.UpdatedAt, ElementName=Root, StringFormat={}{0:yyyy/M/d HH:mm}}" />
@@ -73,7 +73,7 @@
         </Border>
 
         <ScrollViewer Grid.Row="1"
-                      Padding="32,24,32,28"
+                      Padding="24,10,24,14"
                       Focusable="False"
                       FocusVisualStyle="{x:Null}"
                       BorderThickness="0"
@@ -84,17 +84,17 @@
             </ScrollViewer.Resources>
             <StackPanel Focusable="False">
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
-                    <Grid Margin="0,0,0,12"
+                    <Grid Margin="0,0,0,6"
                           Focusable="False">
                         <TextBlock Text="&#x6807;&#x7B7E;"
                                    Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
                         <Button Content="+ &#x6DFB;&#x52A0;"
                                 Click="OnAddTagClick"
                                 Style="{StaticResource DrawerSecondaryButtonStyle}"
-                                Height="30"
-                                MinWidth="66"
-                                Padding="10,0"
-                                FontSize="12"
+                                Height="26"
+                                MinWidth="54"
+                                Padding="8,0"
+                                FontSize="11"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 ToolTip="&#x6DFB;&#x52A0;&#x6807;&#x7B7E;" />
@@ -113,13 +113,12 @@
                     <controls:MarkdownEditorControl Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     Style="{StaticResource DrawerDescriptionEditorStyle}"
                                                     EditorBackground="{StaticResource DrawerSoftSurfaceBrush}"
-                                                    EditorBorderBrush="Transparent"
-                                                    EditorMinHeight="280" />
+                                                    EditorMinHeight="420" />
                 </StackPanel>
 
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}"
                             Margin="0">
-                    <Grid Margin="0,0,0,12"
+                    <Grid Margin="0,0,0,6"
                           Focusable="False">
                         <TextBlock Text="{Binding SelectedNote.AttachmentCount, ElementName=Root, StringFormat=&#x9644;&#x4EF6; {0}}"
                                    Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
@@ -127,17 +126,17 @@
                                 Command="{Binding PickFilesCommand}"
                                 CommandParameter="{Binding SelectedNote, ElementName=Root}"
                                 Style="{StaticResource DrawerSecondaryButtonStyle}"
-                                Height="30"
-                                MinWidth="66"
-                                Padding="10,0"
-                                FontSize="12"
+                                Height="26"
+                                MinWidth="54"
+                                Padding="8,0"
+                                FontSize="11"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
                                 ToolTip="&#x6DFB;&#x52A0;&#x9644;&#x4EF6;" />
                     </Grid>
                     <controls:AttachmentDropZoneControl Owner="{Binding SelectedNote, ElementName=Root}"
                                                         AttachFilesCommand="{Binding AttachFilesCommand}"
-                                                        TitleText="&#x62D6;&#x62FD;&#x6587;&#x4EF6;&#x5230;&#x8FD9;&#x91CC;&#x4E0A;&#x4F20;"
+                                                        TitleText="&#x62D6;&#x62FD;&#x6587;&#x4EF6;&#x5230;&#x8FD9;&#x91CC;&#x4FDD;&#x5B58;&#x4E3A;&#x672C;&#x5730;&#x9644;&#x4EF6;"
                                                         HelperText="&#x652F;&#x6301;&#x6587;&#x6863;&#x3001;&#x56FE;&#x7247;&#x3001;&#x538B;&#x7F29;&#x5305;&#x7B49;&#x9644;&#x4EF6;"
                                                         DropHintText="&#x91CA;&#x653E;&#x6587;&#x4EF6;&#x4EE5;&#x4FDD;&#x5B58;&#x4E3A;&#x9644;&#x4EF6;"
                                                         Style="{StaticResource BorderlessAttachmentDropZoneStyle}" />

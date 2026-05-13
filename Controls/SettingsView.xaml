@@ -9,7 +9,7 @@
                 <TextBlock Text="设置"
                            FontSize="20"
                            FontWeight="SemiBold" />
-                <TextBlock Text="当前版本使用本地 SQLite，并在 EXE 所在目录保存数据。"
+                <TextBlock Text="当前版本使用本地 SQLite，并在 EXE 所在目录的 data/ 下保存数据。"
                            Margin="0,6,0,22"
                            FontSize="12"
                            Foreground="{StaticResource TextSecondaryBrush}" />
@@ -92,13 +92,13 @@
                         <TextBlock Text="当前策略"
                                    FontSize="14"
                                    FontWeight="SemiBold" />
-                        <TextBlock Text="数据会自动生成在 EXE 所在目录，便于随程序目录一起备份或迁移。"
+                        <TextBlock Text="数据会自动生成在 EXE 所在目录的 data/ 下，便于随程序目录一起备份或迁移。"
                                    Margin="0,8,0,0"
                                    FontSize="12"
                                    LineHeight="18"
                                    TextWrapping="Wrap"
                                    Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Text="备份页可创建包含 Kanban41.db 和 attachments/ 的 zip 包。"
+                        <TextBlock Text="备份页可创建包含 data/db/Kanban41.db 和 data/attachments/ 的 zip 包。"
                                    Margin="0,5,0,0"
                                    FontSize="12"
                                    LineHeight="18"

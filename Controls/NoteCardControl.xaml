@@ -20,7 +20,14 @@
                 MinHeight="88"
                 RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
-                <TranslateTransform x:Name="LiftTransform" />
+                <TransformGroup>
+                    <ScaleTransform x:Name="DragScaleTransform"
+                                    ScaleX="1"
+                                    ScaleY="1" />
+                    <RotateTransform x:Name="DragRotateTransform"
+                                     Angle="0" />
+                    <TranslateTransform x:Name="LiftTransform" />
+                </TransformGroup>
             </Border.RenderTransform>
 
             <StackPanel Margin="18,16,18,14">
@@ -30,16 +37,37 @@
                            Foreground="#4A3F22"
                            TextWrapping="Wrap" />
 
+                <TextBlock Text="{Binding Content}"
+                           Margin="0,7,0,0"
+                           FontSize="12"
+                           LineHeight="17"
+                           MaxHeight="36"
+                           Foreground="#6F6235"
+                           TextWrapping="Wrap"
+                           TextTrimming="CharacterEllipsis" />
+
                 <TextBlock Text="{Binding UpdatedAt, Converter={StaticResource DateDisplayConverter}, StringFormat=日期 {0}}"
                            Margin="0,9,0,0"
                            FontSize="11"
                            Foreground="#8A7A44" />
 
-                <TextBlock Text="{Binding TagsDisplay, Converter={StaticResource TagListDisplayConverter}}"
-                           Margin="0,12,0,0"
-                           FontSize="11"
-                           Foreground="#8A7A44"
-                           TextTrimming="CharacterEllipsis" />
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{Binding TagsDisplay, Converter={StaticResource TagListDisplayConverter}}"
+                               FontSize="11"
+                               Foreground="#8A7A44"
+                               TextTrimming="CharacterEllipsis" />
+
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding AttachmentCount, StringFormat=附件 {0}}"
+                               Margin="12,0,0,0"
+                               FontSize="11"
+                               Foreground="#8A7A44" />
+                </Grid>
             </StackPanel>
         </Border>
 

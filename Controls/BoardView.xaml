@@ -18,9 +18,9 @@
     <Grid Background="{StaticResource MainContentBackgroundBrush}">
         <ScrollViewer HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Disabled"
-                      Padding="26,28,26,28">
+                      Padding="16,28,16,28">
             <StackPanel Orientation="Horizontal">
-                <controls:KanbanColumnControl Width="300"
+                <controls:KanbanColumnControl Width="240"
                                               Title="待办"
                                               Subtitle="计划中但尚未开始"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Todo}"
@@ -29,9 +29,9 @@
                                               AddCommand="{Binding CreateTaskCommand}"
                                               AddCommandParameter="{x:Static models:KanbanColumnKind.Todo}"
                                               DropCommand="{Binding MoveCardCommand}"
-                                              Margin="0,0,20,0" />
+                                              Margin="0,0,12,0" />
 
-                <controls:KanbanColumnControl Width="300"
+                <controls:KanbanColumnControl Width="240"
                                               Title="进行中"
                                               Subtitle="当前正在处理"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Doing}"
@@ -40,9 +40,9 @@
                                               AddCommand="{Binding CreateTaskCommand}"
                                               AddCommandParameter="{x:Static models:KanbanColumnKind.Doing}"
                                               DropCommand="{Binding MoveCardCommand}"
-                                              Margin="0,0,20,0" />
+                                              Margin="0,0,12,0" />
 
-                <controls:KanbanColumnControl Width="300"
+                <controls:KanbanColumnControl Width="240"
                                               Title="卡住"
                                               Subtitle="遇到阻碍或等待"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Blocked}"
@@ -51,9 +51,9 @@
                                               AddCommand="{Binding CreateTaskCommand}"
                                               AddCommandParameter="{x:Static models:KanbanColumnKind.Blocked}"
                                               DropCommand="{Binding MoveCardCommand}"
-                                              Margin="0,0,20,0" />
+                                              Margin="0,0,12,0" />
 
-                <controls:KanbanColumnControl Width="300"
+                <controls:KanbanColumnControl Width="240"
                                               Title="完成"
                                               Subtitle="已经处理完成"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Done}"
@@ -62,9 +62,9 @@
                                               AddCommand="{Binding CreateTaskCommand}"
                                               AddCommandParameter="{x:Static models:KanbanColumnKind.Done}"
                                               DropCommand="{Binding MoveCardCommand}"
-                                              Margin="0,0,20,0" />
+                                              Margin="0,0,12,0" />
 
-                <controls:KanbanColumnControl Width="300"
+                <controls:KanbanColumnControl Width="240"
                                               Title="备忘录"
                                               Subtitle="灵感、备忘和随手记"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Notes}"

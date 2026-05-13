@@ -31,7 +31,7 @@ public partial class AttachmentDropZoneControl : UserControl
         nameof(HelperText),
         typeof(string),
         typeof(AttachmentDropZoneControl),
-        new PropertyMetadata("最多 10 个文件，文件会复制到 EXE 所在目录的 attachments/"));
+        new PropertyMetadata("最多 10 个文件，文件会复制到 data/attachments/"));
 
     public static readonly DependencyProperty DropHintTextProperty = DependencyProperty.Register(
         nameof(DropHintText),
@@ -115,14 +115,14 @@ public partial class AttachmentDropZoneControl : UserControl
         }
 
         e.Effects = DragDropEffects.Copy;
-        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#E6FFFFFF")!;
+        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#F8FAFC")!;
         DropHint.Visibility = Visibility.Visible;
         e.Handled = true;
     }
 
     private void ResetDropState()
     {
-        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#80FFFFFF")!;
+        DropBorder.Background = (Brush)FindResource("DrawerSoftSurfaceBrush");
         DropHint.Visibility = Visibility.Collapsed;
     }
 }
