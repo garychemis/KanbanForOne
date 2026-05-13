@@ -12,22 +12,27 @@
         MinHeight="720"
         MinWidth="1100"
         WindowStyle="None"
+        AllowsTransparency="True"
         ResizeMode="CanResize"
-        Background="{StaticResource AppBackgroundBrush}">
+        Background="Transparent"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0"
                             ResizeBorderThickness="6"
-                            CornerRadius="14"
+                            CornerRadius="0"
                             GlassFrameThickness="0"
                             UseAeroCaptionButtons="False" />
     </shell:WindowChrome.WindowChrome>
 
-    <Border CornerRadius="14"
+    <Border x:Name="WindowFrame"
+            CornerRadius="28"
             Background="{StaticResource AppBackgroundBrush}"
-            BorderBrush="{StaticResource BorderBrushSoft}"
-            BorderThickness="1"
+            BorderBrush="Transparent"
+            BorderThickness="0"
             SnapsToDevicePixels="True">
-        <Grid PreviewMouseLeftButtonDown="OnWindowRootPreviewMouseLeftButtonDown"
+        <Grid x:Name="WindowRoot"
+              PreviewMouseLeftButtonDown="OnWindowRootPreviewMouseLeftButtonDown"
               ClipToBounds="True">
             <Grid>
                 <Grid.ColumnDefinitions>

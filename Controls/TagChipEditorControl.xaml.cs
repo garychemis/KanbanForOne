@@ -187,7 +187,7 @@ public partial class TagChipEditorControl : UserControl
     {
         var label = new TextBlock
         {
-            Text = tag,
+            Text = FormatTagForDisplay(tag),
             FontSize = 11,
             FontWeight = FontWeights.SemiBold,
             Foreground = ChipForeground,
@@ -254,5 +254,10 @@ public partial class TagChipEditorControl : UserControl
     private static Brush BrushFrom(string hex)
     {
         return (Brush)new BrushConverter().ConvertFromString(hex)!;
+    }
+
+    private static string FormatTagForDisplay(string tag)
+    {
+        return tag.StartsWith('#') ? tag : $"#{tag}";
     }
 }

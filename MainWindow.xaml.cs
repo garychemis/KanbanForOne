@@ -1,9 +1,7 @@
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using KanbanForOne.ViewModels;
 
@@ -18,6 +16,8 @@ namespace KanbanForOne
             InitializeComponent();
             DataContext = _viewModel;
             Loaded += OnLoaded;
+            StateChanged += OnWindowStateChanged;
+            WindowRoot.SizeChanged += OnWindowRootSizeChanged;
             SourceInitialized += OnSourceInitialized;
         }
 
@@ -29,7 +29,17 @@ namespace KanbanForOne
 
         private void OnSourceInitialized(object? sender, EventArgs e)
         {
-            ApplyRoundedWindowCorners();
+            ApplyWindowRootClip();
+        }
+
+        private void OnWindowRootSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ApplyWindowRootClip();
+        }
+
+        private void OnWindowStateChanged(object? sender, EventArgs e)
+        {
+            ApplyWindowRootClip();
         }
 
         private void OnWindowRootPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -109,30 +119,27 @@ namespace KanbanForOne
             return false;
         }
 
-        private void ApplyRoundedWindowCorners()
+        private void ApplyWindowRootClip()
         {
-            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 22000))
+            if (WindowRoot.ActualWidth <= 0 || WindowRoot.ActualHeight <= 0)
             {
                 return;
             }
 
-            try
+            if (WindowState == WindowState.Maximized)
             {
-                var handle = new WindowInteropHelper(this).Handle;
-                var preference = 2;
-                _ = DwmSetWindowAttribute(handle, 33, ref preference, sizeof(int));
+                WindowFrame.CornerRadius = new CornerRadius(0);
+                WindowRoot.Clip = null;
+                return;
             }
-            catch
-            {
-                // Rounded corners are a visual enhancement; the window must still open if DWM rejects it.
-            }
+
+            WindowFrame.CornerRadius = new CornerRadius(28);
+            var radius = WindowFrame.CornerRadius.TopLeft;
+            WindowRoot.Clip = new RectangleGeometry(
+                new Rect(0, 0, WindowRoot.ActualWidth, WindowRoot.ActualHeight),
+                radius,
+                radius);
         }
 
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(
-            IntPtr hwnd,
-            int attribute,
-            ref int pvAttribute,
-            int cbAttribute);
     }
 }

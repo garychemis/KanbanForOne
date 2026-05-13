@@ -72,7 +72,7 @@
                                         Margin="0,0,6,4"
                                         CornerRadius="8"
                                         Background="#F3F5F7">
-                                    <TextBlock Text="{Binding}"
+                                    <TextBlock Text="{Binding Converter={StaticResource TagDisplayConverter}}"
                                                FontSize="10"
                                                FontWeight="SemiBold"
                                                Foreground="{StaticResource TextSecondaryBrush}" />

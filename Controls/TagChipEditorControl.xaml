@@ -16,7 +16,7 @@
                      MaxWidth="180"
                      BorderThickness="0"
                      Background="Transparent"
-                     Foreground="{StaticResource TextPrimaryBrush}"
+                     Foreground="{Binding ChipForeground, ElementName=Root}"
                      FontSize="12"
                      Padding="4,4"
                      VerticalContentAlignment="Center"

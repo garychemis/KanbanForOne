@@ -78,6 +78,10 @@
                       FocusVisualStyle="{x:Null}"
                       BorderThickness="0"
                       VerticalScrollBarVisibility="Auto">
+            <ScrollViewer.Resources>
+                <Style TargetType="{x:Type ScrollBar}"
+                       BasedOn="{StaticResource DrawerScrollBarStyle}" />
+            </ScrollViewer.Resources>
             <StackPanel Focusable="False">
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
                     <Grid Margin="0,0,0,12"
@@ -99,8 +103,8 @@
                                                    Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorBackground="Transparent"
                                                    EditorBorderBrush="Transparent"
-                                                   ChipBackground="#8CFFFFFF"
-                                                   ChipForeground="#6B5B2E" />
+                                                   ChipBackground="{StaticResource DrawerStrongSurfaceBrush}"
+                                                   ChipForeground="{StaticResource DrawerTextSecondaryBrush}" />
                 </StackPanel>
 
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
@@ -108,7 +112,7 @@
                                Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
                     <controls:MarkdownEditorControl Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                     Style="{StaticResource DrawerDescriptionEditorStyle}"
-                                                    EditorBackground="#99FFFFFF"
+                                                    EditorBackground="{StaticResource DrawerSoftSurfaceBrush}"
                                                     EditorBorderBrush="Transparent"
                                                     EditorMinHeight="280" />
                 </StackPanel>

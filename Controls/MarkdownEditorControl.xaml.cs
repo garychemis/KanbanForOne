@@ -28,6 +28,12 @@ public partial class MarkdownEditorControl : UserControl
         typeof(MarkdownEditorControl),
         new PropertyMetadata(BrushFrom("#ECECEC")));
 
+    public static readonly DependencyProperty EditorForegroundProperty = DependencyProperty.Register(
+        nameof(EditorForeground),
+        typeof(Brush),
+        typeof(MarkdownEditorControl),
+        new PropertyMetadata(BrushFrom("#242424")));
+
     public static readonly DependencyProperty EditorMinHeightProperty = DependencyProperty.Register(
         nameof(EditorMinHeight),
         typeof(double),
@@ -73,6 +79,12 @@ public partial class MarkdownEditorControl : UserControl
     {
         get => (Brush)GetValue(EditorBorderBrushProperty);
         set => SetValue(EditorBorderBrushProperty, value);
+    }
+
+    public Brush EditorForeground
+    {
+        get => (Brush)GetValue(EditorForegroundProperty);
+        set => SetValue(EditorForegroundProperty, value);
     }
 
     public double EditorMinHeight

@@ -16,15 +16,17 @@
     <converters:BooleanToVisibilityConverterEx x:Key="BooleanToVisibilityConverterEx" />
     <converters:FilterSelectedBackgroundConverter x:Key="FilterSelectedBackgroundConverter" />
     <converters:CollectionEmptyToVisibilityConverter x:Key="CollectionEmptyToVisibilityConverter" />
+    <converters:TagDisplayConverter x:Key="TagDisplayConverter" />
+    <converters:TagListDisplayConverter x:Key="TagListDisplayConverter" />
 
-    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F7F7F8" />
-    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="#F7F7F8" />
-    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#ECEEEF" />
+    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#ECEEEF" />
+    <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="#FAF7EF" />
+    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#F4F5F3" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#111827" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B7280" />
-    <SolidColorBrush x:Key="BorderBrushSoft" Color="#E5E7EB" />
-    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E5EBF2" />
+    <SolidColorBrush x:Key="BorderBrushSoft" Color="#D8DADF" />
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E7E1D6" />
     <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#00FFFFFF" />
     <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#FFF8B7" />
     <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />

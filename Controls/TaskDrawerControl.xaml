@@ -2,7 +2,8 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:KanbanForOne.Controls">
+             xmlns:controls="clr-namespace:KanbanForOne.Controls"
+             xmlns:models="clr-namespace:KanbanForOne.Models">
     <Border Style="{StaticResource DrawerPanelStyle}">
     <Grid Style="{StaticResource DrawerRootStyle}">
         <Grid.RowDefinitions>
@@ -27,13 +28,22 @@
                 <StackPanel Orientation="Horizontal"
                             VerticalAlignment="Center"
                             Focusable="False">
-                    <Border Padding="12,5"
-                            CornerRadius="999"
-                            Background="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusBackgroundConverter}}">
-                        <TextBlock Text="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusNameConverter}}"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusBrushConverter}}" />
+                    <Border Padding="10,5"
+                            CornerRadius="10"
+                            Background="{StaticResource DrawerSoftSurfaceBrush}"
+                            BorderBrush="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusBrushConverter}}"
+                            BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="7"
+                                     Height="7"
+                                     Fill="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusBrushConverter}}"
+                                     Margin="0,0,7,0"
+                                     VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TaskStatusDraft, Converter={StaticResource TaskStatusNameConverter}}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource DrawerTextSecondaryBrush}" />
+                        </StackPanel>
                     </Border>
 
                     <Border Margin="8,0,0,0"
@@ -77,23 +87,31 @@
                       FocusVisualStyle="{x:Null}"
                       BorderThickness="0"
                       VerticalScrollBarVisibility="Auto">
+            <ScrollViewer.Resources>
+                <Style TargetType="{x:Type ScrollBar}"
+                       BasedOn="{StaticResource DrawerScrollBarStyle}" />
+            </ScrollViewer.Resources>
             <StackPanel Focusable="False">
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">
                     <TextBlock Text="&#x72B6;&#x6001;"
                                Style="{StaticResource BorderlessDrawerSectionTitleStyle}" />
                     <WrapPanel Focusable="False">
                         <RadioButton Content="&#x5F85;&#x529E;"
+                                     Tag="{x:Static models:TaskStatus.Todo}"
                                      IsChecked="{Binding TaskStatusDraft, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Todo, Mode=TwoWay}"
-                                     Style="{StaticResource BorderlessChipButtonStyle}" />
+                                     Style="{StaticResource DrawerStatusChipButtonStyle}" />
                         <RadioButton Content="&#x8FDB;&#x884C;&#x4E2D;"
+                                     Tag="{x:Static models:TaskStatus.Doing}"
                                      IsChecked="{Binding TaskStatusDraft, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Doing, Mode=TwoWay}"
-                                     Style="{StaticResource BorderlessChipButtonStyle}" />
+                                     Style="{StaticResource DrawerStatusChipButtonStyle}" />
                         <RadioButton Content="&#x5361;&#x4F4F;"
+                                     Tag="{x:Static models:TaskStatus.Blocked}"
                                      IsChecked="{Binding TaskStatusDraft, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Blocked, Mode=TwoWay}"
-                                     Style="{StaticResource BorderlessChipButtonStyle}" />
+                                     Style="{StaticResource DrawerStatusChipButtonStyle}" />
                         <RadioButton Content="&#x5B8C;&#x6210;"
+                                     Tag="{x:Static models:TaskStatus.Done}"
                                      IsChecked="{Binding TaskStatusDraft, Converter={StaticResource EnumEqualsConverter}, ConverterParameter=Done, Mode=TwoWay}"
-                                     Style="{StaticResource BorderlessChipButtonStyle}" />
+                                     Style="{StaticResource DrawerStatusChipButtonStyle}" />
                     </WrapPanel>
                 </StackPanel>
 
@@ -216,8 +234,8 @@
                                                    Text="{Binding TaskTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                    EditorBackground="Transparent"
                                                    EditorBorderBrush="Transparent"
-                                                   ChipBackground="#8CFFFFFF"
-                                                   ChipForeground="#3A5266" />
+                                                   ChipBackground="{StaticResource DrawerStrongSurfaceBrush}"
+                                                   ChipForeground="{StaticResource DrawerTextSecondaryBrush}" />
                 </StackPanel>
 
                 <StackPanel Style="{StaticResource BorderlessDrawerSectionStyle}">

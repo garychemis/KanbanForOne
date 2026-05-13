@@ -13,6 +13,7 @@
                                             Markdown="{Binding Text, ElementName=Root}"
                                             ViewerBackground="Transparent"
                                             ViewerBorderBrush="Transparent"
+                                            ViewerForeground="{Binding EditorForeground, ElementName=Root}"
                                             MinHeight="{Binding EditorMinHeight, ElementName=Root}"
                                             Cursor="IBeam" />
 
@@ -23,7 +24,7 @@
                      Background="{Binding EditorBackground, ElementName=Root}"
                      BorderThickness="0"
                      FocusVisualStyle="{x:Null}"
-                     Foreground="#242424"
+                     Foreground="{Binding EditorForeground, ElementName=Root}"
                      FontSize="14"
                      TextWrapping="Wrap"
                      AcceptsReturn="True"

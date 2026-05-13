@@ -26,6 +26,12 @@ public partial class MarkdownViewerControl : UserControl
         typeof(MarkdownViewerControl),
         new PropertyMetadata(BrushFrom("#ECECEC")));
 
+    public static readonly DependencyProperty ViewerForegroundProperty = DependencyProperty.Register(
+        nameof(ViewerForeground),
+        typeof(Brush),
+        typeof(MarkdownViewerControl),
+        new PropertyMetadata(BrushFrom("#2B2F33"), OnViewerForegroundChanged));
+
     private static readonly Regex HeadingRegex = new(@"^(#{1,3})\s+(.+)$", RegexOptions.Compiled);
     private static readonly Regex OrderedListRegex = new(@"^\d+\.\s+(.+)$", RegexOptions.Compiled);
     private static readonly Regex UnorderedListRegex = new(@"^[-*]\s+(.+)$", RegexOptions.Compiled);
@@ -55,7 +61,18 @@ public partial class MarkdownViewerControl : UserControl
         set => SetValue(ViewerBorderBrushProperty, value);
     }
 
+    public Brush ViewerForeground
+    {
+        get => (Brush)GetValue(ViewerForegroundProperty);
+        set => SetValue(ViewerForegroundProperty, value);
+    }
+
     private static void OnMarkdownChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        ((MarkdownViewerControl)d).RenderMarkdown();
+    }
+
+    private static void OnViewerForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((MarkdownViewerControl)d).RenderMarkdown();
     }
@@ -67,7 +84,7 @@ public partial class MarkdownViewerControl : UserControl
             PagePadding = new Thickness(0),
             FontFamily = new FontFamily("Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei"),
             FontSize = 13,
-            Foreground = BrushFrom("#2B2F33")
+            Foreground = ViewerForeground
         };
 
         var lines = (Markdown ?? string.Empty).Replace("\r\n", "\n").Split('\n');
@@ -122,7 +139,7 @@ public partial class MarkdownViewerControl : UserControl
             var headingMatch = HeadingRegex.Match(line);
             if (headingMatch.Success)
             {
-                document.Blocks.Add(CreateHeading(headingMatch.Groups[1].Value.Length, headingMatch.Groups[2].Value));
+                document.Blocks.Add(CreateHeading(headingMatch.Groups[1].Value.Length, headingMatch.Groups[2].Value, ViewerForeground));
                 continue;
             }
 
@@ -182,13 +199,13 @@ public partial class MarkdownViewerControl : UserControl
         Viewer.Document = document;
     }
 
-    private static Paragraph CreateHeading(int level, string text)
+    private static Paragraph CreateHeading(int level, string text, Brush foreground)
     {
         return new Paragraph(new Run(text))
         {
             FontSize = level switch { 1 => 18, 2 => 16, _ => 14 },
             FontWeight = FontWeights.SemiBold,
-            Foreground = BrushFrom("#111827"),
+            Foreground = foreground,
             Margin = new Thickness(0, level == 1 ? 0 : 8, 0, 8)
         };
     }

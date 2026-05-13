@@ -325,3 +325,51 @@ public sealed class CollectionEmptyToVisibilityConverter : IValueConverter
         return Binding.DoNothing;
     }
 }
+
+public sealed class TagDisplayConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return FormatTag(value as string);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+
+    internal static string FormatTag(string? tag)
+    {
+        tag = tag?.Trim();
+
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return string.Empty;
+        }
+
+        return tag.StartsWith('#') ? tag : $"#{tag}";
+    }
+}
+
+public sealed class TagListDisplayConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var tags = value switch
+        {
+            string text => text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+            IEnumerable<string> strings => strings,
+            IEnumerable enumerable => enumerable.Cast<object>().Select(item => item?.ToString() ?? string.Empty),
+            _ => []
+        };
+
+        return string.Join(", ", tags
+            .Select(TagDisplayConverter.FormatTag)
+            .Where(tag => !string.IsNullOrWhiteSpace(tag)));
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+}
