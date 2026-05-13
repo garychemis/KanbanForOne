@@ -74,12 +74,13 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="14" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="10" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="14" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="10" />
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
@@ -99,7 +100,13 @@
             <controls:SearchBoxControl Grid.Column="2"
                                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-            <Border Grid.Column="4"
+            <controls:DateRangeFilterControl Grid.Column="4"
+                                             StartDate="{Binding DateFilterStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             EndDate="{Binding DateFilterEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             HasFilter="{Binding HasDateFilter}"
+                                             ClearCommand="{Binding ClearDateFilterCommand}" />
+
+            <Border Grid.Column="6"
                     Visibility="{Binding HasNotification, Converter={StaticResource BooleanToVisibilityConverterEx}}"
                     Padding="12,7"
                     CornerRadius="10"
@@ -114,15 +121,14 @@
                            TextTrimming="CharacterEllipsis" />
             </Border>
 
-            <Button Grid.Column="6"
+            <Button Grid.Column="8"
                     Content="⚙"
                     Command="{Binding ChangeFilterCommand}"
                     CommandParameter="Settings"
                     Style="{StaticResource IconButtonStyle}"
                     ToolTip="设置" />
 
-            <StackPanel Grid.Column="8"
-                        Grid.ColumnSpan="3"
+            <StackPanel Grid.Column="10"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
                 <Button Content="−"

@@ -9,6 +9,8 @@ namespace KanbanForOne.Controls;
 
 public partial class KanbanColumnControl : UserControl
 {
+    private int _lastDropIndex = -1;
+
     public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
         nameof(Title),
         typeof(string),
@@ -61,6 +63,8 @@ public partial class KanbanColumnControl : UserControl
     {
         InitializeComponent();
         Loaded += (_, _) => UpdateEmptyState();
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         LayoutUpdated += (_, _) => UpdateEmptyState();
     }
 
@@ -124,7 +128,10 @@ public partial class KanbanColumnControl : UserControl
 
     private void OnDragLeave(object sender, DragEventArgs e)
     {
-        ResetDragState();
+        if (!IsPointerInsideColumn(e))
+        {
+            ResetDragState();
+        }
     }
 
     private void OnDrop(object sender, DragEventArgs e)
@@ -156,6 +163,7 @@ public partial class KanbanColumnControl : UserControl
         {
             e.Effects = DragDropEffects.None;
             ResetDragState();
+            e.Handled = true;
             return;
         }
 
@@ -168,13 +176,13 @@ public partial class KanbanColumnControl : UserControl
         {
             ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#9BA7B4")!;
             ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#F0F3F6")!;
-            ShowDropPlaceholder(e);
+            ShowDropIndicator(e);
         }
         else
         {
             ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#FCA5A5")!;
             ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#FFF1F2")!;
-            DropPlaceholder.Visibility = Visibility.Collapsed;
+            DropIndicator.Visibility = Visibility.Collapsed;
         }
 
         e.Handled = true;
@@ -199,13 +207,20 @@ public partial class KanbanColumnControl : UserControl
     {
         ColumnBorder.BorderBrush = Brushes.Transparent;
         ColumnBorder.Background = (Brush)FindResource("ColumnBackgroundBrush");
-        DropPlaceholder.Visibility = Visibility.Collapsed;
-        DropPlaceholder.Margin = new Thickness(0, 2, 0, 0);
+        DropIndicator.Visibility = Visibility.Collapsed;
+        DropIndicator.Margin = new Thickness(6, 2, 6, 0);
+        _lastDropIndex = -1;
     }
 
-    private void ShowDropPlaceholder(DragEventArgs e)
+    private void ShowDropIndicator(DragEventArgs e)
     {
         var dropIndex = GetDropIndex(e);
+
+        if (DropIndicator.Visibility == Visibility.Visible && dropIndex == _lastDropIndex)
+        {
+            return;
+        }
+
         var top = 2d;
 
         for (var index = 0; index < dropIndex; index++)
@@ -216,8 +231,34 @@ public partial class KanbanColumnControl : UserControl
             }
         }
 
-        DropPlaceholder.Margin = new Thickness(0, top, 0, 0);
-        DropPlaceholder.Visibility = Visibility.Visible;
+        _lastDropIndex = dropIndex;
+        DropIndicator.Margin = new Thickness(6, Math.Max(2, top - 3), 6, 0);
+        DropIndicator.Visibility = Visibility.Visible;
+    }
+
+    private bool IsPointerInsideColumn(DragEventArgs e)
+    {
+        var position = e.GetPosition(ColumnBorder);
+        return position.X >= 0
+            && position.Y >= 0
+            && position.X <= ColumnBorder.ActualWidth
+            && position.Y <= ColumnBorder.ActualHeight;
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        CardDragDropSession.Ended -= OnCardDragEnded;
+        CardDragDropSession.Ended += OnCardDragEnded;
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        CardDragDropSession.Ended -= OnCardDragEnded;
+    }
+
+    private void OnCardDragEnded(object? sender, EventArgs e)
+    {
+        ResetDragState();
     }
 
     private int GetDropIndex(DragEventArgs e)

@@ -8,7 +8,7 @@
                 Background="{StaticResource DrawerSoftSurfaceBrush}"
                 BorderBrush="{StaticResource DrawerSoftDividerBrush}"
                 BorderThickness="1"
-                Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CollectionEmptyToVisibilityConverter}}">
+                Visibility="{Binding HasItems, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
             <TextBlock Text="&#x6682;&#x65E0;&#x9644;&#x4EF6;"
                        FontSize="11"
                        HorizontalAlignment="Center"
@@ -17,7 +17,7 @@
 
         <ItemsControl ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       Focusable="False"
-                      Visibility="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource CollectionEmptyToVisibilityConverter}, ConverterParameter=Invert}">
+                      Visibility="{Binding HasItems, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Margin="0,0,0,6"

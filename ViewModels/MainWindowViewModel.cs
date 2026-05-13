@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Windows;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
@@ -11,6 +12,7 @@ namespace KanbanForOne.ViewModels;
 
 public sealed class MainWindowViewModel : ObservableObject
 {
+    private static readonly Assembly AppAssembly = typeof(MainWindowViewModel).Assembly;
     private readonly ObservableCollection<TaskItem> _allTasks = new();
     private readonly ObservableCollection<NoteItem> _allNotes = new();
     private readonly DatabaseService _databaseService = new();
@@ -22,6 +24,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private bool _isInitialized;
     private bool _isLoading;
     private string _searchText = string.Empty;
+    private DateTime? _dateFilterStart;
+    private DateTime? _dateFilterEnd;
     private string _currentFilter = "Board";
     private string _currentFilterLabel = "看板";
     private string _notificationText = string.Empty;
@@ -43,6 +47,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private string _noteTitleDraft = string.Empty;
     private string _noteContentDraft = string.Empty;
     private string _noteTagsDraft = string.Empty;
+    private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime _selectedCalendarDate = DateTime.Today;
+    private string _calendarViewMode = "Month";
     private TaskItem? _selectedTask;
     private NoteItem? _selectedNote;
 
@@ -74,6 +81,14 @@ public sealed class MainWindowViewModel : ObservableObject
         RestoreBackupCommand = new RelayCommand(RestoreBackupAsync);
         ChangeFilterCommand = new RelayCommand(ChangeFilter);
         ClearSearchCommand = new RelayCommand(() => SearchText = string.Empty);
+        ClearDateFilterCommand = new RelayCommand(_ => ClearDateFilter(), _ => HasDateFilter);
+        PreviousCalendarMonthCommand = new RelayCommand(() => CalendarMonth = CalendarMonth.AddMonths(-1));
+        NextCalendarMonthCommand = new RelayCommand(() => CalendarMonth = CalendarMonth.AddMonths(1));
+        GoToTodayCommand = new RelayCommand(GoToToday);
+        SelectCalendarDateCommand = new RelayCommand(SelectCalendarDate);
+        CreateTaskForCalendarDateCommand = new RelayCommand(CreateTaskForCalendarDateAsync);
+        MoveTaskToCalendarDateCommand = new RelayCommand(MoveTaskToCalendarDateAsync);
+        SetCalendarViewModeCommand = new RelayCommand(SetCalendarViewMode);
 
         RefreshBoard();
     }
@@ -93,6 +108,12 @@ public sealed class MainWindowViewModel : ObservableObject
     public ObservableCollection<NoteItem> Notes { get; } = new();
 
     public ObservableCollection<TaskItem> CalendarTasks { get; } = new();
+
+    public ObservableCollection<CalendarDayItem> CalendarDays { get; } = new();
+
+    public ObservableCollection<TaskItem> SelectedCalendarTasks { get; } = new();
+
+    public IReadOnlyList<string> CalendarWeekdayHeaders { get; } = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
     public RelayCommand CreateTaskCommand { get; }
 
@@ -132,6 +153,22 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public RelayCommand ClearSearchCommand { get; }
 
+    public RelayCommand ClearDateFilterCommand { get; }
+
+    public RelayCommand PreviousCalendarMonthCommand { get; }
+
+    public RelayCommand NextCalendarMonthCommand { get; }
+
+    public RelayCommand GoToTodayCommand { get; }
+
+    public RelayCommand SelectCalendarDateCommand { get; }
+
+    public RelayCommand CreateTaskForCalendarDateCommand { get; }
+
+    public RelayCommand MoveTaskToCalendarDateCommand { get; }
+
+    public RelayCommand SetCalendarViewModeCommand { get; }
+
     public string SearchText
     {
         get => _searchText;
@@ -143,6 +180,32 @@ public sealed class MainWindowViewModel : ObservableObject
             }
         }
     }
+
+    public DateTime? DateFilterStart
+    {
+        get => _dateFilterStart;
+        set
+        {
+            if (SetProperty(ref _dateFilterStart, value?.Date))
+            {
+                OnDateFilterChanged();
+            }
+        }
+    }
+
+    public DateTime? DateFilterEnd
+    {
+        get => _dateFilterEnd;
+        set
+        {
+            if (SetProperty(ref _dateFilterEnd, value?.Date))
+            {
+                OnDateFilterChanged();
+            }
+        }
+    }
+
+    public bool HasDateFilter => DateFilterStart.HasValue || DateFilterEnd.HasValue;
 
     public string CurrentFilterLabel
     {
@@ -174,9 +237,16 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public string BackupDirectory => AppPaths.BackupRoot;
 
-    public string AppVersion => "v0.1";
+    public string AppVersion => AppAssembly
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+        .InformationalVersion
+        ?? AppAssembly.GetName().Version?.ToString()
+        ?? string.Empty;
 
-    public string CopyrightText => "copyright @ 2026 YF";
+    public string CopyrightText => AppAssembly
+        .GetCustomAttribute<AssemblyCopyrightAttribute>()?
+        .Copyright
+        ?? string.Empty;
 
     public string LastBackupPath
     {
@@ -422,7 +492,69 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsSettingsViewVisible => _currentFilter == "Settings";
 
+    public DateTime CalendarMonth
+    {
+        get => _calendarMonth;
+        private set
+        {
+            var normalized = new DateTime(value.Year, value.Month, 1);
+
+            if (SetProperty(ref _calendarMonth, normalized))
+            {
+                if (SelectedCalendarDate.Year != normalized.Year || SelectedCalendarDate.Month != normalized.Month)
+                {
+                    _selectedCalendarDate = normalized;
+                    OnPropertyChanged(nameof(SelectedCalendarDate));
+                    OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
+                }
+
+                OnPropertyChanged(nameof(CalendarMonthTitle));
+                RefreshBoard();
+            }
+        }
+    }
+
+    public string CalendarMonthTitle => CalendarMonth.ToString("yyyy年 M月");
+
+    public DateTime SelectedCalendarDate
+    {
+        get => _selectedCalendarDate;
+        private set
+        {
+            if (SetProperty(ref _selectedCalendarDate, value.Date))
+            {
+                OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
+                RefreshCalendarSelection();
+            }
+        }
+    }
+
+    public string SelectedCalendarDateDisplay => SelectedCalendarDate.ToString("yyyy年 M月 d日");
+
+    public string CalendarViewMode
+    {
+        get => _calendarViewMode;
+        private set
+        {
+            if (SetProperty(ref _calendarViewMode, value))
+            {
+                OnPropertyChanged(nameof(IsCalendarMonthMode));
+                OnPropertyChanged(nameof(IsCalendarListMode));
+            }
+        }
+    }
+
+    public bool IsCalendarMonthMode => CalendarViewMode == "Month";
+
+    public bool IsCalendarListMode => CalendarViewMode == "List";
+
     public int CalendarTaskCount => CalendarTasks.Count;
+
+    public bool HasCalendarTasks => CalendarTaskCount > 0;
+
+    public int SelectedCalendarTaskCount => SelectedCalendarTasks.Count;
+
+    public bool HasSelectedCalendarTasks => SelectedCalendarTaskCount > 0;
 
     public int VisibleTaskCount => TodoTasks.Count + DoingTasks.Count + BlockedTasks.Count + DoneTasks.Count;
 
@@ -533,6 +665,37 @@ public sealed class MainWindowViewModel : ObservableObject
         }
 
         AddTaskToMemory(task);
+        RefreshBoard();
+        OpenTask(task);
+    }
+
+    private async Task CreateTaskForCalendarDateAsync(object? parameter)
+    {
+        if (!ConfirmDiscardDrawerChanges())
+        {
+            return;
+        }
+
+        var date = CalendarDateFromParameter(parameter) ?? SelectedCalendarDate;
+        var task = new TaskItem
+        {
+            Title = "新日程任务",
+            Description = $"安排在 {date:yyyy/M/d} 的任务。",
+            Status = TaskStatus.Todo,
+            Priority = TaskPriority.Medium,
+            StartDate = date.Date,
+            EndDate = date.Date,
+            SortOrder = NextTaskSortOrder(TaskStatus.Todo)
+        };
+        task.Tags.Add("Calendar");
+
+        if (!await SaveTaskSafelyAsync(task, "已创建日程任务"))
+        {
+            return;
+        }
+
+        AddTaskToMemory(task);
+        SelectCalendarDate(date);
         RefreshBoard();
         OpenTask(task);
     }
@@ -1096,6 +1259,161 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    private void OnDateFilterChanged()
+    {
+        OnPropertyChanged(nameof(HasDateFilter));
+        ClearDateFilterCommand.RaiseCanExecuteChanged();
+        RefreshBoard();
+    }
+
+    private void ClearDateFilter()
+    {
+        if (!HasDateFilter)
+        {
+            return;
+        }
+
+        _dateFilterStart = null;
+        _dateFilterEnd = null;
+        OnPropertyChanged(nameof(DateFilterStart));
+        OnPropertyChanged(nameof(DateFilterEnd));
+        OnDateFilterChanged();
+    }
+
+    private void GoToToday()
+    {
+        var today = DateTime.Today;
+        _calendarMonth = new DateTime(today.Year, today.Month, 1);
+        _selectedCalendarDate = today;
+        OnPropertyChanged(nameof(CalendarMonth));
+        OnPropertyChanged(nameof(CalendarMonthTitle));
+        OnPropertyChanged(nameof(SelectedCalendarDate));
+        OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
+        RefreshBoard();
+    }
+
+    private void SelectCalendarDate(object? parameter)
+    {
+        var date = CalendarDateFromParameter(parameter);
+
+        if (date is null)
+        {
+            return;
+        }
+
+        SelectCalendarDate(date.Value);
+    }
+
+    private void SelectCalendarDate(DateTime date)
+    {
+        var targetDate = date.Date;
+        var targetMonth = new DateTime(targetDate.Year, targetDate.Month, 1);
+        var monthChanged = targetMonth != CalendarMonth;
+
+        _selectedCalendarDate = targetDate;
+        OnPropertyChanged(nameof(SelectedCalendarDate));
+        OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
+
+        if (monthChanged)
+        {
+            _calendarMonth = targetMonth;
+            OnPropertyChanged(nameof(CalendarMonth));
+            OnPropertyChanged(nameof(CalendarMonthTitle));
+            RefreshBoard();
+            return;
+        }
+
+        RefreshCalendarSelection();
+    }
+
+    private void SetCalendarViewMode(object? parameter)
+    {
+        if (parameter is not string mode || mode is not ("Month" or "List"))
+        {
+            return;
+        }
+
+        CalendarViewMode = mode;
+    }
+
+    private async Task MoveTaskToCalendarDateAsync(object? parameter)
+    {
+        if (parameter is not CalendarTaskDateDropPayload payload)
+        {
+            return;
+        }
+
+        await MoveTaskToCalendarDateAsync(payload.Task, payload.Date);
+    }
+
+    private async Task MoveTaskToCalendarDateAsync(TaskItem task, DateTime date)
+    {
+        var oldStartDate = task.StartDate;
+        var oldEndDate = task.EndDate;
+        var oldUpdatedAt = task.UpdatedAt;
+
+        try
+        {
+            _isLoading = true;
+            var targetDate = date.Date;
+            var (newStartDate, newEndDate) = ShiftTaskDates(task, targetDate);
+            task.StartDate = newStartDate;
+            task.EndDate = newEndDate;
+            await _taskRepository.UpsertAsync(task);
+            _isLoading = false;
+
+            if (ReferenceEquals(SelectedTask, task))
+            {
+                LoadTaskDraft(task);
+            }
+
+            SelectCalendarDate(targetDate);
+            RefreshBoard();
+            SetNotification($"已调整任务日期：{task.Title}");
+        }
+        catch (Exception ex)
+        {
+            task.StartDate = oldStartDate;
+            task.EndDate = oldEndDate;
+            task.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            RefreshBoard();
+            SetNotification($"调整任务日期失败：{ex.Message}");
+        }
+    }
+
+    private static (DateTime? StartDate, DateTime? EndDate) ShiftTaskDates(TaskItem task, DateTime targetDate)
+    {
+        if (task.StartDate.HasValue && task.EndDate.HasValue)
+        {
+            var range = TaskDateRange(task);
+            var duration = (range.End - range.Start).Days;
+            return (targetDate, targetDate.AddDays(duration));
+        }
+
+        if (task.StartDate.HasValue)
+        {
+            return (targetDate, null);
+        }
+
+        if (task.EndDate.HasValue)
+        {
+            return (null, targetDate);
+        }
+
+        return (targetDate, targetDate);
+    }
+
+    private static DateTime? CalendarDateFromParameter(object? parameter)
+    {
+        return parameter switch
+        {
+            DateTime date => date.Date,
+            CalendarDayItem day => day.Date,
+            _ => null
+        };
+    }
+
     private void ChangeFilter(object? parameter)
     {
         var filter = parameter as string ?? "Board";
@@ -1210,6 +1528,7 @@ public sealed class MainWindowViewModel : ObservableObject
         var tasks = _allTasks
             .Where(task => !task.IsArchived)
             .Where(PassesTaskFilter)
+            .Where(PassesTaskDateFilter)
             .Where(PassesTaskSearch)
             .OrderBy(task => task.SortOrder)
             .ToArray();
@@ -1222,23 +1541,125 @@ public sealed class MainWindowViewModel : ObservableObject
         var notes = _allNotes
             .Where(note => !note.IsArchived)
             .Where(PassesNoteFilter)
+            .Where(PassesNoteDateFilter)
             .Where(PassesNoteSearch)
             .OrderBy(note => note.SortOrder);
 
         Replace(Notes, _currentFilter is "Board" or "WithAttachments" ? notes : Enumerable.Empty<NoteItem>());
 
-        Replace(
-            CalendarTasks,
-            _allTasks
-                .Where(task => !task.IsArchived && (task.StartDate.HasValue || task.EndDate.HasValue))
-                .Where(PassesTaskSearch)
-                .OrderBy(task => task.StartDate ?? task.EndDate)
-                .ThenBy(task => task.EndDate ?? task.StartDate)
-                .ThenBy(task => task.SortOrder));
+        var calendarTasks = _allTasks
+            .Where(task => !task.IsArchived && (task.StartDate.HasValue || task.EndDate.HasValue))
+            .Where(PassesTaskSearch)
+            .OrderBy(task => task.StartDate ?? task.EndDate)
+            .ThenBy(task => task.EndDate ?? task.StartDate)
+            .ThenBy(task => task.SortOrder)
+            .ToArray();
+
+        Replace(CalendarTasks, calendarTasks);
+        RefreshCalendar(calendarTasks);
 
         OnPropertyChanged(nameof(VisibleTaskCount));
         OnPropertyChanged(nameof(VisibleNoteCount));
         OnPropertyChanged(nameof(CalendarTaskCount));
+        OnPropertyChanged(nameof(HasCalendarTasks));
+        OnPropertyChanged(nameof(SelectedCalendarTaskCount));
+        OnPropertyChanged(nameof(HasSelectedCalendarTasks));
+    }
+
+    private void RefreshCalendar(IReadOnlyList<TaskItem> calendarTasks)
+    {
+        const int visibleChipLimit = 3;
+        var firstOfMonth = CalendarMonth;
+        var gridStart = firstOfMonth.AddDays(-(((int)firstOfMonth.DayOfWeek + 6) % 7));
+        var days = new List<CalendarDayItem>(42);
+
+        for (var offset = 0; offset < 42; offset++)
+        {
+            var date = gridStart.AddDays(offset);
+            var day = new CalendarDayItem
+            {
+                Date = date,
+                IsToday = date == DateTime.Today,
+                IsCurrentMonth = date.Month == CalendarMonth.Month && date.Year == CalendarMonth.Year,
+                IsSelected = date == SelectedCalendarDate
+            };
+
+            var chips = calendarTasks
+                .Where(task => IsTaskActiveOnDate(task, date))
+                .OrderBy(task => TaskDateRange(task).Start)
+                .ThenBy(task => TaskDateRange(task).End)
+                .ThenBy(task => task.SortOrder)
+                .Select(task => CreateCalendarTaskChip(task, date))
+                .ToArray();
+
+            day.TotalTaskCount = chips.Length;
+            day.OverflowCount = Math.Max(0, chips.Length - visibleChipLimit);
+
+            foreach (var chip in chips.Take(visibleChipLimit))
+            {
+                day.VisibleTaskChips.Add(chip);
+            }
+
+            days.Add(day);
+        }
+
+        Replace(CalendarDays, days);
+        RefreshCalendarSelection();
+    }
+
+    private void RefreshCalendarSelection()
+    {
+        foreach (var day in CalendarDays)
+        {
+            day.IsSelected = day.Date == SelectedCalendarDate;
+        }
+
+        Replace(
+            SelectedCalendarTasks,
+            CalendarTasks
+                .Where(task => IsTaskActiveOnDate(task, SelectedCalendarDate))
+                .OrderBy(task => TaskDateRange(task).Start)
+                .ThenBy(task => TaskDateRange(task).End)
+                .ThenBy(task => task.SortOrder));
+
+        OnPropertyChanged(nameof(SelectedCalendarTaskCount));
+        OnPropertyChanged(nameof(HasSelectedCalendarTasks));
+    }
+
+    private static CalendarTaskChip CreateCalendarTaskChip(TaskItem task, DateTime date)
+    {
+        var range = TaskDateRange(task);
+        var isMultiDay = range.Start != range.End;
+
+        return new CalendarTaskChip
+        {
+            Task = task,
+            Date = date,
+            IsMultiDay = isMultiDay,
+            StartsOnDate = range.Start == date,
+            EndsOnDate = range.End == date
+        };
+    }
+
+    private static bool IsTaskActiveOnDate(TaskItem task, DateTime date)
+    {
+        if (task.StartDate is null && task.EndDate is null)
+        {
+            return false;
+        }
+
+        var range = TaskDateRange(task);
+        return range.Start <= date.Date && date.Date <= range.End;
+    }
+
+    private static (DateTime Start, DateTime End) TaskDateRange(TaskItem task)
+    {
+        var start = (task.StartDate ?? task.EndDate)!.Value.Date;
+        var end = (task.EndDate ?? task.StartDate)!.Value.Date;
+
+        return start <= end
+            ? (start, end)
+            : (end, start);
     }
 
     private bool PassesTaskFilter(TaskItem task)
@@ -1278,6 +1699,64 @@ public sealed class MainWindowViewModel : ObservableObject
             "WithAttachments" => note.AttachmentCount > 0,
             _ => true
         };
+    }
+
+    private bool PassesTaskDateFilter(TaskItem task)
+    {
+        if (!HasDateFilter)
+        {
+            return true;
+        }
+
+        var itemStart = task.StartDate?.Date ?? task.EndDate?.Date;
+        var itemEnd = task.EndDate?.Date ?? task.StartDate?.Date;
+
+        if (itemStart is null || itemEnd is null)
+        {
+            return false;
+        }
+
+        return DateRangesOverlap(itemStart.Value, itemEnd.Value);
+    }
+
+    private bool PassesNoteDateFilter(NoteItem note)
+    {
+        return !HasDateFilter || DateRangesOverlap(note.UpdatedAt.Date, note.UpdatedAt.Date);
+    }
+
+    private bool DateRangesOverlap(DateTime itemStart, DateTime itemEnd)
+    {
+        var (filterStart, filterEnd) = NormalizedDateFilter();
+
+        if (itemStart > itemEnd)
+        {
+            (itemStart, itemEnd) = (itemEnd, itemStart);
+        }
+
+        if (filterStart.HasValue && itemEnd < filterStart.Value)
+        {
+            return false;
+        }
+
+        if (filterEnd.HasValue && itemStart > filterEnd.Value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private (DateTime? Start, DateTime? End) NormalizedDateFilter()
+    {
+        var start = DateFilterStart?.Date;
+        var end = DateFilterEnd?.Date;
+
+        if (start.HasValue && end.HasValue && start.Value > end.Value)
+        {
+            return (end, start);
+        }
+
+        return (start, end);
     }
 
     private bool PassesTaskSearch(TaskItem task)

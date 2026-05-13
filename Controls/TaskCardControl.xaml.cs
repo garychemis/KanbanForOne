@@ -1,9 +1,11 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 using KanbanForOne.Models;
 
 namespace KanbanForOne.Controls;
@@ -24,6 +26,8 @@ public partial class TaskCardControl : UserControl
 
     private Point _dragStartPoint;
     private bool _isDraggingCard;
+    private AdornerLayer? _dragGhostLayer;
+    private DragGhostAdorner? _dragGhostAdorner;
 
     public TaskCardControl()
     {
@@ -50,6 +54,11 @@ public partial class TaskCardControl : UserControl
 
     private void OnMouseMove(object sender, MouseEventArgs e)
     {
+        if (_isDraggingCard)
+        {
+            return;
+        }
+
         if (e.LeftButton != MouseButtonState.Pressed || DataContext is not TaskItem task)
         {
             return;
@@ -68,13 +77,20 @@ public partial class TaskCardControl : UserControl
         var data = new DataObject();
         data.SetData(DragDropFormats.TaskCard, task);
 
+        BeginDragGhost(e.GetPosition(CardBorder));
         ApplyDraggingVisualState();
+        FlushDragVisualState();
+        GiveFeedback += OnDragGiveFeedback;
+
         try
         {
             DragDrop.DoDragDrop(this, data, DragDropEffects.Move);
         }
         finally
         {
+            GiveFeedback -= OnDragGiveFeedback;
+            RemoveDragGhost();
+            CardDragDropSession.NotifyEnded();
             ResetVisualState();
         }
     }
@@ -172,6 +188,9 @@ public partial class TaskCardControl : UserControl
         DragScaleTransform.ScaleY = 1;
         DragRotateTransform.Angle = 0;
         LiftTransform.Y = 0;
+        CardBorder.Opacity = 1;
+        CardContent.Opacity = 1;
+        CardContent.Effect = null;
         CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#E6E8EB")!;
         CardBorder.Effect = new DropShadowEffect
         {
@@ -185,17 +204,77 @@ public partial class TaskCardControl : UserControl
     private void ApplyDraggingVisualState()
     {
         Cursor = Cursors.SizeAll;
-        DragScaleTransform.ScaleX = 1.02;
-        DragScaleTransform.ScaleY = 1.02;
-        DragRotateTransform.Angle = 0.6;
-        LiftTransform.Y = -3;
+        DragScaleTransform.ScaleX = 1;
+        DragScaleTransform.ScaleY = 1;
+        DragRotateTransform.Angle = 0;
+        LiftTransform.Y = 0;
+        CardBorder.Opacity = 0.36;
+        CardContent.Opacity = 1;
+        CardContent.Effect = null;
         CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#8EA0B5")!;
         CardBorder.Effect = new DropShadowEffect
         {
-            BlurRadius = 24,
-            ShadowDepth = 10,
+            BlurRadius = 10,
+            ShadowDepth = 2,
             Direction = 270,
-            Opacity = 0.16
+            Opacity = 0.06
         };
+    }
+
+    private void BeginDragGhost(Point cursorOffset)
+    {
+        RemoveDragGhost();
+
+        var adornedElement = Window.GetWindow(this)?.Content as UIElement ?? this;
+        var layer = AdornerLayer.GetAdornerLayer(adornedElement);
+
+        if (layer is null)
+        {
+            adornedElement = this;
+            layer = AdornerLayer.GetAdornerLayer(this);
+        }
+
+        if (layer is null || CardBorder.ActualWidth <= 0 || CardBorder.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        _dragGhostLayer = layer;
+        _dragGhostAdorner = new DragGhostAdorner(adornedElement, CardBorder, cursorOffset);
+        _dragGhostLayer.Add(_dragGhostAdorner);
+        UpdateDragGhostPosition();
+    }
+
+    private void OnDragGiveFeedback(object sender, GiveFeedbackEventArgs e)
+    {
+        UpdateDragGhostPosition();
+        e.UseDefaultCursors = true;
+        e.Handled = true;
+    }
+
+    private void UpdateDragGhostPosition()
+    {
+        if (_dragGhostAdorner is not null &&
+            DragGhostAdorner.TryGetCursorScreenPosition(out var screenPosition))
+        {
+            _dragGhostAdorner.UpdatePositionFromScreen(screenPosition);
+        }
+    }
+
+    private void RemoveDragGhost()
+    {
+        if (_dragGhostLayer is not null && _dragGhostAdorner is not null)
+        {
+            _dragGhostLayer.Remove(_dragGhostAdorner);
+        }
+
+        _dragGhostLayer = null;
+        _dragGhostAdorner = null;
+    }
+
+    private void FlushDragVisualState()
+    {
+        UpdateLayout();
+        Dispatcher.Invoke(DispatcherPriority.Render, () => { });
     }
 }
