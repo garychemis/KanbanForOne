@@ -7,6 +7,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Kanban41"
+        Icon="icon/icon.ico"
         Height="900"
         Width="1512"
         MinHeight="720"
