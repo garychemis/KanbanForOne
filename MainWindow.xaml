@@ -58,56 +58,7 @@
                 </Grid>
             </Grid>
 
-            <Border Background="#330F172A"
-                    Visibility="{Binding IsDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-
-            <Border Width="520"
-                    HorizontalAlignment="Right"
-                    Background="Transparent"
-                    BorderThickness="0">
-                <Border.RenderTransform>
-                    <TranslateTransform X="520" />
-                </Border.RenderTransform>
-                <Border.Style>
-                    <Style TargetType="{x:Type Border}">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                        <Setter Property="Opacity" Value="0" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsDrawerOpen}" Value="True">
-                                <Setter Property="Visibility" Value="Visible" />
-                                <Setter Property="Opacity" Value="1" />
-                                <DataTrigger.EnterActions>
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
-                                                             From="520"
-                                                             To="0"
-                                                             Duration="0:0:0.18" />
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                             From="0"
-                                                             To="1"
-                                                             Duration="0:0:0.14" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </DataTrigger.EnterActions>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="40"
-                                      ShadowDepth="12"
-                                      Direction="180"
-                                      Opacity="0.18" />
-                </Border.Effect>
-
-                <Grid>
-                    <controls:TaskDrawerControl SelectedTask="{Binding SelectedTask}"
-                                                Visibility="{Binding IsTaskDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                    <controls:NoteDrawerControl SelectedNote="{Binding SelectedNote}"
-                                                Visibility="{Binding IsNoteDrawerOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                </Grid>
-            </Border>
+            <controls:SpotlightCardControl Visibility="{Binding IsSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
         </Grid>
     </Border>
 </Window>

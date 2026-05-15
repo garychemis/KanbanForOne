@@ -45,6 +45,17 @@
                             <TextBlock Text="高优先级" />
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ChangeFilterCommand}"
+                            CommandParameter="Archived"
+                            Style="{StaticResource NavButtonStyle}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="▱"
+                                       Width="24"
+                                       FontSize="15"
+                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="归档" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </StackPanel>
 

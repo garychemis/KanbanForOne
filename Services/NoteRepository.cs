@@ -6,6 +6,22 @@ namespace KanbanForOne.Services;
 public sealed class NoteRepository
 {
     private readonly DatabaseService _database;
+    private const string UpsertCommandText =
+        """
+        INSERT INTO Notes (
+            Id, Title, Content, TagsJson, CreatedAt, UpdatedAt, IsArchived, SortOrder
+        )
+        VALUES (
+            $id, $title, $content, $tagsJson, $createdAt, $updatedAt, $isArchived, $sortOrder
+        )
+        ON CONFLICT(Id) DO UPDATE SET
+            Title = excluded.Title,
+            Content = excluded.Content,
+            TagsJson = excluded.TagsJson,
+            UpdatedAt = excluded.UpdatedAt,
+            IsArchived = excluded.IsArchived,
+            SortOrder = excluded.SortOrder
+        """;
 
     public NoteRepository(DatabaseService database)
     {
@@ -58,25 +74,43 @@ public sealed class NoteRepository
         await connection.OpenAsync();
 
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            INSERT INTO Notes (
-                Id, Title, Content, TagsJson, CreatedAt, UpdatedAt, IsArchived, SortOrder
-            )
-            VALUES (
-                $id, $title, $content, $tagsJson, $createdAt, $updatedAt, $isArchived, $sortOrder
-            )
-            ON CONFLICT(Id) DO UPDATE SET
-                Title = excluded.Title,
-                Content = excluded.Content,
-                TagsJson = excluded.TagsJson,
-                UpdatedAt = excluded.UpdatedAt,
-                IsArchived = excluded.IsArchived,
-                SortOrder = excluded.SortOrder
-            """;
+        command.CommandText = UpsertCommandText;
         AddParameters(command, note);
 
         await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpsertRangeAsync(IEnumerable<NoteItem> notes)
+    {
+        var items = notes.ToArray();
+
+        if (items.Length == 0)
+        {
+            return;
+        }
+
+        await using var connection = _database.CreateConnection();
+        await connection.OpenAsync();
+        await using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            foreach (var note in items)
+            {
+                await using var command = connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = UpsertCommandText;
+                AddParameters(command, note);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task DeleteAsync(Guid id)

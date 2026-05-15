@@ -12,6 +12,7 @@ public sealed class NoteItem : ObservableObject
     private DateTime _updatedAt = DateTime.Now;
     private bool _isArchived;
     private int _sortOrder;
+    private bool _isExpanded;
 
     public NoteItem()
     {
@@ -87,6 +88,12 @@ public sealed class NoteItem : ObservableObject
     {
         get => _sortOrder;
         set => SetProperty(ref _sortOrder, value);
+    }
+
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set => SetProperty(ref _isExpanded, value);
     }
 
     public ObservableCollection<AttachmentItem> Attachments { get; } = new();

@@ -13,6 +13,34 @@
              DragLeave="OnFileDragLeave"
              Drop="OnFileDrop">
     <Grid Margin="0,0,0,14">
+        <Grid.Style>
+            <Style TargetType="{x:Type Grid}">
+                <Setter Property="Opacity" Value="1" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsExpanded}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="0.08"
+                                                     Duration="0:0:0.08" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                     To="1"
+                                                     Duration="0:0:0.12" />
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
+
         <Border x:Name="CardBorder"
                 Style="{StaticResource CardBorderStyle}"
                 Background="{StaticResource NoteCardBackgroundBrush}"
@@ -31,8 +59,16 @@
                 </TransformGroup>
             </Border.RenderTransform>
 
-            <StackPanel x:Name="CardContent"
-                        Margin="18,16,18,14">
+            <Grid x:Name="CardContent"
+                  Margin="18,16,18,14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
                 <TextBlock Text="{Binding Title}"
                            FontSize="15"
                            FontWeight="SemiBold"
@@ -40,6 +76,7 @@
                            TextWrapping="Wrap" />
 
                 <controls:MarkdownPreviewControl Markdown="{Binding Content}"
+                                                 Grid.Row="1"
                                                  Margin="0,7,0,0"
                                                  PreviewFontSize="12"
                                                  PreviewForeground="#6F6235"
@@ -47,11 +84,13 @@
                                                  PreviewMaxHeight="36" />
 
                 <TextBlock Text="{Binding UpdatedAt, Converter={StaticResource DateDisplayConverter}, StringFormat=日期 {0}}"
-                           Margin="0,9,0,0"
+                           Grid.Row="3"
+                           Margin="0,10,0,0"
                            FontSize="11"
                            Foreground="#8A7A44" />
 
-                <Grid Margin="0,10,0,0">
+                <Grid Grid.Row="4"
+                      Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -68,7 +107,7 @@
                                FontSize="11"
                                Foreground="#8A7A44" />
                 </Grid>
-            </StackPanel>
+            </Grid>
         </Border>
 
         <Border x:Name="DropHint"

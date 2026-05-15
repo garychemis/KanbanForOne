@@ -7,6 +7,16 @@ namespace KanbanForOne.Controls;
 
 public partial class TagChipEditorControl : UserControl
 {
+    private readonly TextBlock _placeholder = new()
+    {
+        Text = "+ 添加标签",
+        Margin = new Thickness(2, 0, 7, 5),
+        FontSize = 12,
+        Foreground = BrushFrom("#94A3B8"),
+        VerticalAlignment = VerticalAlignment.Center,
+        IsHitTestVisible = false
+    };
+
     public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
         nameof(Text),
         typeof(string),
@@ -121,6 +131,16 @@ public partial class TagChipEditorControl : UserControl
         CommitInput();
     }
 
+    private void OnInputTextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdatePlaceholderVisibility();
+    }
+
+    private void OnContainerMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        FocusInput();
+    }
+
     private void CommitInput()
     {
         var added = false;
@@ -178,7 +198,9 @@ public partial class TagChipEditorControl : UserControl
             TagsPanel.Children.Add(CreateChip(tag));
         }
 
+        TagsPanel.Children.Add(_placeholder);
         TagsPanel.Children.Add(InputBox);
+        UpdatePlaceholderVisibility();
     }
 
     private Border CreateChip(string tag)
@@ -224,11 +246,18 @@ public partial class TagChipEditorControl : UserControl
         return new Border
         {
             Padding = new Thickness(7, 3, 5, 3),
-            Margin = new Thickness(0, 0, 5, 5),
-            CornerRadius = new CornerRadius(4),
+            Margin = new Thickness(0, 0, 6, 5),
+            CornerRadius = new CornerRadius(999),
             Background = ChipBackground,
             Child = content
         };
+    }
+
+    private void UpdatePlaceholderVisibility()
+    {
+        _placeholder.Visibility = string.IsNullOrWhiteSpace(InputBox.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private static IEnumerable<string> ParseTags(string text)

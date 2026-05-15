@@ -39,8 +39,8 @@ public partial class MarkdownPreviewControl : UserControl
         new PropertyMetadata(36d));
 
     private static readonly Regex HeadingRegex = new(@"^(#{1,6})\s+(.+)$", RegexOptions.Compiled);
-    private static readonly Regex OrderedListRegex = new(@"^(\d+)\.\s+(.+)$", RegexOptions.Compiled);
-    private static readonly Regex UnorderedListRegex = new(@"^[-*+]\s+(.+)$", RegexOptions.Compiled);
+    private static readonly Regex OrderedListRegex = new(@"^(?<indent>\s*)(?<number>\d+)\.\s+(?<text>.+)$", RegexOptions.Compiled);
+    private static readonly Regex UnorderedListRegex = new(@"^(?<indent>\s*)[-*+]\s+(?<text>.+)$", RegexOptions.Compiled);
     private static readonly Regex InlineRegex = new(@"(\*\*.+?\*\*|__.+?__|`.+?`|\*.+?\*|_.+?_|!\[.*?\]\(.*?\)|\[.*?\]\(.*?\))", RegexOptions.Compiled);
 
     public MarkdownPreviewControl()
@@ -109,59 +109,68 @@ public partial class MarkdownPreviewControl : UserControl
 
         foreach (var rawLine in lines)
         {
-            var line = rawLine.Trim();
+            var line = rawLine.TrimEnd();
+            var trimmedLine = line.TrimStart();
 
-            if (line.Length == 0)
+            if (trimmedLine.Length == 0)
             {
                 continue;
             }
 
-            if (line.StartsWith("```", StringComparison.Ordinal))
+            if (trimmedLine.StartsWith("```", StringComparison.Ordinal))
             {
                 inCodeBlock = !inCodeBlock;
                 continue;
             }
 
-            if (line is "---" or "***")
+            if (trimmedLine is "---" or "***")
             {
                 continue;
             }
 
             if (inCodeBlock)
             {
-                yield return $"`{line}`";
+                yield return $"`{trimmedLine}`";
                 continue;
             }
 
-            var headingMatch = HeadingRegex.Match(line);
+            var headingMatch = HeadingRegex.Match(trimmedLine);
             if (headingMatch.Success)
             {
                 yield return $"**{headingMatch.Groups[2].Value}**";
                 continue;
             }
 
-            if (line.StartsWith("> ", StringComparison.Ordinal))
+            if (trimmedLine.StartsWith("> ", StringComparison.Ordinal))
             {
-                yield return line[2..];
+                yield return trimmedLine[2..];
                 continue;
             }
 
             var orderedMatch = OrderedListRegex.Match(line);
             if (orderedMatch.Success)
             {
-                yield return $"{orderedMatch.Groups[1].Value}. {orderedMatch.Groups[2].Value}";
+                var indent = PreviewIndent(orderedMatch.Groups["indent"].Value);
+                yield return $"{indent}{orderedMatch.Groups["number"].Value}. {orderedMatch.Groups["text"].Value}";
                 continue;
             }
 
             var unorderedMatch = UnorderedListRegex.Match(line);
             if (unorderedMatch.Success)
             {
-                yield return $"• {unorderedMatch.Groups[1].Value}";
+                var indent = PreviewIndent(unorderedMatch.Groups["indent"].Value);
+                yield return $"{indent}\u2022 {unorderedMatch.Groups["text"].Value}";
                 continue;
             }
 
-            yield return line;
+            yield return trimmedLine;
         }
+    }
+
+    private static string PreviewIndent(string indent)
+    {
+        var width = indent.Sum(character => character == '\t' ? 4 : 1);
+        return new string(' ', width * 2);
     }
 
     private static IEnumerable<Inline> CreatePreviewInlines(string text)

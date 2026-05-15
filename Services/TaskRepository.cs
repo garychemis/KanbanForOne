@@ -7,6 +7,29 @@ namespace KanbanForOne.Services;
 public sealed class TaskRepository
 {
     private readonly DatabaseService _database;
+    private const string UpsertCommandText =
+        """
+        INSERT INTO Tasks (
+            Id, Title, Description, Status, Priority, TagsJson, StartDate, EndDate,
+            CreatedAt, UpdatedAt, CompletedAt, IsArchived, SortOrder
+        )
+        VALUES (
+            $id, $title, $description, $status, $priority, $tagsJson, $startDate, $endDate,
+            $createdAt, $updatedAt, $completedAt, $isArchived, $sortOrder
+        )
+        ON CONFLICT(Id) DO UPDATE SET
+            Title = excluded.Title,
+            Description = excluded.Description,
+            Status = excluded.Status,
+            Priority = excluded.Priority,
+            TagsJson = excluded.TagsJson,
+            StartDate = excluded.StartDate,
+            EndDate = excluded.EndDate,
+            UpdatedAt = excluded.UpdatedAt,
+            CompletedAt = excluded.CompletedAt,
+            IsArchived = excluded.IsArchived,
+            SortOrder = excluded.SortOrder
+        """;
 
     public TaskRepository(DatabaseService database)
     {
@@ -65,32 +88,43 @@ public sealed class TaskRepository
         await connection.OpenAsync();
 
         await using var command = connection.CreateCommand();
-        command.CommandText =
-            """
-            INSERT INTO Tasks (
-                Id, Title, Description, Status, Priority, TagsJson, StartDate, EndDate,
-                CreatedAt, UpdatedAt, CompletedAt, IsArchived, SortOrder
-            )
-            VALUES (
-                $id, $title, $description, $status, $priority, $tagsJson, $startDate, $endDate,
-                $createdAt, $updatedAt, $completedAt, $isArchived, $sortOrder
-            )
-            ON CONFLICT(Id) DO UPDATE SET
-                Title = excluded.Title,
-                Description = excluded.Description,
-                Status = excluded.Status,
-                Priority = excluded.Priority,
-                TagsJson = excluded.TagsJson,
-                StartDate = excluded.StartDate,
-                EndDate = excluded.EndDate,
-                UpdatedAt = excluded.UpdatedAt,
-                CompletedAt = excluded.CompletedAt,
-                IsArchived = excluded.IsArchived,
-                SortOrder = excluded.SortOrder
-            """;
+        command.CommandText = UpsertCommandText;
         AddParameters(command, task);
 
         await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task UpsertRangeAsync(IEnumerable<TaskItem> tasks)
+    {
+        var items = tasks.ToArray();
+
+        if (items.Length == 0)
+        {
+            return;
+        }
+
+        await using var connection = _database.CreateConnection();
+        await connection.OpenAsync();
+        await using var transaction = connection.BeginTransaction();
+
+        try
+        {
+            foreach (var task in items)
+            {
+                await using var command = connection.CreateCommand();
+                command.Transaction = transaction;
+                command.CommandText = UpsertCommandText;
+                AddParameters(command, task);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task DeleteAsync(Guid id)

@@ -115,14 +115,16 @@ public partial class AttachmentDropZoneControl : UserControl
         }
 
         e.Effects = DragDropEffects.Copy;
-        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#F8FAFC")!;
+        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#EFF6FF")!;
+        DropFrame.Stroke = (Brush)new BrushConverter().ConvertFromString("#93C5FD")!;
         DropHint.Visibility = Visibility.Visible;
         e.Handled = true;
     }
 
     private void ResetDropState()
     {
-        DropBorder.Background = (Brush)FindResource("DrawerSoftSurfaceBrush");
+        DropBorder.Background = (Brush)new BrushConverter().ConvertFromString("#99FFFFFF")!;
+        DropFrame.Stroke = (Brush)new BrushConverter().ConvertFromString("#CBD5E1")!;
         DropHint.Visibility = Visibility.Collapsed;
     }
 }

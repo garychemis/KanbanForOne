@@ -10,12 +10,15 @@
             DragEnter="OnDragEnter"
             DragOver="OnDragOver"
             DragLeave="OnDragLeave"
+            PreviewDrop="OnPreviewDrop"
             Drop="OnDrop"
-            Background="Transparent"
-            BorderBrush="Transparent"
+            MouseEnter="OnColumnMouseEnter"
+            MouseLeave="OnColumnMouseLeave"
+            Background="{StaticResource ColumnBackgroundBrush}"
+            BorderBrush="#55FFFFFF"
             BorderThickness="1"
-            CornerRadius="8"
-            Padding="4">
+            CornerRadius="18"
+            Padding="10,10,10,12">
         <DockPanel>
             <Grid DockPanel.Dock="Top"
                   Margin="0,0,0,18">
@@ -53,19 +56,25 @@
                 </Border>
 
                 <Button Grid.Column="3"
+                        x:Name="AddButton"
                         Content="+"
-                        Command="{Binding AddCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        CommandParameter="{Binding AddCommandParameter, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        Click="OnAddButtonClick"
                         Style="{StaticResource IconButtonStyle}"
-                        Width="22"
-                        Height="22"
-                        Opacity="0.55"
+                        Width="24"
+                        MinWidth="24"
+                        Height="24"
+                        Padding="0"
+                        FontSize="15"
+                        FontWeight="SemiBold"
+                        Opacity="0.78"
+                        Visibility="{Binding IsArchiveFilter, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"
                         ToolTip="添加卡片" />
             </Grid>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto"
+            <ScrollViewer x:Name="CardsScrollViewer"
+                          VerticalScrollBarVisibility="Auto"
                           HorizontalScrollBarVisibility="Disabled">
-                <Grid>
+                <Grid MinHeight="{Binding ActualHeight, ElementName=CardsScrollViewer}">
                     <ItemsControl x:Name="CardItems"
                                   ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                   ItemTemplate="{Binding ItemTemplate, RelativeSource={RelativeSource AncestorType=UserControl}}">
@@ -99,6 +108,24 @@
                                               Direction="270"
                                               Opacity="0.16" />
                         </Border.Effect>
+                    </Border>
+
+                    <Border x:Name="ColumnDropZone"
+                            Height="42"
+                            Margin="2,12,2,0"
+                            CornerRadius="14"
+                            Background="#00FFFFFF"
+                            BorderBrush="#66CBD5E1"
+                            BorderThickness="1"
+                            VerticalAlignment="Bottom"
+                            Opacity="0.18"
+                            IsHitTestVisible="False">
+                        <TextBlock Text="拖拽任务到这里"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
                     </Border>
                 </Grid>
             </ScrollViewer>

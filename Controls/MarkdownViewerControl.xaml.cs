@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace KanbanForOne.Controls;
@@ -32,9 +33,16 @@ public partial class MarkdownViewerControl : UserControl
         typeof(MarkdownViewerControl),
         new PropertyMetadata(BrushFrom("#2B2F33"), OnViewerForegroundChanged));
 
+    public static readonly DependencyProperty ForwardMouseWheelToParentScrollViewerProperty = DependencyProperty.Register(
+        nameof(ForwardMouseWheelToParentScrollViewer),
+        typeof(bool),
+        typeof(MarkdownViewerControl),
+        new PropertyMetadata(false));
+
     private static readonly Regex HeadingRegex = new(@"^(#{1,3})\s+(.+)$", RegexOptions.Compiled);
-    private static readonly Regex OrderedListRegex = new(@"^\d+\.\s+(.+)$", RegexOptions.Compiled);
-    private static readonly Regex UnorderedListRegex = new(@"^[-*]\s+(.+)$", RegexOptions.Compiled);
+    private static readonly Regex OrderedListRegex = new(@"^\s*\d+\.\s+(.+)$", RegexOptions.Compiled);
+    private static readonly Regex UnorderedListRegex = new(@"^\s*[-*+]\s+(.+)$", RegexOptions.Compiled);
+    private static readonly Regex ListLineRegex = new(@"^(?<indent>\s*)(?<marker>(?:[-*+])|(?:\d+\.))\s+(?<text>.+)$", RegexOptions.Compiled);
     private static readonly Regex InlineRegex = new(@"(\*\*.+?\*\*|__.+?__|`.+?`|\*.+?\*|_.+?_|!\[.*?\]\(.*?\)|\[.*?\]\(.*?\))", RegexOptions.Compiled);
 
     public MarkdownViewerControl()
@@ -65,6 +73,12 @@ public partial class MarkdownViewerControl : UserControl
     {
         get => (Brush)GetValue(ViewerForegroundProperty);
         set => SetValue(ViewerForegroundProperty, value);
+    }
+
+    public bool ForwardMouseWheelToParentScrollViewer
+    {
+        get => (bool)GetValue(ForwardMouseWheelToParentScrollViewerProperty);
+        set => SetValue(ForwardMouseWheelToParentScrollViewerProperty, value);
     }
 
     private static void OnMarkdownChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -149,47 +163,28 @@ public partial class MarkdownViewerControl : UserControl
                 continue;
             }
 
-            var unorderedMatch = UnorderedListRegex.Match(line.TrimStart());
-            if (unorderedMatch.Success)
+            if (TryParseListLine(line, out _))
             {
-                var list = new List { MarkerStyle = TextMarkerStyle.Disc, Margin = new Thickness(18, 0, 0, 8) };
+                var listLines = new List<ListLine>();
 
                 while (i < lines.Length)
                 {
-                    var itemMatch = UnorderedListRegex.Match(lines[i].TrimStart());
-                    if (!itemMatch.Success)
+                    if (!TryParseListLine(lines[i], out var listLine))
                     {
                         i--;
                         break;
                     }
 
-                    list.ListItems.Add(CreateListItem(itemMatch.Groups[1].Value));
+                    listLines.Add(listLine);
                     i++;
                 }
 
-                document.Blocks.Add(list);
-                continue;
-            }
-
-            var orderedMatch = OrderedListRegex.Match(line.TrimStart());
-            if (orderedMatch.Success)
-            {
-                var list = new List { MarkerStyle = TextMarkerStyle.Decimal, Margin = new Thickness(18, 0, 0, 8) };
-
-                while (i < lines.Length)
+                var listIndex = 0;
+                while (listIndex < listLines.Count)
                 {
-                    var itemMatch = OrderedListRegex.Match(lines[i].TrimStart());
-                    if (!itemMatch.Success)
-                    {
-                        i--;
-                        break;
-                    }
-
-                    list.ListItems.Add(CreateListItem(itemMatch.Groups[1].Value));
-                    i++;
+                    document.Blocks.Add(CreateList(listLines, ref listIndex));
                 }
 
-                document.Blocks.Add(list);
                 continue;
             }
 
@@ -197,6 +192,99 @@ public partial class MarkdownViewerControl : UserControl
         }
 
         Viewer.Document = document;
+    }
+
+    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (!ForwardMouseWheelToParentScrollViewer || e.Handled)
+        {
+            return;
+        }
+
+        var innerScrollViewer = FindDescendant<ScrollViewer>(Viewer);
+
+        if (innerScrollViewer is not null && CanScrollInDirection(innerScrollViewer, e.Delta))
+        {
+            return;
+        }
+
+        var parentScrollViewer = FindAncestor<ScrollViewer>(this);
+
+        if (parentScrollViewer is null || !CanScrollInDirection(parentScrollViewer, e.Delta))
+        {
+            return;
+        }
+
+        ScrollByWheel(parentScrollViewer, e.Delta);
+        e.Handled = true;
+    }
+
+    private static bool CanScrollInDirection(ScrollViewer scrollViewer, int delta)
+    {
+        const double epsilon = 0.1;
+
+        if (scrollViewer.ScrollableHeight <= epsilon)
+        {
+            return false;
+        }
+
+        return delta < 0
+            ? scrollViewer.VerticalOffset < scrollViewer.ScrollableHeight - epsilon
+            : scrollViewer.VerticalOffset > epsilon;
+    }
+
+    private static void ScrollByWheel(ScrollViewer scrollViewer, int delta)
+    {
+        const double pixelsPerWheelDelta = 0.35;
+        var targetOffset = Math.Clamp(
+            scrollViewer.VerticalOffset - delta * pixelsPerWheelDelta,
+            0,
+            scrollViewer.ScrollableHeight);
+
+        scrollViewer.ScrollToVerticalOffset(targetOffset);
+    }
+
+    private static T? FindAncestor<T>(DependencyObject current)
+        where T : DependencyObject
+    {
+        var parent = VisualTreeHelper.GetParent(current);
+
+        while (parent is not null)
+        {
+            if (parent is T typedParent)
+            {
+                return typedParent;
+            }
+
+            parent = VisualTreeHelper.GetParent(parent);
+        }
+
+        return null;
+    }
+
+    private static T? FindDescendant<T>(DependencyObject current)
+        where T : DependencyObject
+    {
+        var count = VisualTreeHelper.GetChildrenCount(current);
+
+        for (var index = 0; index < count; index++)
+        {
+            var child = VisualTreeHelper.GetChild(current, index);
+
+            if (child is T typedChild)
+            {
+                return typedChild;
+            }
+
+            var descendant = FindDescendant<T>(child);
+
+            if (descendant is not null)
+            {
+                return descendant;
+            }
+        }
+
+        return null;
     }
 
     private static Paragraph CreateHeading(int level, string text, Brush foreground)
@@ -251,6 +339,46 @@ public partial class MarkdownViewerControl : UserControl
         };
     }
 
+    private static List CreateList(IReadOnlyList<ListLine> lines, ref int index)
+    {
+        var current = lines[index];
+        var indent = current.Indent;
+        var isOrdered = current.IsOrdered;
+        var list = new List
+        {
+            MarkerStyle = isOrdered ? TextMarkerStyle.Decimal : TextMarkerStyle.Disc,
+            Margin = new Thickness(indent == 0 ? 18 : 16, 0, 0, 6),
+            Padding = new Thickness(0)
+        };
+
+        while (index < lines.Count)
+        {
+            var line = lines[index];
+
+            if (line.Indent < indent || line.Indent == indent && line.IsOrdered != isOrdered)
+            {
+                break;
+            }
+
+            if (line.Indent > indent)
+            {
+                break;
+            }
+
+            var item = CreateListItem(line.Text);
+            index++;
+
+            while (index < lines.Count && lines[index].Indent > indent)
+            {
+                item.Blocks.Add(CreateList(lines, ref index));
+            }
+
+            list.ListItems.Add(item);
+        }
+
+        return list;
+    }
+
     private static ListItem CreateListItem(string text)
     {
         var paragraph = new Paragraph { Margin = new Thickness(0, 0, 0, 4), LineHeight = 19 };
@@ -260,6 +388,29 @@ public partial class MarkdownViewerControl : UserControl
         }
 
         return new ListItem(paragraph);
+    }
+
+    private static bool TryParseListLine(string line, out ListLine listLine)
+    {
+        var match = ListLineRegex.Match(line);
+
+        if (!match.Success)
+        {
+            listLine = default;
+            return false;
+        }
+
+        var marker = match.Groups["marker"].Value;
+        listLine = new ListLine(
+            IndentWidth(match.Groups["indent"].Value),
+            marker.EndsWith(".", StringComparison.Ordinal),
+            match.Groups["text"].Value);
+        return true;
+    }
+
+    private static int IndentWidth(string indent)
+    {
+        return indent.Sum(character => character == '\t' ? 4 : 1);
     }
 
     private static IEnumerable<Inline> CreateInlines(string text)
@@ -329,6 +480,8 @@ public partial class MarkdownViewerControl : UserControl
 
         return new Run(markdown);
     }
+
+    private readonly record struct ListLine(int Indent, bool IsOrdered, string Text);
 
     private static Brush BrushFrom(string hex)
     {

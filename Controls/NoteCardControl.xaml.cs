@@ -75,9 +75,11 @@ public partial class NoteCardControl : UserControl
 
         _isDraggingCard = true;
         var data = new DataObject();
+        var cursorOffset = e.GetPosition(CardBorder);
         data.SetData(DragDropFormats.NoteCard, note);
+        data.SetData(DragDropFormats.CardDragMetrics, new CardDragMetrics(cursorOffset.Y, CardBorder.ActualHeight));
 
-        BeginDragGhost(e.GetPosition(CardBorder));
+        BeginDragGhost(cursorOffset);
         ApplyDraggingVisualState();
         FlushDragVisualState();
         GiveFeedback += OnDragGiveFeedback;
@@ -105,8 +107,28 @@ public partial class NoteCardControl : UserControl
 
         if (OpenCommand?.CanExecute(note) == true)
         {
-            OpenCommand.Execute(note);
+            OpenCommand.Execute(new CardOpenPayload(note, GetAnchorBounds(), GetHostSize()));
         }
+    }
+
+    private Rect GetAnchorBounds()
+    {
+        var host = Window.GetWindow(this)?.Content as Visual;
+
+        if (host is null)
+        {
+            return new Rect(0, 0, ActualWidth, ActualHeight);
+        }
+
+        var origin = CardBorder.TransformToAncestor(host).Transform(new Point(0, 0));
+        return new Rect(origin, new Size(CardBorder.ActualWidth, CardBorder.ActualHeight));
+    }
+
+    private Size GetHostSize()
+    {
+        return Window.GetWindow(this)?.Content is FrameworkElement host
+            ? new Size(host.ActualWidth, host.ActualHeight)
+            : Size.Empty;
     }
 
     private void OnMouseEnter(object sender, MouseEventArgs e)
@@ -151,7 +173,12 @@ public partial class NoteCardControl : UserControl
 
     private void OnFileDrop(object sender, DragEventArgs e)
     {
-        if (DataContext is NoteItem note && e.Data.GetDataPresent(DataFormats.FileDrop))
+        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+        {
+            return;
+        }
+
+        if (DataContext is NoteItem note)
         {
             var files = ((string[])e.Data.GetData(DataFormats.FileDrop)).Where(File.Exists).ToArray();
             var payload = new FileDropPayload(note, files);
@@ -208,7 +235,7 @@ public partial class NoteCardControl : UserControl
         DragScaleTransform.ScaleY = 1;
         DragRotateTransform.Angle = 0;
         LiftTransform.Y = 0;
-        CardBorder.Opacity = 0.36;
+        CardBorder.Opacity = 0.75;
         CardContent.Opacity = 1;
         CardContent.Effect = null;
         CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#C3A737")!;

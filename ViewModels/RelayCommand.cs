@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using System.Diagnostics;
 
 namespace KanbanForOne.ViewModels;
 
@@ -8,6 +9,8 @@ public sealed class RelayCommand : ICommand
     private readonly Func<object?, Task>? _executeAsync;
     private readonly Predicate<object?>? _canExecute;
     private bool _isExecuting;
+
+    public static event Action<Exception>? UnhandledException;
 
     public RelayCommand(Action execute)
         : this(_ => execute())
@@ -45,27 +48,35 @@ public sealed class RelayCommand : ICommand
             return;
         }
 
-        if (_execute is not null)
-        {
-            _execute(parameter);
-            return;
-        }
-
-        if (_executeAsync is null)
-        {
-            return;
-        }
-
         try
         {
+            if (_execute is not null)
+            {
+                _execute(parameter);
+                return;
+            }
+
+            if (_executeAsync is null)
+            {
+                return;
+            }
+
             _isExecuting = true;
             RaiseCanExecuteChanged();
             await _executeAsync(parameter);
         }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            UnhandledException?.Invoke(ex);
+        }
         finally
         {
-            _isExecuting = false;
-            RaiseCanExecuteChanged();
+            if (_isExecuting)
+            {
+                _isExecuting = false;
+                RaiseCanExecuteChanged();
+            }
         }
     }
 

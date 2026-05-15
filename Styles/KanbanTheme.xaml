@@ -27,7 +27,7 @@
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B7280" />
     <SolidColorBrush x:Key="BorderBrushSoft" Color="#D8DADF" />
     <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E7E1D6" />
-    <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#00FFFFFF" />
+    <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#40F8FAFC" />
     <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#FFF8B7" />
     <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />
 

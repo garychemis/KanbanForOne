@@ -2,24 +2,26 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             MinHeight="26">
+             MinHeight="42">
     <Border x:Name="Container"
-            Padding="0"
-            CornerRadius="4"
+            Padding="12,8,10,4"
+            CornerRadius="14"
             Background="{Binding EditorBackground, ElementName=Root}"
             BorderBrush="{Binding EditorBorderBrush, ElementName=Root}"
-            BorderThickness="1">
+            BorderThickness="1"
+            MouseLeftButtonDown="OnContainerMouseLeftButtonDown">
         <WrapPanel x:Name="TagsPanel"
                    VerticalAlignment="Center">
             <TextBox x:Name="InputBox"
-                     MinWidth="60"
+                     MinWidth="76"
                      MaxWidth="180"
                      BorderThickness="0"
                      Background="Transparent"
                      Foreground="{Binding ChipForeground, ElementName=Root}"
-                     FontSize="11"
-                     Padding="3,3"
+                     FontSize="12"
+                     Padding="0,1,0,4"
                      VerticalContentAlignment="Center"
+                     TextChanged="OnInputTextChanged"
                      KeyDown="OnInputKeyDown"
                      LostKeyboardFocus="OnInputLostKeyboardFocus" />
         </WrapPanel>

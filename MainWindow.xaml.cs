@@ -44,6 +44,11 @@ namespace KanbanForOne
 
         private void OnWindowRootPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+            if (_viewModel.IsSpotlightOpen)
+            {
+                return;
+            }
+
             if (e.ChangedButton != MouseButton.Left || e.GetPosition(this).Y > 64)
             {
                 return;

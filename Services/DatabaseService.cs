@@ -9,7 +9,7 @@ public sealed class DatabaseService
 
     private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "AppSettings"];
 
-    private static readonly string[] CreateSchemaCommands =
+    private static readonly string[] CreateTableCommands =
     [
         """
         CREATE TABLE IF NOT EXISTS Tasks (
@@ -59,7 +59,11 @@ public sealed class DatabaseService
             Key TEXT PRIMARY KEY,
             Value TEXT NOT NULL
         )
-        """,
+        """
+    ];
+
+    private static readonly string[] CreateIndexCommands =
+    [
         "CREATE INDEX IF NOT EXISTS IX_Tasks_Status ON Tasks(Status)",
         "CREATE INDEX IF NOT EXISTS IX_Tasks_DateRange ON Tasks(StartDate, EndDate)",
         "CREATE INDEX IF NOT EXISTS IX_Tasks_IsArchived ON Tasks(IsArchived)",
@@ -152,6 +156,7 @@ public sealed class DatabaseService
 
         await CreateCurrentSchemaAsync(connection);
         await ApplyMigrationsAsync(connection, schemaVersion);
+        await CreateCurrentIndexesAsync(connection);
         await ValidateCurrentSchemaAsync(connection);
 
         if (schemaVersion != CurrentSchemaVersion)
@@ -179,6 +184,8 @@ public sealed class DatabaseService
         _ = fromVersion;
         await EnsureColumnAsync(connection, "Tasks", "StartDate", "TEXT NULL");
         await EnsureColumnAsync(connection, "Tasks", "EndDate", "TEXT NULL");
+        await EnsureColumnAsync(connection, "Tasks", "IsArchived", "INTEGER NOT NULL DEFAULT 0");
+        await EnsureColumnAsync(connection, "Notes", "IsArchived", "INTEGER NOT NULL DEFAULT 0");
 
         if (await ColumnExistsAsync(connection, "Tasks", "DueDate"))
         {
@@ -196,7 +203,17 @@ public sealed class DatabaseService
 
     private static async Task CreateCurrentSchemaAsync(SqliteConnection connection)
     {
-        foreach (var commandText in CreateSchemaCommands)
+        foreach (var commandText in CreateTableCommands)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = commandText;
+            await command.ExecuteNonQueryAsync();
+        }
+    }
+
+    private static async Task CreateCurrentIndexesAsync(SqliteConnection connection)
+    {
+        foreach (var commandText in CreateIndexCommands)
         {
             await using var command = connection.CreateCommand();
             command.CommandText = commandText;
