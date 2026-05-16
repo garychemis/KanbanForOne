@@ -247,7 +247,7 @@ public partial class TagChipEditorControl : UserControl
         {
             Padding = new Thickness(7, 3, 5, 3),
             Margin = new Thickness(0, 0, 6, 5),
-            CornerRadius = new CornerRadius(999),
+            CornerRadius = new CornerRadius(7),
             Background = ChipBackground,
             Child = content
         };

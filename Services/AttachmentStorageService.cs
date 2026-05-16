@@ -95,6 +95,74 @@ public sealed class AttachmentStorageService
         return attachments;
     }
 
+    public async Task<AttachmentItem> SaveStreamAsync(
+        AttachmentOwnerType ownerType,
+        Guid ownerId,
+        string originalFileName,
+        Stream source)
+    {
+        if (!source.CanRead)
+        {
+            throw new InvalidOperationException("Cannot read attachment content.");
+        }
+
+        if (source.CanSeek)
+        {
+            source.Position = 0;
+
+            if (source.Length > MaxSingleFileBytes)
+            {
+                throw new InvalidOperationException("Attachment cannot be larger than 200MB.");
+            }
+        }
+
+        var attachmentId = Guid.NewGuid();
+        var safeName = BuildSafeFileName(originalFileName);
+        var storedName = $"{attachmentId:N}_{safeName}";
+        var folder = GetOwnerFolder(ownerType, ownerId);
+        var destination = Path.Combine(folder, storedName);
+
+        Directory.CreateDirectory(folder);
+
+        try
+        {
+            await using (var target = File.Create(destination))
+            {
+                await source.CopyToAsync(target);
+            }
+
+            var fileInfo = new FileInfo(destination);
+
+            if (fileInfo.Length > MaxSingleFileBytes)
+            {
+                File.Delete(destination);
+                throw new InvalidOperationException("Attachment cannot be larger than 200MB.");
+            }
+
+            return new AttachmentItem
+            {
+                Id = attachmentId,
+                OwnerType = ownerType,
+                OwnerId = ownerId,
+                OriginalFileName = safeName,
+                StoredFileName = storedName,
+                RelativePath = Path.GetRelativePath(DataRoot, destination),
+                FileExtension = fileInfo.Extension,
+                FileSizeBytes = fileInfo.Length,
+                CreatedAt = DateTime.Now
+            };
+        }
+        catch
+        {
+            if (File.Exists(destination))
+            {
+                File.Delete(destination);
+            }
+
+            throw;
+        }
+    }
+
     public string GetAbsolutePath(AttachmentItem attachment)
     {
         var fullPath = Path.GetFullPath(Path.Combine(DataRoot, attachment.RelativePath));

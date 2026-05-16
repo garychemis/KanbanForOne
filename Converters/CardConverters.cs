@@ -146,6 +146,77 @@ public sealed class TaskPriorityNameConverter : IValueConverter
     }
 }
 
+public sealed class TaskPreviewSegmentBrushConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        var role = parameter as string ?? "Background";
+        var hex = value switch
+        {
+            TaskStatus.Todo => role switch
+            {
+                "Border" => "#CBD5E1",
+                "Foreground" => "#475569",
+                _ => "#F1F5F9"
+            },
+            TaskStatus.Doing => role switch
+            {
+                "Border" => "#BFDBFE",
+                "Foreground" => "#2563EB",
+                _ => "#EFF6FF"
+            },
+            TaskStatus.Blocked => role switch
+            {
+                "Border" => "#FDBA74",
+                "Foreground" => "#EA580C",
+                _ => "#FFF7ED"
+            },
+            TaskStatus.Done => role switch
+            {
+                "Border" => "#A7F3D0",
+                "Foreground" => "#059669",
+                _ => "#ECFDF5"
+            },
+            TaskPriority.High => role switch
+            {
+                "Border" => "#FECACA",
+                "Foreground" => "#DC2626",
+                _ => "#FEF2F2"
+            },
+            TaskPriority.Medium => role switch
+            {
+                "Border" => "#FED7AA",
+                "Foreground" => "#EA580C",
+                _ => "#FFF7ED"
+            },
+            TaskPriority.Low => role switch
+            {
+                "Border" => "#E2E8F0",
+                "Foreground" => "#475569",
+                _ => "#F8FAFC"
+            },
+            _ => role switch
+            {
+                "Border" => "#E5E7EB",
+                "Foreground" => "#64748B",
+                _ => "#F8FAFC"
+            }
+        };
+
+        return BrushFrom(hex);
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+
+    private static Brush BrushFrom(string hex)
+    {
+        return (Brush)new BrushConverter().ConvertFromString(hex)!;
+    }
+}
+
 public sealed class EnumEqualsConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

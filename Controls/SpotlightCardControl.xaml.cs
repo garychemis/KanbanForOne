@@ -37,6 +37,12 @@ public partial class SpotlightCardControl : UserControl
 
     private void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
+        if (IsPasteShortcut(e) && TryPasteClipboardImage())
+        {
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key != Key.Escape)
         {
             return;
@@ -44,6 +50,45 @@ public partial class SpotlightCardControl : UserControl
 
         RequestAnimatedClose();
         e.Handled = true;
+    }
+
+    private bool TryPasteClipboardImage()
+    {
+        if (DataContext is not MainWindowViewModel viewModel || !viewModel.IsSpotlightEditing)
+        {
+            return false;
+        }
+
+        if (!ClipboardContainsImage())
+        {
+            return false;
+        }
+
+        if (!viewModel.PasteClipboardImageCommand.CanExecute(null))
+        {
+            return false;
+        }
+
+        viewModel.PasteClipboardImageCommand.Execute(null);
+        return true;
+    }
+
+    private static bool IsPasteShortcut(KeyEventArgs e)
+    {
+        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+        return key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control;
+    }
+
+    private static bool ClipboardContainsImage()
+    {
+        try
+        {
+            return Clipboard.ContainsImage();
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

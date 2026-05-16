@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using KanbanForOne.Controls;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
@@ -97,6 +98,7 @@ public sealed class MainWindowViewModel : ObservableObject
         MoveCardCommand = new RelayCommand(MoveCardAsync);
         AttachFilesCommand = new RelayCommand(AttachFilesAsync);
         PickFilesCommand = new RelayCommand(PickFilesAsync);
+        PasteClipboardImageCommand = new RelayCommand(PasteClipboardImageAsync, _ => IsSpotlightEditing);
         OpenAttachmentCommand = new RelayCommand(OpenAttachment);
         RevealAttachmentCommand = new RelayCommand(RevealAttachment);
         DeleteAttachmentCommand = new RelayCommand(DeleteAttachmentAsync);
@@ -169,6 +171,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public RelayCommand AttachFilesCommand { get; }
 
     public RelayCommand PickFilesCommand { get; }
+
+    public RelayCommand PasteClipboardImageCommand { get; }
 
     public RelayCommand OpenAttachmentCommand { get; }
 
@@ -593,6 +597,7 @@ public sealed class MainWindowViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsTaskSpotlightPreviewing));
                 EditSpotlightCommand.RaiseCanExecuteChanged();
                 CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+                PasteClipboardImageCommand.RaiseCanExecuteChanged();
                 SaveTaskCommand.RaiseCanExecuteChanged();
             }
         }
@@ -609,6 +614,7 @@ public sealed class MainWindowViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsNoteSpotlightPreviewing));
                 EditSpotlightCommand.RaiseCanExecuteChanged();
                 CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+                PasteClipboardImageCommand.RaiseCanExecuteChanged();
                 SaveNoteCommand.RaiseCanExecuteChanged();
             }
         }
@@ -1571,6 +1577,97 @@ public sealed class MainWindowViewModel : ObservableObject
         if (dialog.ShowDialog() == true)
         {
             await AttachFilesAsync(new FileDropPayload(owner, dialog.FileNames));
+        }
+    }
+
+    private async Task PasteClipboardImageAsync(object? _)
+    {
+        if (!IsSpotlightEditing)
+        {
+            return;
+        }
+
+        object? owner = IsTaskSpotlightEditing
+            ? FocusedTask
+            : IsNoteSpotlightEditing
+                ? FocusedNote
+                : null;
+
+        if (owner is null)
+        {
+            return;
+        }
+
+        BitmapSource? image;
+
+        try
+        {
+            if (!Clipboard.ContainsImage())
+            {
+                return;
+            }
+
+            image = Clipboard.GetImage();
+        }
+        catch (Exception ex)
+        {
+            SetNotification($"读取剪贴板失败：{ex.Message}");
+            return;
+        }
+
+        if (image is null)
+        {
+            return;
+        }
+
+        AttachmentItem? attachment = null;
+
+        try
+        {
+            using var stream = new MemoryStream();
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            encoder.Save(stream);
+            stream.Position = 0;
+
+            var fileName = $"clipboard-image-{DateTime.Now:yyyyMMdd-HHmmss}.png";
+
+            if (owner is TaskItem task)
+            {
+                attachment = await _attachmentStorage.SaveStreamAsync(AttachmentOwnerType.Task, task.Id, fileName, stream);
+                attachment.SortOrder = task.Attachments.Count;
+                await _attachmentRepository.AddRangeAsync([attachment]);
+                task.Attachments.Add(attachment);
+                RefreshBoard();
+                SetNotification("已保存剪贴板图片为附件");
+                return;
+            }
+
+            if (owner is NoteItem note)
+            {
+                attachment = await _attachmentStorage.SaveStreamAsync(AttachmentOwnerType.Note, note.Id, fileName, stream);
+                attachment.SortOrder = note.Attachments.Count;
+                await _attachmentRepository.AddRangeAsync([attachment]);
+                note.Attachments.Add(attachment);
+                RefreshBoard();
+                SetNotification("已保存剪贴板图片为附件");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (attachment is not null)
+            {
+                try
+                {
+                    await _attachmentStorage.DeleteAttachmentFileAsync(attachment);
+                }
+                catch
+                {
+                    // Best-effort cleanup after a failed clipboard image attachment.
+                }
+            }
+
+            SetNotification($"保存剪贴板图片失败：{ex.Message}");
         }
     }
 

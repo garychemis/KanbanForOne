@@ -7,6 +7,7 @@
     <converters:TaskStatusNameConverter x:Key="TaskStatusNameConverter" />
     <converters:TaskPriorityBrushConverter x:Key="TaskPriorityBrushConverter" />
     <converters:TaskPriorityNameConverter x:Key="TaskPriorityNameConverter" />
+    <converters:TaskPreviewSegmentBrushConverter x:Key="TaskPreviewSegmentBrushConverter" />
     <converters:EnumEqualsConverter x:Key="EnumEqualsConverter" />
     <converters:DoneTextDecorationConverter x:Key="DoneTextDecorationConverter" />
     <converters:DoneForegroundConverter x:Key="DoneForegroundConverter" />

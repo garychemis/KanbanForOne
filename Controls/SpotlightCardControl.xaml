@@ -11,25 +11,25 @@
         <SolidColorBrush x:Key="SpotlightTextPrimaryBrush" Color="#111827" />
         <SolidColorBrush x:Key="SpotlightTextSecondaryBrush" Color="#64748B" />
         <SolidColorBrush x:Key="SpotlightTextMutedBrush" Color="#94A3B8" />
-        <SolidColorBrush x:Key="SpotlightSurfaceDialogBrush" Color="#F8FBFF" />
-        <SolidColorBrush x:Key="SpotlightSurfaceBlockBrush" Color="#B8FFFFFF" />
-        <SolidColorBrush x:Key="SpotlightSurfaceInputBrush" Color="#CCFFFFFF" />
+        <SolidColorBrush x:Key="SpotlightSurfaceDialogBrush" Color="#FFFDF8" />
+        <SolidColorBrush x:Key="SpotlightSurfaceBlockBrush" Color="#FFFFFC" />
+        <SolidColorBrush x:Key="SpotlightSurfaceInputBrush" Color="#FFFFFC" />
         <SolidColorBrush x:Key="SpotlightBorderSoftBrush" Color="#E5E7EB" />
         <SolidColorBrush x:Key="SpotlightPrimaryBrush" Color="#111827" />
 
         <Style x:Key="SpotlightShellStyle" TargetType="{x:Type Border}">
-            <Setter Property="CornerRadius" Value="24" />
+            <Setter Property="CornerRadius" Value="20" />
             <Setter Property="Background" Value="{StaticResource SpotlightSurfaceDialogBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderThickness" Value="1.5" />
             <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="38"
-                                      ShadowDepth="12"
+                    <DropShadowEffect BlurRadius="30"
+                                      ShadowDepth="10"
                                       Direction="270"
-                                      Opacity="0.14" />
+                                      Opacity="0.13" />
                 </Setter.Value>
             </Setter>
         </Style>
@@ -43,15 +43,15 @@
         </Style>
 
         <Style x:Key="SpotlightTitleBoxStyle" TargetType="{x:Type TextBox}">
-            <Setter Property="MinHeight" Value="50" />
-            <Setter Property="FontSize" Value="26" />
+            <Setter Property="MinHeight" Value="46" />
+            <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{StaticResource SpotlightTextPrimaryBrush}" />
             <Setter Property="CaretBrush" Value="#111827" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="6,6" />
+            <Setter Property="BorderBrush" Value="#CBD5E1" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Padding" Value="0,4,0,7" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="AcceptsReturn" Value="False" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -62,18 +62,18 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="12">
+                                CornerRadius="0">
                             <ScrollViewer x:Name="PART_ContentHost"
                                           Margin="{TemplateBinding Padding}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#73FFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="Transparent" />
                                 <Setter TargetName="Chrome" Property="BorderBrush" Value="#D8E0EA" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#A6FFFFFF" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#BFDBFE" />
+                                <Setter TargetName="Chrome" Property="Background" Value="Transparent" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#111827" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -91,21 +91,21 @@
         <Style x:Key="SpotlightMetaPanelStyle" TargetType="{x:Type Border}">
             <Setter Property="Height" Value="64" />
             <Setter Property="Padding" Value="14,10" />
-            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="BorderBrush" Value="#BFDBFE" />
-                    <Setter Property="Background" Value="#CCFFFFFF" />
+                    <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="SpotlightPropertyPanelStyle" TargetType="{x:Type Border}">
-            <Setter Property="Padding" Value="16" />
-            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -126,7 +126,7 @@
         <Style x:Key="SpotlightTagStyle" TargetType="{x:Type Border}">
             <Setter Property="Padding" Value="9,4" />
             <Setter Property="Margin" Value="0,0,7,7" />
-            <Setter Property="CornerRadius" Value="999" />
+            <Setter Property="CornerRadius" Value="7" />
             <Setter Property="Background" Value="#DFFFFFFF" />
             <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
@@ -173,7 +173,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter TargetName="Chrome" Property="BorderBrush" Value="#BFDBFE" />
-                                <Setter TargetName="Chrome" Property="Background" Value="#D9FFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SpotlightSurfaceInputBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -185,6 +185,15 @@
             <Setter Property="Padding" Value="10,5" />
             <Setter Property="CornerRadius" Value="999" />
             <Setter Property="BorderThickness" Value="0" />
+        </Style>
+
+        <Style x:Key="SpotlightPreviewSegmentStyle" TargetType="{x:Type Border}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="MinWidth" Value="74" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="12" />
         </Style>
 
         <Style x:Key="SpotlightSegmentButtonStyle" TargetType="{x:Type RadioButton}">
@@ -466,8 +475,8 @@
                 Canvas.Top="{Binding SpotlightTop}"
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
-                Background="#F8FBFF"
-                BorderBrush="#E5E7EB"
+                Background="{StaticResource SpotlightSurfaceDialogBrush}"
+                BorderBrush="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}"
                 Opacity="0"
                 Visibility="{Binding IsTaskSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="TaskDetailContent"
@@ -482,16 +491,6 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Border Grid.Row="0"
-                        Width="4"
-                        Height="42"
-                        Margin="20,22,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Opacity="0.42"
-                        Background="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}"
-                        CornerRadius="999" />
-
                 <Grid Grid.Row="0"
                       Margin="34,20,24,8">
                     <Grid.ColumnDefinitions>
@@ -502,25 +501,29 @@
                     <StackPanel Orientation="Horizontal"
                                 VerticalAlignment="Center"
                                 Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
-                        <Border Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBackgroundConverter}}">
+                        <Border Style="{StaticResource SpotlightPreviewSegmentStyle}"
+                                Background="{Binding FocusedTask.Status, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Background}"
+                                BorderBrush="{Binding FocusedTask.Status, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Border}">
                             <TextBlock Text="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusNameConverter}}"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}" />
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding FocusedTask.Status, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Foreground}" />
                         </Border>
 
-                        <Border Margin="8,0,0,0"
-                                Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="#FFF7ED">
+                        <Border Style="{StaticResource SpotlightPreviewSegmentStyle}"
+                                Background="{Binding FocusedTask.Priority, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Background}"
+                                BorderBrush="{Binding FocusedTask.Priority, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Border}">
                             <TextBlock Text="{Binding FocusedTask.Priority, Converter={StaticResource TaskPriorityNameConverter}, StringFormat=&#x4F18;&#x5148;&#x7EA7; {0}}"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{Binding FocusedTask.Priority, Converter={StaticResource TaskPriorityBrushConverter}}" />
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{Binding FocusedTask.Priority, Converter={StaticResource TaskPreviewSegmentBrushConverter}, ConverterParameter=Foreground}" />
                         </Border>
 
-                        <Border Margin="8,0,0,0"
-                                Style="{StaticResource SpotlightHeaderChipStyle}"
+                        <Border Style="{StaticResource SpotlightHeaderChipStyle}"
                                 Background="#EEF2F7"
                                 Visibility="{Binding HasUnsavedTaskChanges, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
@@ -650,7 +653,7 @@
                                                    Style="{StaticResource SpotlightPropertyLabelStyle}" />
                                         <controls:TagChipEditorControl Grid.Column="1"
                                                                        Text="{Binding TaskTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                       EditorBackground="#AAFFFFFF"
+                                                                       EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
                                                                        EditorBorderBrush="#E5E7EB"
                                                                        ChipBackground="#F1F5F9"
                                                                        ChipForeground="#334155" />
@@ -700,8 +703,8 @@
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
                                    Margin="0,18,0,7" />
                         <controls:MarkdownViewerControl Markdown="{Binding FocusedTask.Description}"
-                                                        ViewerBackground="#7AFFFFFF"
-                                                        ViewerBorderBrush="#33E5E7EB"
+                                                        ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
+                                                        ViewerBorderBrush="#E5E7EB"
                                                         ViewerForeground="#1F2937"
                                                         ForwardMouseWheelToParentScrollViewer="True"
                                                         MinHeight="130"
@@ -735,7 +738,7 @@
                         <StackPanel Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
-                                    Background="#55FFFFFF"
+                                    Background="{StaticResource SpotlightSurfaceBlockBrush}"
                                     Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <StackPanel>
                                     <TextBlock Text="暂无附件"
@@ -756,12 +759,13 @@
                                         <Border Margin="0,0,0,6"
                                                 Padding="10"
                                                 CornerRadius="8"
-                                                Background="#F8FAFC"
+                                                Background="{StaticResource SpotlightSurfaceBlockBrush}"
                                                 BorderBrush="#E2E8F0"
                                                 BorderThickness="1">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="{Binding OriginalFileName}"
@@ -773,6 +777,16 @@
                                                            Margin="12,0,0,0"
                                                            FontSize="11"
                                                            Foreground="#64748B" />
+                                                <Button Grid.Column="2"
+                                                        Content="&#x6253;&#x5F00;"
+                                                        Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=controls:SpotlightCardControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButtonStyle}"
+                                                        MinWidth="40"
+                                                        Height="24"
+                                                        FontSize="10"
+                                                        Margin="8,0,0,0"
+                                                        FocusVisualStyle="{x:Null}" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -793,7 +807,7 @@
                         Background="{StaticResource SpotlightSurfaceDialogBrush}"
                         BorderBrush="#55E5E7EB"
                         BorderThickness="0,1,0,0"
-                        CornerRadius="0,0,24,24">
+                        CornerRadius="0,0,20,20">
                     <Grid>
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Left">
@@ -836,8 +850,8 @@
                 Canvas.Top="{Binding SpotlightTop}"
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
-                Background="#FAFAF7"
-                BorderBrush="#E5E7EB"
+                Background="{StaticResource SpotlightSurfaceDialogBrush}"
+                BorderBrush="{StaticResource NoteCardBorderBrush}"
                 Opacity="0"
                 Visibility="{Binding IsNoteSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="NoteDetailContent"
@@ -851,16 +865,6 @@
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
-
-                <Border Grid.Row="0"
-                        Width="4"
-                        Height="42"
-                        Margin="20,22,0,0"
-                        HorizontalAlignment="Left"
-                        VerticalAlignment="Top"
-                        Opacity="0.36"
-                        Background="#B45309"
-                        CornerRadius="999" />
 
                 <Grid Grid.Row="0"
                       Margin="34,20,24,8">
@@ -954,7 +958,7 @@
                                        Style="{StaticResource SpotlightSectionLabelStyle}"
                                        Margin="0,14,0,7" />
                             <controls:TagChipEditorControl Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                           EditorBackground="#B8FFFFFF"
+                                                           EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
                                                            EditorBorderBrush="#E5E7EB"
                                                            ChipBackground="#FFF7ED"
                                                            ChipForeground="#9A3412" />
@@ -964,8 +968,8 @@
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
                                    Margin="0,16,0,7" />
                         <controls:MarkdownViewerControl Markdown="{Binding FocusedNote.Content}"
-                                                        ViewerBackground="#7AFFFFFF"
-                                                        ViewerBorderBrush="#33E5E7EB"
+                                                        ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
+                                                        ViewerBorderBrush="#E5E7EB"
                                                         ViewerForeground="#1F2937"
                                                         ForwardMouseWheelToParentScrollViewer="True"
                                                         MinHeight="150"
@@ -975,7 +979,7 @@
                                  Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
                                  MinHeight="260"
                                  MaxHeight="300"
-                                 Background="#B8FFFFFF"
+                                 Background="{StaticResource SpotlightSurfaceBlockBrush}"
                                  BorderBrush="#E5E7EB"
                                  Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
 
@@ -1001,7 +1005,7 @@
                         <StackPanel Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
-                                    Background="#55FFFFFF"
+                                    Background="{StaticResource SpotlightSurfaceBlockBrush}"
                                     Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <StackPanel>
                                     <TextBlock Text="暂无附件"
@@ -1022,12 +1026,13 @@
                                         <Border Margin="0,0,0,6"
                                                 Padding="10"
                                                 CornerRadius="8"
-                                                Background="#F8FAFC"
+                                                Background="{StaticResource SpotlightSurfaceBlockBrush}"
                                                 BorderBrush="#E2E8F0"
                                                 BorderThickness="1">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="{Binding OriginalFileName}"
@@ -1039,6 +1044,16 @@
                                                            Margin="12,0,0,0"
                                                            FontSize="11"
                                                            Foreground="#64748B" />
+                                                <Button Grid.Column="2"
+                                                        Content="&#x6253;&#x5F00;"
+                                                        Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=controls:SpotlightCardControl}}"
+                                                        CommandParameter="{Binding}"
+                                                        Style="{StaticResource IconButtonStyle}"
+                                                        MinWidth="40"
+                                                        Height="24"
+                                                        FontSize="10"
+                                                        Margin="8,0,0,0"
+                                                        FocusVisualStyle="{x:Null}" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -1056,10 +1071,10 @@
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
-                        Background="#FAFAF7"
+                        Background="{StaticResource SpotlightSurfaceDialogBrush}"
                         BorderBrush="#55E5E7EB"
                         BorderThickness="0,1,0,0"
-                        CornerRadius="0,0,24,24">
+                        CornerRadius="0,0,20,20">
                     <Grid>
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Left">
