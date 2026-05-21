@@ -20,6 +20,12 @@ public partial class AttachmentListControl : UserControl
         typeof(AttachmentListControl),
         new PropertyMetadata(false));
 
+    public static readonly DependencyProperty ShowManageActionsProperty = DependencyProperty.Register(
+        nameof(ShowManageActions),
+        typeof(bool),
+        typeof(AttachmentListControl),
+        new PropertyMetadata(true));
+
     public static readonly DependencyProperty OpenCommandProperty = DependencyProperty.Register(
         nameof(OpenCommand),
         typeof(ICommand),
@@ -55,6 +61,12 @@ public partial class AttachmentListControl : UserControl
     {
         get => (bool)GetValue(HasItemsProperty);
         private set => SetValue(HasItemsProperty, value);
+    }
+
+    public bool ShowManageActions
+    {
+        get => (bool)GetValue(ShowManageActionsProperty);
+        set => SetValue(ShowManageActionsProperty, value);
     }
 
     public ICommand? OpenCommand

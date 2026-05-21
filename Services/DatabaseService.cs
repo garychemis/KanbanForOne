@@ -1,13 +1,14 @@
 using System.IO;
+using KanbanForOne.Models;
 using Microsoft.Data.Sqlite;
 
 namespace KanbanForOne.Services;
 
 public sealed class DatabaseService
 {
-    private const int CurrentSchemaVersion = 2;
+    private const int CurrentSchemaVersion = 3;
 
-    private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "AppSettings"];
+    private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "ArchiveSections", "AppSettings"];
 
     private static readonly string[] CreateTableCommands =
     [
@@ -25,6 +26,8 @@ public sealed class DatabaseService
             UpdatedAt TEXT NOT NULL,
             CompletedAt TEXT NULL,
             IsArchived INTEGER NOT NULL DEFAULT 0,
+            ArchiveSectionId TEXT NULL,
+            ArchivedAt TEXT NULL,
             SortOrder INTEGER NOT NULL DEFAULT 0
         )
         """,
@@ -37,7 +40,19 @@ public sealed class DatabaseService
             CreatedAt TEXT NOT NULL,
             UpdatedAt TEXT NOT NULL,
             IsArchived INTEGER NOT NULL DEFAULT 0,
+            ArchiveSectionId TEXT NULL,
+            ArchivedAt TEXT NULL,
             SortOrder INTEGER NOT NULL DEFAULT 0
+        )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS ArchiveSections (
+            Id TEXT PRIMARY KEY,
+            Name TEXT NOT NULL,
+            SortOrder INTEGER NOT NULL DEFAULT 0,
+            CreatedAt TEXT NOT NULL,
+            UpdatedAt TEXT NOT NULL,
+            IsDefault INTEGER NOT NULL DEFAULT 0
         )
         """,
         """
@@ -67,8 +82,11 @@ public sealed class DatabaseService
         "CREATE INDEX IF NOT EXISTS IX_Tasks_Status ON Tasks(Status)",
         "CREATE INDEX IF NOT EXISTS IX_Tasks_DateRange ON Tasks(StartDate, EndDate)",
         "CREATE INDEX IF NOT EXISTS IX_Tasks_IsArchived ON Tasks(IsArchived)",
+        "CREATE INDEX IF NOT EXISTS IX_Tasks_ArchiveSection ON Tasks(IsArchived, ArchiveSectionId)",
         "CREATE INDEX IF NOT EXISTS IX_Notes_IsArchived ON Notes(IsArchived)",
-        "CREATE INDEX IF NOT EXISTS IX_Attachments_Owner ON Attachments(OwnerType, OwnerId)"
+        "CREATE INDEX IF NOT EXISTS IX_Notes_ArchiveSection ON Notes(IsArchived, ArchiveSectionId)",
+        "CREATE INDEX IF NOT EXISTS IX_Attachments_Owner ON Attachments(OwnerType, OwnerId)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS UX_ArchiveSections_Name ON ArchiveSections(Name COLLATE NOCASE)"
     ];
 
     private static readonly IReadOnlyDictionary<string, string[]> RequiredColumns = new Dictionary<string, string[]>
@@ -87,9 +105,23 @@ public sealed class DatabaseService
             "UpdatedAt",
             "CompletedAt",
             "IsArchived",
+            "ArchiveSectionId",
+            "ArchivedAt",
             "SortOrder"
         ],
-        ["Notes"] = ["Id", "Title", "Content", "TagsJson", "CreatedAt", "UpdatedAt", "IsArchived", "SortOrder"],
+        ["Notes"] =
+        [
+            "Id",
+            "Title",
+            "Content",
+            "TagsJson",
+            "CreatedAt",
+            "UpdatedAt",
+            "IsArchived",
+            "ArchiveSectionId",
+            "ArchivedAt",
+            "SortOrder"
+        ],
         ["Attachments"] =
         [
             "Id",
@@ -103,6 +135,7 @@ public sealed class DatabaseService
             "CreatedAt",
             "SortOrder"
         ],
+        ["ArchiveSections"] = ["Id", "Name", "SortOrder", "CreatedAt", "UpdatedAt", "IsDefault"],
         ["AppSettings"] = ["Key", "Value"]
     };
 
@@ -155,6 +188,7 @@ public sealed class DatabaseService
         }
 
         await CreateCurrentSchemaAsync(connection);
+        await EnsureDefaultArchiveSectionAsync(connection);
         await ApplyMigrationsAsync(connection, schemaVersion);
         await CreateCurrentIndexesAsync(connection);
         await ValidateCurrentSchemaAsync(connection);
@@ -185,7 +219,11 @@ public sealed class DatabaseService
         await EnsureColumnAsync(connection, "Tasks", "StartDate", "TEXT NULL");
         await EnsureColumnAsync(connection, "Tasks", "EndDate", "TEXT NULL");
         await EnsureColumnAsync(connection, "Tasks", "IsArchived", "INTEGER NOT NULL DEFAULT 0");
+        await EnsureColumnAsync(connection, "Tasks", "ArchiveSectionId", "TEXT NULL");
+        await EnsureColumnAsync(connection, "Tasks", "ArchivedAt", "TEXT NULL");
         await EnsureColumnAsync(connection, "Notes", "IsArchived", "INTEGER NOT NULL DEFAULT 0");
+        await EnsureColumnAsync(connection, "Notes", "ArchiveSectionId", "TEXT NULL");
+        await EnsureColumnAsync(connection, "Notes", "ArchivedAt", "TEXT NULL");
 
         if (await ColumnExistsAsync(connection, "Tasks", "DueDate"))
         {
@@ -196,8 +234,38 @@ public sealed class DatabaseService
                 SET StartDate = COALESCE(StartDate, DueDate),
                     EndDate = COALESCE(EndDate, DueDate)
                 WHERE DueDate IS NOT NULL
-                """;
+            """;
             await migrateDatesCommand.ExecuteNonQueryAsync();
+        }
+
+        var defaultSectionId = ArchiveSection.DefaultId.ToString();
+
+        await using (var migrateTaskArchiveSectionCommand = connection.CreateCommand())
+        {
+            migrateTaskArchiveSectionCommand.CommandText =
+                """
+                UPDATE Tasks
+                SET ArchiveSectionId = $defaultSectionId,
+                    ArchivedAt = COALESCE(ArchivedAt, UpdatedAt, CreatedAt)
+                WHERE IsArchived = 1
+                  AND (ArchiveSectionId IS NULL OR ArchiveSectionId = '')
+                """;
+            migrateTaskArchiveSectionCommand.Parameters.AddWithValue("$defaultSectionId", defaultSectionId);
+            await migrateTaskArchiveSectionCommand.ExecuteNonQueryAsync();
+        }
+
+        await using (var migrateNoteArchiveSectionCommand = connection.CreateCommand())
+        {
+            migrateNoteArchiveSectionCommand.CommandText =
+                """
+                UPDATE Notes
+                SET ArchiveSectionId = $defaultSectionId,
+                    ArchivedAt = COALESCE(ArchivedAt, UpdatedAt, CreatedAt)
+                WHERE IsArchived = 1
+                  AND (ArchiveSectionId IS NULL OR ArchiveSectionId = '')
+                """;
+            migrateNoteArchiveSectionCommand.Parameters.AddWithValue("$defaultSectionId", defaultSectionId);
+            await migrateNoteArchiveSectionCommand.ExecuteNonQueryAsync();
         }
     }
 
@@ -219,6 +287,22 @@ public sealed class DatabaseService
             command.CommandText = commandText;
             await command.ExecuteNonQueryAsync();
         }
+    }
+
+    private static async Task EnsureDefaultArchiveSectionAsync(SqliteConnection connection)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            """
+            INSERT OR IGNORE INTO ArchiveSections (Id, Name, SortOrder, CreatedAt, UpdatedAt, IsDefault)
+            VALUES ($id, $name, 0, $createdAt, $updatedAt, 1)
+            """;
+        var now = SqliteMapper.DbDate(DateTime.Now);
+        command.Parameters.AddWithValue("$id", ArchiveSection.DefaultId.ToString());
+        command.Parameters.AddWithValue("$name", "默认");
+        command.Parameters.AddWithValue("$createdAt", now);
+        command.Parameters.AddWithValue("$updatedAt", now);
+        await command.ExecuteNonQueryAsync();
     }
 
     private static async Task ValidateCurrentSchemaAsync(SqliteConnection connection)

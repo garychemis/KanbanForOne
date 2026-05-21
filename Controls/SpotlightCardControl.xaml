@@ -480,7 +480,9 @@
                 Opacity="0"
                 Visibility="{Binding IsTaskSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="TaskDetailContent"
-                  Opacity="0">
+                  DataContext="{Binding SpotlightDetailDataContext}"
+                  Opacity="0"
+                  Visibility="Collapsed">
                 <Grid.RenderTransform>
                     <TranslateTransform x:Name="TaskDetailTransform"
                                         Y="-8" />
@@ -752,53 +754,14 @@
                                 </StackPanel>
                             </Border>
 
-                            <ItemsControl ItemsSource="{Binding FocusedTask.Attachments}"
-                                          Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Margin="0,0,0,6"
-                                                Padding="10"
-                                                CornerRadius="8"
-                                                Background="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                BorderBrush="#E2E8F0"
-                                                BorderThickness="1">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding OriginalFileName}"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Grid.Column="1"
-                                                           Text="{Binding FileSizeBytes, Converter={StaticResource AttachmentSizeConverter}}"
-                                                           Margin="12,0,0,0"
-                                                           FontSize="11"
-                                                           Foreground="#64748B" />
-                                                <Button Grid.Column="2"
-                                                        Content="&#x6253;&#x5F00;"
-                                                        Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=controls:SpotlightCardControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButtonStyle}"
-                                                        MinWidth="40"
-                                                        Height="24"
-                                                        FontSize="10"
-                                                        Margin="8,0,0,0"
-                                                        FocusVisualStyle="{x:Null}" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
                         </StackPanel>
                         <controls:AttachmentListControl ItemsSource="{Binding FocusedTask.Attachments}"
                                                         OpenCommand="{Binding OpenAttachmentCommand}"
                                                         RevealCommand="{Binding RevealAttachmentCommand}"
                                                         DeleteCommand="{Binding DeleteAttachmentCommand}"
+                                                        ShowManageActions="{Binding IsTaskSpotlightEditing}"
                                                         Margin="0,8,0,0"
-                                                        Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                                        Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
                     </StackPanel>
                 </ScrollViewer>
 
@@ -855,7 +818,9 @@
                 Opacity="0"
                 Visibility="{Binding IsNoteSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="NoteDetailContent"
-                  Opacity="0">
+                  DataContext="{Binding SpotlightDetailDataContext}"
+                  Opacity="0"
+                  Visibility="Collapsed">
                 <Grid.RenderTransform>
                     <TranslateTransform x:Name="NoteDetailTransform"
                                         Y="-8" />
@@ -1019,53 +984,14 @@
                                 </StackPanel>
                             </Border>
 
-                            <ItemsControl ItemsSource="{Binding FocusedNote.Attachments}"
-                                          Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <Border Margin="0,0,0,6"
-                                                Padding="10"
-                                                CornerRadius="8"
-                                                Background="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                BorderBrush="#E2E8F0"
-                                                BorderThickness="1">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding OriginalFileName}"
-                                                           FontSize="12"
-                                                           FontWeight="SemiBold"
-                                                           TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Grid.Column="1"
-                                                           Text="{Binding FileSizeBytes, Converter={StaticResource AttachmentSizeConverter}}"
-                                                           Margin="12,0,0,0"
-                                                           FontSize="11"
-                                                           Foreground="#64748B" />
-                                                <Button Grid.Column="2"
-                                                        Content="&#x6253;&#x5F00;"
-                                                        Command="{Binding DataContext.OpenAttachmentCommand, RelativeSource={RelativeSource AncestorType=controls:SpotlightCardControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource IconButtonStyle}"
-                                                        MinWidth="40"
-                                                        Height="24"
-                                                        FontSize="10"
-                                                        Margin="8,0,0,0"
-                                                        FocusVisualStyle="{x:Null}" />
-                                            </Grid>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
                         </StackPanel>
                         <controls:AttachmentListControl ItemsSource="{Binding FocusedNote.Attachments}"
                                                         OpenCommand="{Binding OpenAttachmentCommand}"
                                                         RevealCommand="{Binding RevealAttachmentCommand}"
                                                         DeleteCommand="{Binding DeleteAttachmentCommand}"
+                                                        ShowManageActions="{Binding IsNoteSpotlightEditing}"
                                                         Margin="0,8,0,0"
-                                                        Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                                        Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
                     </StackPanel>
                 </ScrollViewer>
 

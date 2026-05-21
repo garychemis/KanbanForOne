@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace KanbanForOne.Controls;
 
@@ -44,11 +45,22 @@ public partial class MarkdownViewerControl : UserControl
     private static readonly Regex UnorderedListRegex = new(@"^\s*[-*+]\s+(.+)$", RegexOptions.Compiled);
     private static readonly Regex ListLineRegex = new(@"^(?<indent>\s*)(?<marker>(?:[-*+])|(?:\d+\.))\s+(?<text>.+)$", RegexOptions.Compiled);
     private static readonly Regex InlineRegex = new(@"(\*\*.+?\*\*|__.+?__|`.+?`|\*.+?\*|_.+?_|!\[.*?\]\(.*?\)|\[.*?\]\(.*?\))", RegexOptions.Compiled);
+    private int _renderVersion;
+    private bool _hasRendered;
+    private string? _renderedMarkdown;
+    private Brush? _renderedForeground;
 
     public MarkdownViewerControl()
     {
         InitializeComponent();
-        RenderMarkdown();
+        Loaded += (_, _) => ScheduleRenderMarkdown();
+        IsVisibleChanged += (_, e) =>
+        {
+            if (e.NewValue is true)
+            {
+                ScheduleRenderMarkdown();
+            }
+        };
     }
 
     public string Markdown
@@ -83,25 +95,63 @@ public partial class MarkdownViewerControl : UserControl
 
     private static void OnMarkdownChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ((MarkdownViewerControl)d).RenderMarkdown();
+        ((MarkdownViewerControl)d).ScheduleRenderMarkdown();
     }
 
     private static void OnViewerForegroundChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ((MarkdownViewerControl)d).RenderMarkdown();
+        ((MarkdownViewerControl)d).ScheduleRenderMarkdown();
     }
 
-    private void RenderMarkdown()
+    private void ScheduleRenderMarkdown()
+    {
+        var version = ++_renderVersion;
+
+        if (!IsLoaded || !IsVisible)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke((Action)(() =>
+        {
+            if (version != _renderVersion || !IsVisible)
+            {
+                return;
+            }
+
+            RenderMarkdownIfNeeded();
+        }), DispatcherPriority.Background);
+    }
+
+    private void RenderMarkdownIfNeeded()
+    {
+        var markdown = Markdown ?? string.Empty;
+        var foreground = ViewerForeground;
+
+        if (_hasRendered &&
+            string.Equals(_renderedMarkdown, markdown, StringComparison.Ordinal) &&
+            Equals(_renderedForeground, foreground))
+        {
+            return;
+        }
+
+        RenderMarkdown(markdown, foreground);
+        _hasRendered = true;
+        _renderedMarkdown = markdown;
+        _renderedForeground = foreground;
+    }
+
+    private void RenderMarkdown(string markdown, Brush foreground)
     {
         var document = new FlowDocument
         {
             PagePadding = new Thickness(0),
             FontFamily = new FontFamily("Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei"),
             FontSize = 13,
-            Foreground = ViewerForeground
+            Foreground = foreground
         };
 
-        var lines = (Markdown ?? string.Empty).Replace("\r\n", "\n").Split('\n');
+        var lines = markdown.Replace("\r\n", "\n").Split('\n');
 
         if (lines.All(string.IsNullOrWhiteSpace))
         {
@@ -153,7 +203,7 @@ public partial class MarkdownViewerControl : UserControl
             var headingMatch = HeadingRegex.Match(line);
             if (headingMatch.Success)
             {
-                document.Blocks.Add(CreateHeading(headingMatch.Groups[1].Value.Length, headingMatch.Groups[2].Value, ViewerForeground));
+                document.Blocks.Add(CreateHeading(headingMatch.Groups[1].Value.Length, headingMatch.Groups[2].Value, foreground));
                 continue;
             }
 

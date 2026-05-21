@@ -1,0 +1,218 @@
+<Window x:Class="KanbanForOne.Controls.ArchiveSectionDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="选择归档分区"
+        Width="460"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        KeyDown="OnDialogKeyDown">
+    <Window.Resources>
+        <Style x:Key="DialogCloseButtonStyle"
+               BasedOn="{StaticResource IconButtonStyle}"
+               TargetType="{x:Type Button}">
+            <Setter Property="Width" Value="30" />
+            <Setter Property="MinWidth" Value="30" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="#64748B" />
+        </Style>
+
+        <Style x:Key="ArchiveSectionListBoxStyle" TargetType="{x:Type ListBox}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        </Style>
+
+        <Style x:Key="ArchiveSectionItemStyle" TargetType="{x:Type ListBoxItem}">
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                        <Border x:Name="Chrome"
+                                Background="#FFFFFF"
+                                BorderBrush="#E6E8EB"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="14,11">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#F6F7F8" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#CBD5E1" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="#212529" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#212529" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DialogGhostButtonStyle"
+               BasedOn="{StaticResource IconButtonStyle}"
+               TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="82" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#D8E0EA" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#334155" />
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="DialogChrome"
+          Margin="18"
+          Opacity="0"
+          RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform>
+            <ScaleTransform ScaleX="0.96"
+                            ScaleY="0.96" />
+        </Grid.RenderTransform>
+
+        <Border Background="#F8FAFC"
+                BorderBrush="#D8E0EA"
+                BorderThickness="1"
+                CornerRadius="18">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="30"
+                                  ShadowDepth="10"
+                                  Direction="270"
+                                  Opacity="0.18" />
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Padding="20,14,16,14"
+                        Background="{StaticResource TopNavBackgroundBrush}"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="0,0,0,1"
+                        CornerRadius="18,18,0,0"
+                        MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="选择归档分区"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBlock Text="归档到默认或自定义区域"
+                                       Margin="0,3,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="&#x00D7;"
+                                Click="OnCancelClick"
+                                Style="{StaticResource DialogCloseButtonStyle}" />
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Row="1"
+                            Margin="22,20,22,18">
+                    <TextBlock Text="选择区域"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+
+                    <ListBox x:Name="SectionListBox"
+                             Margin="0,9,0,14"
+                             MaxHeight="188"
+                             Style="{StaticResource ArchiveSectionListBoxStyle}"
+                             ItemContainerStyle="{StaticResource ArchiveSectionItemStyle}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding Name}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
+                                               TextTrimming="CharacterEllipsis" />
+
+                                    <Border Grid.Column="1"
+                                            MinWidth="40"
+                                            Height="22"
+                                            Margin="12,0,0,0"
+                                            Padding="8,0"
+                                            CornerRadius="8"
+                                            Background="#F0F1F3"
+                                            VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding TotalCount, StringFormat={}{0} 项}"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Text="新建区域"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                    <TextBox x:Name="NewSectionText"
+                             Margin="0,9,0,0"
+                             Style="{StaticResource TextInputStyle}"
+                             TextChanged="OnNewSectionTextChanged" />
+                </StackPanel>
+
+                <Border Grid.Row="2"
+                        Background="#FFFFFF"
+                        BorderBrush="#E2E8F0"
+                        BorderThickness="0,1,0,0"
+                        CornerRadius="0,0,18,18"
+                        Padding="18,14">
+                    <StackPanel HorizontalAlignment="Right"
+                                Orientation="Horizontal">
+                        <Button Content="取消"
+                                Click="OnCancelClick"
+                                IsCancel="True"
+                                Style="{StaticResource DialogGhostButtonStyle}" />
+                        <Button x:Name="ConfirmButton"
+                                Content="归档"
+                                Click="OnConfirmClick"
+                                Margin="10,0,0,0"
+                                Style="{StaticResource PrimaryButtonStyle}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

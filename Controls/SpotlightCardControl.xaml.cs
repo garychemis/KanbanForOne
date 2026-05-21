@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using System.Windows.Threading;
 using KanbanForOne.ViewModels;
 
@@ -99,6 +100,8 @@ public partial class SpotlightCardControl : UserControl
             Backdrop.Opacity = 0;
             TaskShell.Opacity = 0;
             NoteShell.Opacity = 0;
+            TaskDetailContent.Visibility = Visibility.Collapsed;
+            NoteDetailContent.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -181,11 +184,19 @@ public partial class SpotlightCardControl : UserControl
         {
             EasingMode = opening ? EasingMode.EaseOut : EasingMode.EaseIn
         };
+        var shellTransform = PrepareShellTransform(shell);
+        var fromTransform = ShellTransformState.FromRects(from, target);
+        var toTransform = ShellTransformState.FromRects(to, target);
 
-        Canvas.SetLeft(shell, from.Left);
-        Canvas.SetTop(shell, from.Top);
-        shell.Width = from.Width;
-        shell.Height = from.Height;
+        UseTransitionShadow(shell);
+        Canvas.SetLeft(shell, target.Left);
+        Canvas.SetTop(shell, target.Top);
+        shell.Width = target.Width;
+        shell.Height = target.Height;
+        shellTransform.Scale.ScaleX = fromTransform.ScaleX;
+        shellTransform.Scale.ScaleY = fromTransform.ScaleY;
+        shellTransform.Translate.X = fromTransform.TranslateX;
+        shellTransform.Translate.Y = fromTransform.TranslateY;
         shell.Opacity = 1;
         Backdrop.Opacity = opening ? 0 : 1;
         detail.Opacity = opening ? 0 : 1;
@@ -193,24 +204,27 @@ public partial class SpotlightCardControl : UserControl
         detail.Visibility = Visibility.Collapsed;
 
         var storyboard = new Storyboard();
-        AddAnimation(storyboard, shell, "(Canvas.Left)", from.Left, to.Left, duration, easing);
-        AddAnimation(storyboard, shell, "(Canvas.Top)", from.Top, to.Top, duration, easing);
-        AddAnimation(storyboard, shell, nameof(Width), from.Width, to.Width, duration, easing);
-        AddAnimation(storyboard, shell, nameof(Height), from.Height, to.Height, duration, easing);
+        AddAnimation(storyboard, shellTransform.Scale, nameof(ScaleTransform.ScaleX), fromTransform.ScaleX, toTransform.ScaleX, duration, easing);
+        AddAnimation(storyboard, shellTransform.Scale, nameof(ScaleTransform.ScaleY), fromTransform.ScaleY, toTransform.ScaleY, duration, easing);
+        AddAnimation(storyboard, shellTransform.Translate, nameof(TranslateTransform.X), fromTransform.TranslateX, toTransform.TranslateX, duration, easing);
+        AddAnimation(storyboard, shellTransform.Translate, nameof(TranslateTransform.Y), fromTransform.TranslateY, toTransform.TranslateY, duration, easing);
         AddAnimation(storyboard, Backdrop, nameof(Opacity), opening ? 0 : 1, opening ? 1 : 0, duration, easing);
 
         storyboard.Completed += (_, _) =>
         {
-            ClearTransitionAnimations(shell, Backdrop, detail, transform);
-            Canvas.SetLeft(shell, to.Left);
-            Canvas.SetTop(shell, to.Top);
-            shell.Width = to.Width;
-            shell.Height = to.Height;
+            ClearTransitionAnimations(shell, Backdrop, detail, transform, shellTransform);
+            RestoreShellShadow(shell);
+            Canvas.SetLeft(shell, target.Left);
+            Canvas.SetTop(shell, target.Top);
+            shell.Width = target.Width;
+            shell.Height = target.Height;
+            ResetShellTransform(shellTransform);
             Backdrop.Opacity = opening ? 1 : 0;
 
             if (opening)
             {
-                FadeDetailIn(detail, transform);
+                viewModel.CompleteSpotlightOpen();
+                Dispatcher.BeginInvoke(() => FadeDetailIn(detail, transform), DispatcherPriority.Loaded);
                 completed?.Invoke();
                 return;
             }
@@ -222,6 +236,73 @@ public partial class SpotlightCardControl : UserControl
         };
 
         storyboard.Begin();
+    }
+
+    private sealed record ShellTransformState(double ScaleX, double ScaleY, double TranslateX, double TranslateY)
+    {
+        public static ShellTransformState FromRects(Rect visualRect, Rect layoutRect)
+        {
+            var width = Math.Max(1, layoutRect.Width);
+            var height = Math.Max(1, layoutRect.Height);
+
+            return new ShellTransformState(
+                Math.Max(0.01, visualRect.Width / width),
+                Math.Max(0.01, visualRect.Height / height),
+                visualRect.Left - layoutRect.Left,
+                visualRect.Top - layoutRect.Top);
+        }
+    }
+
+    private sealed record ShellTransitionTransform(ScaleTransform Scale, TranslateTransform Translate);
+
+    private static ShellTransitionTransform PrepareShellTransform(Border shell)
+    {
+        shell.RenderTransformOrigin = new Point(0, 0);
+
+        if (shell.RenderTransform is TransformGroup group &&
+            group.Children.Count >= 2 &&
+            group.Children[0] is ScaleTransform scale &&
+            group.Children[1] is TranslateTransform translate)
+        {
+            return new ShellTransitionTransform(scale, translate);
+        }
+
+        scale = new ScaleTransform(1, 1);
+        translate = new TranslateTransform();
+        shell.RenderTransform = new TransformGroup
+        {
+            Children =
+            {
+                scale,
+                translate
+            }
+        };
+
+        return new ShellTransitionTransform(scale, translate);
+    }
+
+    private static void ResetShellTransform(ShellTransitionTransform shellTransform)
+    {
+        shellTransform.Scale.ScaleX = 1;
+        shellTransform.Scale.ScaleY = 1;
+        shellTransform.Translate.X = 0;
+        shellTransform.Translate.Y = 0;
+    }
+
+    private static void UseTransitionShadow(Border shell)
+    {
+        shell.Effect = new DropShadowEffect
+        {
+            BlurRadius = 12,
+            ShadowDepth = 4,
+            Direction = 270,
+            Opacity = 0.08
+        };
+    }
+
+    private static void RestoreShellShadow(Border shell)
+    {
+        shell.ClearValue(UIElement.EffectProperty);
     }
 
     private Border? ActiveShell(MainWindowViewModel viewModel)
@@ -276,13 +357,18 @@ public partial class SpotlightCardControl : UserControl
         Border shell,
         FrameworkElement backdrop,
         FrameworkElement detail,
-        TranslateTransform transform)
+        TranslateTransform transform,
+        ShellTransitionTransform shellTransform)
     {
         shell.BeginAnimation(Canvas.LeftProperty, null);
         shell.BeginAnimation(Canvas.TopProperty, null);
         shell.BeginAnimation(FrameworkElement.WidthProperty, null);
         shell.BeginAnimation(FrameworkElement.HeightProperty, null);
         shell.BeginAnimation(UIElement.OpacityProperty, null);
+        shellTransform.Scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+        shellTransform.Scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        shellTransform.Translate.BeginAnimation(TranslateTransform.XProperty, null);
+        shellTransform.Translate.BeginAnimation(TranslateTransform.YProperty, null);
         backdrop.BeginAnimation(UIElement.OpacityProperty, null);
         detail.BeginAnimation(UIElement.OpacityProperty, null);
         transform.BeginAnimation(TranslateTransform.YProperty, null);

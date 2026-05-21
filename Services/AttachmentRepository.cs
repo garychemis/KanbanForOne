@@ -31,19 +31,57 @@ public sealed class AttachmentRepository
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
-            attachments.Add(new AttachmentItem
+            attachments.Add(ReadAttachment(reader));
+        }
+
+        return attachments;
+    }
+
+    public async Task<IReadOnlyList<AttachmentItem>> GetByOwnerIdsAsync(
+        AttachmentOwnerType ownerType,
+        IEnumerable<Guid> ownerIds)
+    {
+        var ownerIdItems = ownerIds.Distinct().ToArray();
+
+        if (ownerIdItems.Length == 0)
+        {
+            return [];
+        }
+
+        var attachments = new List<AttachmentItem>();
+
+        await using var connection = _database.CreateConnection();
+        await connection.OpenAsync();
+
+        foreach (var chunk in ownerIdItems.Chunk(250))
+        {
+            await using var command = connection.CreateCommand();
+            var parameterNames = new List<string>(chunk.Length);
+            var index = 0;
+
+            foreach (var ownerId in chunk)
             {
-                Id = Guid.Parse(reader.GetString(0)),
-                OwnerType = Enum.Parse<AttachmentOwnerType>(reader.GetString(1)),
-                OwnerId = Guid.Parse(reader.GetString(2)),
-                OriginalFileName = reader.GetString(3),
-                StoredFileName = reader.GetString(4),
-                RelativePath = reader.GetString(5),
-                FileExtension = reader.GetString(6),
-                FileSizeBytes = reader.GetInt64(7),
-                CreatedAt = SqliteMapper.ReadDate(reader, 8),
-                SortOrder = reader.GetInt32(9)
-            });
+                var parameterName = $"$ownerId{index++}";
+                parameterNames.Add(parameterName);
+                command.Parameters.AddWithValue(parameterName, ownerId.ToString());
+            }
+
+            command.CommandText =
+                $"""
+                SELECT Id, OwnerType, OwnerId, OriginalFileName, StoredFileName, RelativePath,
+                       FileExtension, FileSizeBytes, CreatedAt, SortOrder
+                FROM Attachments
+                WHERE OwnerType = $ownerType
+                  AND OwnerId IN ({string.Join(", ", parameterNames)})
+                ORDER BY OwnerType, OwnerId, SortOrder, CreatedAt
+                """;
+            command.Parameters.AddWithValue("$ownerType", ownerType.ToString());
+
+            await using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                attachments.Add(ReadAttachment(reader));
+            }
         }
 
         return attachments;
@@ -129,5 +167,22 @@ public sealed class AttachmentRepository
         command.Parameters.AddWithValue("$fileSizeBytes", attachment.FileSizeBytes);
         command.Parameters.AddWithValue("$createdAt", SqliteMapper.DbDate(attachment.CreatedAt));
         command.Parameters.AddWithValue("$sortOrder", attachment.SortOrder);
+    }
+
+    private static AttachmentItem ReadAttachment(SqliteDataReader reader)
+    {
+        return new AttachmentItem
+        {
+            Id = Guid.Parse(reader.GetString(0)),
+            OwnerType = Enum.Parse<AttachmentOwnerType>(reader.GetString(1)),
+            OwnerId = Guid.Parse(reader.GetString(2)),
+            OriginalFileName = reader.GetString(3),
+            StoredFileName = reader.GetString(4),
+            RelativePath = reader.GetString(5),
+            FileExtension = reader.GetString(6),
+            FileSizeBytes = reader.GetInt64(7),
+            CreatedAt = SqliteMapper.ReadDate(reader, 8),
+            SortOrder = reader.GetInt32(9)
+        };
     }
 }

@@ -74,7 +74,8 @@
                                         Height="24"
                                         FontSize="10"
                                         Margin="4,0,0,0"
-                                        FocusVisualStyle="{x:Null}" />
+                                        FocusVisualStyle="{x:Null}"
+                                        Visibility="{Binding ShowManageActions, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                                 <Button Content="&#x5220;&#x9664;"
                                         Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
@@ -84,7 +85,8 @@
                                         Height="24"
                                         FontSize="10"
                                         Margin="4,0,0,0"
-                                        FocusVisualStyle="{x:Null}" />
+                                        FocusVisualStyle="{x:Null}"
+                                        Visibility="{Binding ShowManageActions, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             </StackPanel>
                         </Grid>
                     </Border>

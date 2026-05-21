@@ -11,6 +11,8 @@ public sealed class NoteItem : ObservableObject
     private DateTime _createdAt = DateTime.Now;
     private DateTime _updatedAt = DateTime.Now;
     private bool _isArchived;
+    private Guid? _archiveSectionId;
+    private DateTime? _archivedAt;
     private int _sortOrder;
     private bool _isExpanded;
 
@@ -82,6 +84,18 @@ public sealed class NoteItem : ObservableObject
             Touch();
             OnPropertyChanged();
         }
+    }
+
+    public Guid? ArchiveSectionId
+    {
+        get => _archiveSectionId;
+        set => SetProperty(ref _archiveSectionId, value);
+    }
+
+    public DateTime? ArchivedAt
+    {
+        get => _archivedAt;
+        set => SetProperty(ref _archivedAt, value);
     }
 
     public int SortOrder

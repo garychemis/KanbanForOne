@@ -22,6 +22,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly TaskRepository _taskRepository;
     private readonly NoteRepository _noteRepository;
     private readonly AttachmentRepository _attachmentRepository;
+    private readonly ArchiveSectionRepository _archiveSectionRepository;
     private readonly BackupService _backupService = new();
     private bool _isInitialized;
     private bool _isLoading;
@@ -31,6 +32,10 @@ public sealed class MainWindowViewModel : ObservableObject
     private DateTime? _dateFilterStart;
     private DateTime? _dateFilterEnd;
     private string _currentFilter = "Board";
+    private ArchiveSection? _selectedArchiveSection;
+    private Guid? _loadedArchiveSectionId;
+    private bool _isArchiveContentLoaded;
+    private string _newArchiveSectionName = string.Empty;
     private string _currentFilterLabel = "看板";
     private string _notificationText = string.Empty;
     private string _lastBackupPath = string.Empty;
@@ -58,6 +63,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private NoteItem? _selectedNote;
     private TaskItem? _focusedTask;
     private NoteItem? _focusedNote;
+    private object? _spotlightDetailDataContext;
     private bool _isTaskSpotlightEditing;
     private bool _isNoteSpotlightEditing;
     private double _spotlightSourceLeft = 260;
@@ -78,6 +84,7 @@ public sealed class MainWindowViewModel : ObservableObject
         _taskRepository = new TaskRepository(_databaseService);
         _noteRepository = new NoteRepository(_databaseService);
         _attachmentRepository = new AttachmentRepository(_databaseService);
+        _archiveSectionRepository = new ArchiveSectionRepository(_databaseService);
 
         TaskStatusOptions = Enum.GetValues<TaskStatus>();
         TaskPriorityOptions = Enum.GetValues<TaskPriority>();
@@ -104,7 +111,10 @@ public sealed class MainWindowViewModel : ObservableObject
         DeleteAttachmentCommand = new RelayCommand(DeleteAttachmentAsync);
         CreateBackupCommand = new RelayCommand(CreateBackupAsync);
         RestoreBackupCommand = new RelayCommand(RestoreBackupAsync);
-        ChangeFilterCommand = new RelayCommand(ChangeFilter);
+        ChangeFilterCommand = new RelayCommand(ChangeFilterAsync);
+        SelectArchiveSectionCommand = new RelayCommand(SelectArchiveSectionAsync);
+        OpenArchiveSectionPickerCommand = new RelayCommand(OpenArchiveSectionPickerAsync);
+        CreateArchiveSectionCommand = new RelayCommand(CreateArchiveSectionAsync, _ => !string.IsNullOrWhiteSpace(NewArchiveSectionName));
         ClearSearchCommand = new RelayCommand(() => SearchText = string.Empty);
         ClearDateFilterCommand = new RelayCommand(_ => ClearDateFilter(), _ => HasDateFilter);
         PreviousCalendarMonthCommand = new RelayCommand(() => CalendarMonth = CalendarMonth.AddMonths(-1));
@@ -137,6 +147,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public ObservableCollection<CalendarDayItem> CalendarDays { get; } = new();
 
     public ObservableCollection<TaskItem> SelectedCalendarTasks { get; } = new();
+
+    public ObservableCollection<ArchiveSection> ArchiveSections { get; } = new();
 
     public IReadOnlyList<string> CalendarWeekdayHeaders { get; } = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
@@ -185,6 +197,12 @@ public sealed class MainWindowViewModel : ObservableObject
     public RelayCommand RestoreBackupCommand { get; }
 
     public RelayCommand ChangeFilterCommand { get; }
+
+    public RelayCommand SelectArchiveSectionCommand { get; }
+
+    public RelayCommand OpenArchiveSectionPickerCommand { get; }
+
+    public RelayCommand CreateArchiveSectionCommand { get; }
 
     public RelayCommand ClearSearchCommand { get; }
 
@@ -253,6 +271,68 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsArchiveFilter => _currentFilter == "Archived";
 
+    public ArchiveSection? SelectedArchiveSection
+    {
+        get => _selectedArchiveSection;
+        private set
+        {
+            if (ReferenceEquals(_selectedArchiveSection, value))
+            {
+                return;
+            }
+
+            if (_selectedArchiveSection is not null)
+            {
+                _selectedArchiveSection.IsSelected = false;
+            }
+
+            _selectedArchiveSection = value;
+
+            if (_selectedArchiveSection is not null)
+            {
+                _selectedArchiveSection.IsSelected = true;
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedArchiveSection));
+            OnPropertyChanged(nameof(ArchiveSectionSelectorText));
+        }
+    }
+
+    public bool HasSelectedArchiveSection => SelectedArchiveSection is not null;
+
+    public string ArchiveSectionSelectorText => SelectedArchiveSection is null
+        ? "选择分区"
+        : $"{SelectedArchiveSection.Name} · {SelectedArchiveSection.TotalCount}";
+
+    public string ArchiveSectionSelectorHint => $"{ArchiveSections.Count} 个分区";
+
+    public bool IsArchiveContentLoaded
+    {
+        get => _isArchiveContentLoaded;
+        private set
+        {
+            if (SetProperty(ref _isArchiveContentLoaded, value))
+            {
+                OnPropertyChanged(nameof(IsArchiveWaitingForSection));
+            }
+        }
+    }
+
+    public bool IsArchiveWaitingForSection => IsArchiveFilter && !IsArchiveContentLoaded;
+
+    public string NewArchiveSectionName
+    {
+        get => _newArchiveSectionName;
+        set
+        {
+            if (SetProperty(ref _newArchiveSectionName, value))
+            {
+                CreateArchiveSectionCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public string TaskArchiveActionText => ActiveTask?.IsArchived == true ? "恢复" : "归档";
 
     public string NoteArchiveActionText => ActiveNote?.IsArchived == true ? "恢复" : "归档";
@@ -260,6 +340,12 @@ public sealed class MainWindowViewModel : ObservableObject
     public bool IsFocusedTaskAttachmentEmpty => FocusedTask?.AttachmentCount == 0;
 
     public bool IsFocusedNoteAttachmentEmpty => FocusedNote?.AttachmentCount == 0;
+
+    public object? SpotlightDetailDataContext
+    {
+        get => _spotlightDetailDataContext;
+        private set => SetProperty(ref _spotlightDetailDataContext, value);
+    }
 
     public string NotificationText
     {
@@ -509,6 +595,11 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(TaskArchiveActionText));
             OnPropertyChanged(nameof(IsFocusedTaskAttachmentEmpty));
             RaiseTaskActionCanExecuteChanged();
+
+            if (!IsSpotlightOpen)
+            {
+                SpotlightDetailDataContext = null;
+            }
         }
     }
 
@@ -543,6 +634,11 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(NoteArchiveActionText));
             OnPropertyChanged(nameof(IsFocusedNoteAttachmentEmpty));
             RaiseNoteActionCanExecuteChanged();
+
+            if (!IsSpotlightOpen)
+            {
+                SpotlightDetailDataContext = null;
+            }
         }
     }
 
@@ -769,60 +865,14 @@ public sealed class MainWindowViewModel : ObservableObject
         try
         {
             _isLoading = true;
+            _isInitialized = false;
             await _databaseService.InitializeAsync();
-
-            foreach (var task in _allTasks)
-            {
-                UntrackTask(task);
-            }
-
-            foreach (var note in _allNotes)
-            {
-                UntrackNote(note);
-            }
-
-            _allTasks.Clear();
-            _allNotes.Clear();
-
-            var tasks = await _taskRepository.GetAllAsync();
-            var notes = await _noteRepository.GetAllAsync();
-            var attachments = await _attachmentRepository.GetAllAsync();
-
-            var taskAttachments = attachments
-                .Where(attachment => attachment.OwnerType == AttachmentOwnerType.Task)
-                .GroupBy(attachment => attachment.OwnerId)
-                .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
-            var noteAttachments = attachments
-                .Where(attachment => attachment.OwnerType == AttachmentOwnerType.Note)
-                .GroupBy(attachment => attachment.OwnerId)
-                .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
-
-            foreach (var task in tasks)
-            {
-                if (taskAttachments.TryGetValue(task.Id, out var items))
-                {
-                    foreach (var attachment in items)
-                    {
-                        task.Attachments.Add(attachment);
-                    }
-                }
-
-                AddTaskToMemory(task);
-            }
-
-            foreach (var note in notes)
-            {
-                if (noteAttachments.TryGetValue(note.Id, out var items))
-                {
-                    foreach (var attachment in items)
-                    {
-                        note.Attachments.Add(attachment);
-                    }
-                }
-
-                AddNoteToMemory(note);
-            }
-
+            ClearWorkingSet();
+            await LoadArchiveSectionsAsync();
+            SelectedArchiveSection = null;
+            _loadedArchiveSectionId = null;
+            IsArchiveContentLoaded = false;
+            await LoadActiveWorkspaceAsync();
             _isInitialized = true;
         }
         catch (Exception ex)
@@ -834,6 +884,153 @@ public sealed class MainWindowViewModel : ObservableObject
             _isLoading = false;
             RefreshBoard();
         }
+    }
+
+    private async Task LoadArchiveSectionsAsync()
+    {
+        var previousSelectedId = SelectedArchiveSection?.Id;
+        var sections = await _archiveSectionRepository.GetAllAsync();
+        Replace(ArchiveSections, sections);
+        OnPropertyChanged(nameof(ArchiveSectionSelectorHint));
+
+        var selected = previousSelectedId.HasValue
+            ? ArchiveSections.FirstOrDefault(section => section.Id == previousSelectedId.Value)
+            : null;
+        SelectedArchiveSection = selected;
+        OnPropertyChanged(nameof(ArchiveSectionSelectorText));
+    }
+
+    private async Task LoadActiveWorkspaceAsync()
+    {
+        ClearWorkingSet();
+        var tasks = await _taskRepository.GetActiveAsync();
+        var notes = await _noteRepository.GetActiveAsync();
+        await AttachLoadedAttachmentsAsync(tasks, notes);
+
+        foreach (var task in tasks)
+        {
+            AddTaskToMemory(task);
+        }
+
+        foreach (var note in notes)
+        {
+            AddNoteToMemory(note);
+        }
+
+        _loadedArchiveSectionId = null;
+        SelectedArchiveSection = null;
+        IsArchiveContentLoaded = false;
+    }
+
+    private async Task LoadArchiveSectionAsync(ArchiveSection section)
+    {
+        try
+        {
+            _isLoading = true;
+            ClearWorkingSet();
+            var tasks = await _taskRepository.GetArchivedBySectionAsync(section.Id);
+            var notes = await _noteRepository.GetArchivedBySectionAsync(section.Id);
+            await AttachLoadedAttachmentsAsync(tasks, notes);
+
+            foreach (var task in tasks)
+            {
+                AddTaskToMemory(task);
+            }
+
+            foreach (var note in notes)
+            {
+                AddNoteToMemory(note);
+            }
+
+            SelectedArchiveSection = ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+            _loadedArchiveSectionId = section.Id;
+            IsArchiveContentLoaded = true;
+            SetNotification($"已打开归档分区：{section.Name}");
+        }
+        catch (Exception ex)
+        {
+            ClearWorkingSet();
+            _loadedArchiveSectionId = null;
+            SelectedArchiveSection = null;
+            IsArchiveContentLoaded = false;
+            SetNotification($"加载归档失败：{ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            RefreshBoard();
+        }
+    }
+
+    private async Task AttachLoadedAttachmentsAsync(
+        IReadOnlyList<TaskItem> tasks,
+        IReadOnlyList<NoteItem> notes)
+    {
+        var taskAttachments = await _attachmentRepository.GetByOwnerIdsAsync(
+            AttachmentOwnerType.Task,
+            tasks.Select(task => task.Id));
+        var noteAttachments = await _attachmentRepository.GetByOwnerIdsAsync(
+            AttachmentOwnerType.Note,
+            notes.Select(note => note.Id));
+
+        AttachItems(tasks, taskAttachments);
+        AttachItems(notes, noteAttachments);
+    }
+
+    private static void AttachItems(IEnumerable<TaskItem> tasks, IEnumerable<AttachmentItem> attachments)
+    {
+        var groupedAttachments = attachments
+            .GroupBy(attachment => attachment.OwnerId)
+            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
+
+        foreach (var task in tasks)
+        {
+            if (!groupedAttachments.TryGetValue(task.Id, out var items))
+            {
+                continue;
+            }
+
+            foreach (var attachment in items)
+            {
+                task.Attachments.Add(attachment);
+            }
+        }
+    }
+
+    private static void AttachItems(IEnumerable<NoteItem> notes, IEnumerable<AttachmentItem> attachments)
+    {
+        var groupedAttachments = attachments
+            .GroupBy(attachment => attachment.OwnerId)
+            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
+
+        foreach (var note in notes)
+        {
+            if (!groupedAttachments.TryGetValue(note.Id, out var items))
+            {
+                continue;
+            }
+
+            foreach (var attachment in items)
+            {
+                note.Attachments.Add(attachment);
+            }
+        }
+    }
+
+    private void ClearWorkingSet()
+    {
+        foreach (var task in _allTasks)
+        {
+            UntrackTask(task);
+        }
+
+        foreach (var note in _allNotes)
+        {
+            UntrackNote(note);
+        }
+
+        _allTasks.Clear();
+        _allNotes.Clear();
     }
 
     private void OpenTaskFromParameter(object? parameter)
@@ -965,6 +1162,7 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
+        SpotlightDetailDataContext = null;
         SelectedNote = null;
         FocusedNote = null;
         SetSpotlightLayout(payload, task, edit);
@@ -988,6 +1186,7 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
+        SpotlightDetailDataContext = null;
         SelectedTask = null;
         FocusedTask = null;
         SetSpotlightLayout(payload, note, edit);
@@ -1095,8 +1294,17 @@ public sealed class MainWindowViewModel : ObservableObject
         return ConfirmDiscardSpotlightChanges();
     }
 
+    public void CompleteSpotlightOpen()
+    {
+        if (IsSpotlightOpen)
+        {
+            SpotlightDetailDataContext = this;
+        }
+    }
+
     public void CompleteSpotlightClose()
     {
+        SpotlightDetailDataContext = null;
         FocusedTask = null;
         FocusedNote = null;
         SelectedTask = null;
@@ -1105,7 +1313,6 @@ public sealed class MainWindowViewModel : ObservableObject
         IsNoteSpotlightEditing = false;
         ClearTaskDraft();
         ClearNoteDraft();
-        RefreshBoard();
     }
 
     private void EnterSpotlightEditMode()
@@ -1170,6 +1377,35 @@ public sealed class MainWindowViewModel : ObservableObject
         return ConfirmDialog.Show(GetDialogOwner(), title, message, confirmText, "取消");
     }
 
+    private async Task<ArchiveSection?> ChooseArchiveTargetSectionAsync()
+    {
+        await LoadArchiveSectionsAsync();
+        var defaultSection = ArchiveSections.FirstOrDefault(section => section.IsDefault)
+            ?? ArchiveSections.FirstOrDefault(section => section.Id == ArchiveSection.DefaultId)
+            ?? await _archiveSectionRepository.GetDefaultAsync();
+        var selection = ArchiveSectionDialog.Show(GetDialogOwner(), ArchiveSections, defaultSection);
+
+        if (selection is null)
+        {
+            return null;
+        }
+
+        ArchiveSection section;
+
+        if (!string.IsNullOrWhiteSpace(selection.NewSectionName))
+        {
+            section = await _archiveSectionRepository.GetOrCreateAsync(selection.NewSectionName);
+        }
+        else
+        {
+            var sectionId = selection.SectionId ?? defaultSection.Id;
+            section = ArchiveSections.FirstOrDefault(item => item.Id == sectionId) ?? defaultSection;
+        }
+
+        await LoadArchiveSectionsAsync();
+        return ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+    }
+
     private async Task DeleteSelectedTaskAsync()
     {
         if (ActiveTask is null)
@@ -1205,6 +1441,7 @@ public sealed class MainWindowViewModel : ObservableObject
             SelectedTask = null;
             IsTaskSpotlightEditing = false;
             ClearTaskDraft();
+            await LoadArchiveSectionsAsync();
             RefreshBoard();
             SetNotification("已删除任务");
         }
@@ -1253,6 +1490,7 @@ public sealed class MainWindowViewModel : ObservableObject
             SelectedNote = null;
             IsNoteSpotlightEditing = false;
             ClearNoteDraft();
+            await LoadArchiveSectionsAsync();
             RefreshBoard();
             SetNotification("已删除备忘");
         }
@@ -1277,11 +1515,26 @@ public sealed class MainWindowViewModel : ObservableObject
         var shouldArchive = !task.IsArchived;
         var oldArchived = task.IsArchived;
         var oldUpdatedAt = task.UpdatedAt;
+        var oldArchiveSectionId = task.ArchiveSectionId;
+        var oldArchivedAt = task.ArchivedAt;
+        ArchiveSection? archiveSection = null;
+
+        if (shouldArchive)
+        {
+            archiveSection = await ChooseArchiveTargetSectionAsync();
+
+            if (archiveSection is null)
+            {
+                return;
+            }
+        }
 
         try
         {
             _isLoading = true;
             task.IsArchived = shouldArchive;
+            task.ArchiveSectionId = shouldArchive ? archiveSection!.Id : null;
+            task.ArchivedAt = shouldArchive ? DateTime.Now : null;
             await _taskRepository.UpsertAsync(task);
             _isLoading = false;
 
@@ -1289,12 +1542,21 @@ public sealed class MainWindowViewModel : ObservableObject
             SelectedTask = null;
             IsTaskSpotlightEditing = false;
             ClearTaskDraft();
+            if (shouldArchive || IsArchiveFilter)
+            {
+                UntrackTask(task);
+                _allTasks.Remove(task);
+            }
+
+            await LoadArchiveSectionsAsync();
             RefreshBoard();
             SetNotification(shouldArchive ? "已归档任务" : "已恢复任务");
         }
         catch (Exception ex)
         {
             task.IsArchived = oldArchived;
+            task.ArchiveSectionId = oldArchiveSectionId;
+            task.ArchivedAt = oldArchivedAt;
             task.UpdatedAt = oldUpdatedAt;
             _isLoading = false;
             RefreshBoard();
@@ -1313,11 +1575,26 @@ public sealed class MainWindowViewModel : ObservableObject
         var shouldArchive = !note.IsArchived;
         var oldArchived = note.IsArchived;
         var oldUpdatedAt = note.UpdatedAt;
+        var oldArchiveSectionId = note.ArchiveSectionId;
+        var oldArchivedAt = note.ArchivedAt;
+        ArchiveSection? archiveSection = null;
+
+        if (shouldArchive)
+        {
+            archiveSection = await ChooseArchiveTargetSectionAsync();
+
+            if (archiveSection is null)
+            {
+                return;
+            }
+        }
 
         try
         {
             _isLoading = true;
             note.IsArchived = shouldArchive;
+            note.ArchiveSectionId = shouldArchive ? archiveSection!.Id : null;
+            note.ArchivedAt = shouldArchive ? DateTime.Now : null;
             await _noteRepository.UpsertAsync(note);
             _isLoading = false;
 
@@ -1325,12 +1602,21 @@ public sealed class MainWindowViewModel : ObservableObject
             SelectedNote = null;
             IsNoteSpotlightEditing = false;
             ClearNoteDraft();
-            RefreshBoard();
+            if (shouldArchive || IsArchiveFilter)
+            {
+                UntrackNote(note);
+                _allNotes.Remove(note);
+            }
+
+            await LoadArchiveSectionsAsync();
+            RefreshBoard(refreshCalendar: false);
             SetNotification(shouldArchive ? "已归档备忘" : "已恢复备忘");
         }
         catch (Exception ex)
         {
             note.IsArchived = oldArchived;
+            note.ArchiveSectionId = oldArchiveSectionId;
+            note.ArchivedAt = oldArchivedAt;
             note.UpdatedAt = oldUpdatedAt;
             _isLoading = false;
             RefreshBoard();
@@ -2059,9 +2345,10 @@ public sealed class MainWindowViewModel : ObservableObject
         };
     }
 
-    private void ChangeFilter(object? parameter)
+    private async Task ChangeFilterAsync(object? parameter)
     {
         var filter = parameter as string ?? "Board";
+        var previousFilter = _currentFilter;
 
         if (!ConfirmDiscardSpotlightChanges())
         {
@@ -2096,7 +2383,186 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsCalendarViewVisible));
         OnPropertyChanged(nameof(IsBackupViewVisible));
         OnPropertyChanged(nameof(IsSettingsViewVisible));
+        OnPropertyChanged(nameof(IsArchiveWaitingForSection));
+
+        try
+        {
+            _isLoading = true;
+
+            if (filter == "Archived")
+            {
+                await LoadArchiveSectionsAsync();
+                ClearWorkingSet();
+                SelectedArchiveSection = null;
+                _loadedArchiveSectionId = null;
+                IsArchiveContentLoaded = false;
+            }
+            else if (previousFilter == "Archived")
+            {
+                await LoadActiveWorkspaceAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            SetNotification($"切换视图失败：{ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+
         RefreshBoard();
+    }
+
+    private async Task SelectArchiveSectionAsync(object? parameter)
+    {
+        if (parameter is not ArchiveSection section)
+        {
+            return;
+        }
+
+        if (!ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        FocusedTask = null;
+        FocusedNote = null;
+        SelectedTask = null;
+        SelectedNote = null;
+        IsTaskSpotlightEditing = false;
+        IsNoteSpotlightEditing = false;
+        ClearTaskDraft();
+        ClearNoteDraft();
+
+        if (_loadedArchiveSectionId == section.Id && IsArchiveContentLoaded)
+        {
+            SelectedArchiveSection = section;
+            RefreshBoard();
+            return;
+        }
+
+        await LoadArchiveSectionAsync(section);
+    }
+
+    private async Task OpenArchiveSectionPickerAsync(object? _)
+    {
+        if (!IsArchiveFilter)
+        {
+            return;
+        }
+
+        await LoadArchiveSectionsAsync();
+
+        var selection = ArchiveSectionPickerDialog.Show(GetDialogOwner(), ArchiveSections, SelectedArchiveSection);
+
+        if (selection is null)
+        {
+            return;
+        }
+
+        if (selection.DeleteSectionId.HasValue)
+        {
+            await DeleteArchiveSectionAsync(selection.DeleteSectionId.Value);
+            return;
+        }
+
+        ArchiveSection section;
+
+        if (!string.IsNullOrWhiteSpace(selection.NewSectionName))
+        {
+            section = await _archiveSectionRepository.GetOrCreateAsync(selection.NewSectionName);
+            NewArchiveSectionName = string.Empty;
+            await LoadArchiveSectionsAsync();
+            section = ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+        }
+        else if (selection.SectionId.HasValue)
+        {
+            section = ArchiveSections.FirstOrDefault(item => item.Id == selection.SectionId.Value)
+                ?? await _archiveSectionRepository.GetDefaultAsync();
+        }
+        else
+        {
+            return;
+        }
+
+        await SelectArchiveSectionAsync(section);
+    }
+
+    private async Task DeleteArchiveSectionAsync(Guid sectionId)
+    {
+        var section = ArchiveSections.FirstOrDefault(item => item.Id == sectionId);
+
+        if (section?.IsDefault == true || sectionId == ArchiveSection.DefaultId)
+        {
+            SetNotification("默认分区不能删除");
+            return;
+        }
+
+        try
+        {
+            var deletingLoadedSection = _loadedArchiveSectionId == sectionId;
+            var defaultSectionWasLoaded = _loadedArchiveSectionId == ArchiveSection.DefaultId;
+            var deleted = await _archiveSectionRepository.DeleteAndMoveContentsToDefaultAsync(sectionId);
+
+            if (!deleted)
+            {
+                SetNotification("分区不存在或不能删除");
+                await LoadArchiveSectionsAsync();
+                return;
+            }
+
+            await LoadArchiveSectionsAsync();
+            var defaultSection = ArchiveSections.FirstOrDefault(item => item.IsDefault)
+                ?? ArchiveSections.FirstOrDefault(item => item.Id == ArchiveSection.DefaultId)
+                ?? await _archiveSectionRepository.GetDefaultAsync();
+
+            if (IsArchiveFilter && (deletingLoadedSection || defaultSectionWasLoaded))
+            {
+                await LoadArchiveSectionAsync(defaultSection);
+            }
+            else
+            {
+                RefreshBoard();
+            }
+
+            SetNotification($"已删除归档分区，卡片已移动到默认分区");
+        }
+        catch (Exception ex)
+        {
+            SetNotification($"删除归档分区失败：{ex.Message}");
+        }
+    }
+
+    private async Task CreateArchiveSectionAsync(object? _)
+    {
+        var sectionName = NewArchiveSectionName.Trim();
+
+        if (string.IsNullOrWhiteSpace(sectionName))
+        {
+            return;
+        }
+
+        try
+        {
+            var section = await _archiveSectionRepository.GetOrCreateAsync(sectionName);
+            NewArchiveSectionName = string.Empty;
+            await LoadArchiveSectionsAsync();
+            var loadedSection = ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+
+            if (IsArchiveFilter)
+            {
+                await LoadArchiveSectionAsync(loadedSection);
+            }
+            else
+            {
+                SetNotification($"已创建归档分区：{loadedSection.Name}");
+            }
+        }
+        catch (Exception ex)
+        {
+            SetNotification($"创建归档分区失败：{ex.Message}");
+        }
     }
 
     private async Task CreateBackupAsync()
@@ -2173,7 +2639,7 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void RefreshBoard()
+    private void RefreshBoard(bool refreshCalendar = true)
     {
         var showArchived = _currentFilter == "Archived";
         var tasks = _allTasks
@@ -2198,23 +2664,26 @@ public sealed class MainWindowViewModel : ObservableObject
 
         Replace(Notes, _currentFilter is "Board" or "WithAttachments" or "Archived" ? notes : Enumerable.Empty<NoteItem>());
 
-        var calendarTasks = _allTasks
-            .Where(task => !task.IsArchived && (task.StartDate.HasValue || task.EndDate.HasValue))
-            .Where(PassesTaskSearch)
-            .OrderBy(task => task.StartDate ?? task.EndDate)
-            .ThenBy(task => task.EndDate ?? task.StartDate)
-            .ThenBy(task => task.SortOrder)
-            .ToArray();
+        if (refreshCalendar)
+        {
+            var calendarTasks = _allTasks
+                .Where(task => !task.IsArchived && (task.StartDate.HasValue || task.EndDate.HasValue))
+                .Where(PassesTaskSearch)
+                .OrderBy(task => task.StartDate ?? task.EndDate)
+                .ThenBy(task => task.EndDate ?? task.StartDate)
+                .ThenBy(task => task.SortOrder)
+                .ToArray();
 
-        Replace(CalendarTasks, calendarTasks);
-        RefreshCalendar(calendarTasks);
+            Replace(CalendarTasks, calendarTasks);
+            RefreshCalendar(calendarTasks);
+            OnPropertyChanged(nameof(CalendarTaskCount));
+            OnPropertyChanged(nameof(HasCalendarTasks));
+            OnPropertyChanged(nameof(SelectedCalendarTaskCount));
+            OnPropertyChanged(nameof(HasSelectedCalendarTasks));
+        }
 
         OnPropertyChanged(nameof(VisibleTaskCount));
         OnPropertyChanged(nameof(VisibleNoteCount));
-        OnPropertyChanged(nameof(CalendarTaskCount));
-        OnPropertyChanged(nameof(HasCalendarTasks));
-        OnPropertyChanged(nameof(SelectedCalendarTaskCount));
-        OnPropertyChanged(nameof(HasSelectedCalendarTasks));
         OnPropertyChanged(nameof(IsFocusedTaskAttachmentEmpty));
         OnPropertyChanged(nameof(IsFocusedNoteAttachmentEmpty));
     }
@@ -2494,13 +2963,29 @@ public sealed class MainWindowViewModel : ObservableObject
         if (e.PropertyName is nameof(TaskItem.AttachmentCount)
             or nameof(TaskItem.UpdatedAt)
             or nameof(TaskItem.CompletedAt)
-            or nameof(TaskItem.DateRangeDisplay))
+            or nameof(TaskItem.DateRangeDisplay)
+            or nameof(TaskItem.IsExpanded))
         {
             return;
         }
 
-        RefreshBoard();
+        RefreshBoard(ShouldRefreshCalendarForTaskChange(e.PropertyName));
         await SaveTaskSafelyAsync(task);
+    }
+
+    private bool ShouldRefreshCalendarForTaskChange(string? propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(propertyName) || !string.IsNullOrWhiteSpace(_normalizedSearchText))
+        {
+            return true;
+        }
+
+        return propertyName is nameof(TaskItem.StartDate)
+            or nameof(TaskItem.EndDate)
+            or nameof(TaskItem.IsArchived)
+            or nameof(TaskItem.ArchiveSectionId)
+            or nameof(TaskItem.ArchivedAt)
+            or nameof(TaskItem.SortOrder);
     }
 
     private async void OnNotePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -2510,12 +2995,14 @@ public sealed class MainWindowViewModel : ObservableObject
             return;
         }
 
-        if (e.PropertyName is nameof(NoteItem.AttachmentCount) or nameof(NoteItem.UpdatedAt))
+        if (e.PropertyName is nameof(NoteItem.AttachmentCount)
+            or nameof(NoteItem.UpdatedAt)
+            or nameof(NoteItem.IsExpanded))
         {
             return;
         }
 
-        RefreshBoard();
+        RefreshBoard(refreshCalendar: false);
         await SaveNoteSafelyAsync(note);
     }
 
@@ -2608,7 +3095,7 @@ public sealed class MainWindowViewModel : ObservableObject
             LoadNoteDraft(note);
             IsNoteSpotlightEditing = false;
             SpotlightHeight = Math.Min(PreferredSpotlightHeight(note, edit: false), _spotlightAvailableHeight);
-            RefreshBoard();
+            RefreshBoard(refreshCalendar: false);
             SetNotification("已保存");
         }
         catch (Exception ex)
@@ -2618,7 +3105,7 @@ public sealed class MainWindowViewModel : ObservableObject
             note.TagsDisplay = oldTags;
             note.UpdatedAt = oldUpdatedAt;
             _isLoading = false;
-            RefreshBoard();
+            RefreshBoard(refreshCalendar: false);
             OnPropertyChanged(nameof(HasUnsavedNoteChanges));
             SaveNoteCommand.RaiseCanExecuteChanged();
             SetNotification($"保存备忘失败：{ex.Message}");

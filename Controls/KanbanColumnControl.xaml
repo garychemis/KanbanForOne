@@ -71,25 +71,54 @@
                         ToolTip="添加卡片" />
             </Grid>
 
-            <ScrollViewer x:Name="CardsScrollViewer"
-                          VerticalScrollBarVisibility="Auto"
-                          HorizontalScrollBarVisibility="Disabled">
-                <Grid MinHeight="{Binding ActualHeight, ElementName=CardsScrollViewer}">
-                    <ItemsControl x:Name="CardItems"
-                                  ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                  ItemTemplate="{Binding ItemTemplate, RelativeSource={RelativeSource AncestorType=UserControl}}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <StackPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+            <Grid>
+                <ListBox x:Name="CardItems"
+                         ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                         ItemTemplate="{Binding ItemTemplate, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="0"
+                         Focusable="False"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.CanContentScroll="True"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         VirtualizingPanel.ScrollUnit="Pixel"
+                         VirtualizingPanel.CacheLength="1"
+                         VirtualizingPanel.CacheLengthUnit="Page">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="{x:Type ListBoxItem}">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Focusable" Value="False" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
 
                     <local:EmptyStateControl x:Name="ColumnEmptyState"
                                              Title="暂无卡片"
                                              Message="点击右上角 + 添加一张卡片。"
                                              Visibility="Collapsed"
-                                             Margin="0,4,0,0" />
+                                             Margin="0,4,0,0"
+                                             IsHitTestVisible="False" />
 
                     <Border x:Name="DropIndicator"
                             Visibility="Collapsed"
@@ -127,8 +156,7 @@
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextSecondaryBrush}" />
                     </Border>
-                </Grid>
-            </ScrollViewer>
+            </Grid>
         </DockPanel>
     </Border>
 </UserControl>

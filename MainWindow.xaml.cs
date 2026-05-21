@@ -1,15 +1,22 @@
+using System.ComponentModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using KanbanForOne.ViewModels;
+using Drawing = System.Drawing;
+using Forms = System.Windows.Forms;
 
 namespace KanbanForOne
 {
     public partial class MainWindow : Window
     {
         private readonly MainWindowViewModel _viewModel = new();
+        private Forms.NotifyIcon? _trayIcon;
+        private Drawing.Icon? _trayIconImage;
+        private bool _isExitRequested;
 
         public MainWindow()
         {
@@ -19,6 +26,7 @@ namespace KanbanForOne
             StateChanged += OnWindowStateChanged;
             WindowRoot.SizeChanged += OnWindowRootSizeChanged;
             SourceInitialized += OnSourceInitialized;
+            InitializeTrayIcon();
         }
 
         private async void OnLoaded(object sender, RoutedEventArgs e)
@@ -144,6 +152,108 @@ namespace KanbanForOne
                 new Rect(0, 0, WindowRoot.ActualWidth, WindowRoot.ActualHeight),
                 radius,
                 radius);
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (!_isExitRequested)
+            {
+                e.Cancel = true;
+                HideToTray();
+                return;
+            }
+
+            base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            DisposeTrayIcon();
+            base.OnClosed(e);
+        }
+
+        private void InitializeTrayIcon()
+        {
+            var loadedIcon = LoadTrayIcon();
+            _trayIconImage = (Drawing.Icon)(loadedIcon ?? Drawing.SystemIcons.Application).Clone();
+            loadedIcon?.Dispose();
+
+            var menu = new Forms.ContextMenuStrip();
+            menu.Items.Add("打开", null, (_, _) => RestoreFromTray());
+            menu.Items.Add("退出", null, (_, _) => ExitFromTray());
+
+            _trayIcon = new Forms.NotifyIcon
+            {
+                Icon = _trayIconImage,
+                Text = "Kanban41",
+                Visible = true,
+                ContextMenuStrip = menu
+            };
+            _trayIcon.DoubleClick += (_, _) => RestoreFromTray();
+        }
+
+        private static Drawing.Icon? LoadTrayIcon()
+        {
+            var iconPath = Path.Combine(AppContext.BaseDirectory, "icon", "icon.ico");
+
+            if (File.Exists(iconPath))
+            {
+                return new Drawing.Icon(iconPath);
+            }
+
+            var resource = Application.GetResourceStream(new Uri("pack://application:,,,/icon/icon.ico"));
+
+            if (resource is null)
+            {
+                return null;
+            }
+
+            using var stream = resource.Stream;
+            return new Drawing.Icon(stream);
+        }
+
+        private void HideToTray()
+        {
+            ShowInTaskbar = false;
+            Hide();
+        }
+
+        private void RestoreFromTray()
+        {
+            ShowInTaskbar = true;
+            Show();
+
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
+            Activate();
+        }
+
+        private void ExitFromTray()
+        {
+            _isExitRequested = true;
+
+            if (_trayIcon is not null)
+            {
+                _trayIcon.Visible = false;
+            }
+
+            Close();
+        }
+
+        private void DisposeTrayIcon()
+        {
+            if (_trayIcon is not null)
+            {
+                _trayIcon.Visible = false;
+                _trayIcon.Dispose();
+                _trayIcon = null;
+            }
+
+            _trayIconImage?.Dispose();
+            _trayIconImage = null;
         }
 
     }

@@ -73,7 +73,7 @@ public partial class KanbanColumnControl : UserControl
         Loaded += (_, _) => UpdateEmptyState();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
-        CardsScrollViewer.ScrollChanged += (_, _) => InvalidateDropBounds();
+        AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler((_, _) => InvalidateDropBounds()));
     }
 
     public string Title
