@@ -113,6 +113,7 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="{Binding Priority, Converter={StaticResource TaskPriorityNameConverter}, StringFormat=优先级 {0}}"
@@ -121,8 +122,17 @@
                                    TextTrimming="CharacterEllipsis" />
 
                         <TextBlock Grid.Column="1"
+                                   Text="超期"
+                                   Margin="10,0,0,0"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="#BE185D"
+                                   Visibility="{Binding IsOverdue, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+
+                        <TextBlock Grid.Column="2"
                                    Text="{Binding AttachmentCount, StringFormat=附件 {0}}"
                                    Margin="10,0,0,0"
+                                   HorizontalAlignment="Right"
                                    FontSize="11"
                                    Foreground="{StaticResource TextSecondaryBrush}" />
                     </Grid>

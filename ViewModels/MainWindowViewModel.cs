@@ -380,6 +380,8 @@ public sealed class MainWindowViewModel : ObservableObject
         .Copyright
         ?? string.Empty;
 
+    public IReadOnlyList<ReleaseNoteEntry> ReleaseNotes => ReleaseNotesService.FromAssembly(AppAssembly);
+
     public string LastBackupPath
     {
         get => _lastBackupPath;
@@ -2372,6 +2374,7 @@ public sealed class MainWindowViewModel : ObservableObject
             "Today" => "今日任务",
             "Calendar" => "日历",
             "High" => "高优先级",
+            "Overdue" => "超期未完成",
             "WithAttachments" => "有附件",
             "Archived" => "归档",
             "Backup" => "数据备份",
@@ -2790,6 +2793,7 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             "Today" => IsTodayWithinTaskDateRange(task),
             "High" => task.Priority == TaskPriority.High,
+            "Overdue" => task.IsOverdue,
             "WithAttachments" => task.AttachmentCount > 0,
             _ => true
         };
@@ -2964,6 +2968,7 @@ public sealed class MainWindowViewModel : ObservableObject
             or nameof(TaskItem.UpdatedAt)
             or nameof(TaskItem.CompletedAt)
             or nameof(TaskItem.DateRangeDisplay)
+            or nameof(TaskItem.IsOverdue)
             or nameof(TaskItem.IsExpanded))
         {
             return;

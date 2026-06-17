@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using KanbanForOne.Services;
 using KanbanForOne.ViewModels;
 
 namespace KanbanForOne.Models;
@@ -76,6 +77,7 @@ public sealed class TaskItem : ObservableObject
             Touch();
             OnPropertyChanged();
             OnPropertyChanged(nameof(CompletedAt));
+            OnPropertyChanged(nameof(IsOverdue));
         }
     }
 
@@ -111,6 +113,7 @@ public sealed class TaskItem : ObservableObject
             Touch();
             OnPropertyChanged();
             OnPropertyChanged(nameof(DateRangeDisplay));
+            OnPropertyChanged(nameof(IsOverdue));
         }
     }
 
@@ -128,6 +131,7 @@ public sealed class TaskItem : ObservableObject
             Touch();
             OnPropertyChanged();
             OnPropertyChanged(nameof(DateRangeDisplay));
+            OnPropertyChanged(nameof(IsOverdue));
         }
     }
 
@@ -188,6 +192,7 @@ public sealed class TaskItem : ObservableObject
             _isArchived = value;
             Touch();
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsOverdue));
         }
     }
 
@@ -218,6 +223,8 @@ public sealed class TaskItem : ObservableObject
     public ObservableCollection<AttachmentItem> Attachments { get; } = new();
 
     public int AttachmentCount => Attachments.Count;
+
+    public bool IsOverdue => TaskOverdueService.IsOverdue(this, DateTime.Today);
 
     public string PrimaryTag => Tags.FirstOrDefault() ?? "TASK";
 

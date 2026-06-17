@@ -8,17 +8,25 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon\icon.ico</ApplicationIcon>
-    <Version>0.3.2</Version>
-    <AssemblyVersion>0.3.2.0</AssemblyVersion>
-    <FileVersion>0.3.2.0</FileVersion>
-    <InformationalVersion>v0.3.2</InformationalVersion>
+    <Version>0.3.3</Version>
+    <AssemblyVersion>0.3.3.0</AssemblyVersion>
+    <FileVersion>0.3.3.0</FileVersion>
+    <InformationalVersion>v0.3.3</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>Kanban41</Product>
     <Authors>闫飞</Authors>
-    <Copyright>Copyright © 2026 闫飞 All rights reserved.</Copyright>
+    <Copyright>Copyright © 2026 闫飞</Copyright>
+    <ReleaseNotes><![CDATA[v0.3.3|2026-06-17|增加超期未完成检查，打开数据时实时判断待办、进行中、卡住卡片是否超期；新增超期未完成筛选入口；在卡片优先级和附件之间显示紫红色“超期”标注；在左侧栏 Kanban41 下方显示版本和版权信息；补充超期判断单元测试并完成构建验证]]></ReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ReleaseNotes</_Parameter1>
+      <_Parameter2>$(ReleaseNotes)</_Parameter2>
+    </AssemblyAttribute>
+    <Compile Remove="KanbanForOne.Tests\**\*.cs" />
+    <EmbeddedResource Remove="KanbanForOne.Tests\**\*" />
+    <None Remove="KanbanForOne.Tests\**\*" />
     <Using Remove="System.Drawing" />
     <Using Remove="System.Windows.Forms" />
     <Resource Include="icon\icon.ico" />
