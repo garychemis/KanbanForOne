@@ -25,8 +25,10 @@ public sealed class ReleaseNotesServiceTests
     {
         var entries = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        var entry = Assert.Single(entries);
-        Assert.Equal("v0.3.3", entry.Version);
-        Assert.Contains("新增超期未完成筛选入口", entry.Items);
+        Assert.Equal(2, entries.Count);
+        Assert.Equal("V0.4", entries[0].Version);
+        Assert.Equal("2026-07-17", entries[0].Date);
+        Assert.Contains("新增个人工时录入与管理，支持项目号、专业、工作内容、工时及可选备注", entries[0].Items);
+        Assert.Contains("新增超期未完成筛选入口", entries[1].Items);
     }
 }
