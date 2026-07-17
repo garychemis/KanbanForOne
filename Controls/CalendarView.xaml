@@ -186,6 +186,70 @@
             </Border>
         </DataTemplate>
 
+        <DataTemplate x:Key="CalendarWorkHourListTemplate">
+            <Button Command="{Binding DataContext.OpenWorkHourCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource ListCardButtonStyle}"
+                    Margin="0,0,0,8">
+                <Border Padding="10"
+                        CornerRadius="7"
+                        BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Background" Value="#F5F6F4" />
+                            <Setter Property="BorderBrush" Value="#D5DBD8" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}"
+                                             Value="True">
+                                    <Setter Property="Background" Value="#F0F3F1" />
+                                    <Setter Property="BorderBrush" Value="#B9C3BF" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding ProjectNumber}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#2F3A36"
+                                       TextTrimming="CharacterEllipsis" />
+                            <TextBlock Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="#68736F">
+                                <Run Text="{Binding Discipline, Mode=OneWay}" />
+                                <Run Text=" · " />
+                                <Run Text="{Binding WorkActivity, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Text="{Binding Remark}"
+                                       Margin="0,4,0,0"
+                                       FontSize="10"
+                                       Foreground="#7B8581"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="{Binding HasRemark, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Padding="7,3"
+                                CornerRadius="5"
+                                Background="#FBFCFB"
+                                BorderBrush="#D5DBD8"
+                                BorderThickness="1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding HoursDisplay}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="#4F605A" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
         <DataTemplate x:Key="CalendarListTemplate">
             <Border Margin="0,0,0,10"
                     Padding="14"
@@ -366,7 +430,9 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
+                            <RowDefinition Height="4*" />
+                            <RowDefinition Height="1" />
+                            <RowDefinition Height="5*" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -381,25 +447,77 @@
                                        Foreground="{StaticResource TextSecondaryBrush}" />
                         </StackPanel>
 
-                        <ScrollViewer Grid.Row="1"
-                                      Margin="0,14,0,12"
-                                      VerticalScrollBarVisibility="Auto">
-                            <Grid>
-                                <ItemsControl ItemsSource="{Binding SelectedCalendarTasks}"
-                                              ItemTemplate="{StaticResource CalendarTaskListTemplate}"
-                                              Visibility="{Binding HasSelectedCalendarTasks, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                                <controls:EmptyStateControl Title="当天暂无任务"
-                                                            Message="双击日历格可快速创建任务。"
-                                                            Visibility="{Binding HasSelectedCalendarTasks, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
-                            </Grid>
-                        </ScrollViewer>
+                        <Grid Grid.Row="1" Margin="0,12,0,10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="任务"
+                                       Margin="0,0,0,7"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding SelectedCalendarTasks}"
+                                                  ItemTemplate="{StaticResource CalendarTaskListTemplate}"
+                                                  Visibility="{Binding HasSelectedCalendarTasks, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                    <controls:EmptyStateControl Title="当天暂无任务"
+                                                                Message="双击日历格可快速创建任务。"
+                                                                Visibility="{Binding HasSelectedCalendarTasks, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
 
-                        <Button Grid.Row="2"
-                                Content="+ 新建当天任务"
-                                Command="{Binding CreateTaskForCalendarDateCommand}"
-                                CommandParameter="{Binding SelectedCalendarDate}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                HorizontalAlignment="Stretch" />
+                        <Border Grid.Row="2" Background="#E2E8F0" />
+
+                        <Grid Grid.Row="3" Margin="0,10,0,12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid Margin="0,0,0,7">
+                                <TextBlock Text="人工时"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                <TextBlock HorizontalAlignment="Right"
+                                           FontSize="11"
+                                           Foreground="{StaticResource TextSecondaryBrush}">
+                                    <Run Text="{Binding SelectedCalendarWorkHourCount, Mode=OneWay}" />
+                                    <Run Text=" 条 · " />
+                                    <Run Text="{Binding SelectedCalendarWorkHourTotalDisplay, Mode=OneWay}" />
+                                </TextBlock>
+                            </Grid>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding SelectedCalendarWorkHours}"
+                                                  ItemTemplate="{StaticResource CalendarWorkHourListTemplate}"
+                                                  Visibility="{Binding HasSelectedCalendarWorkHours, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                    <controls:EmptyStateControl Title="当天暂无人工时"
+                                                                Message="点击下方按钮添加记录。"
+                                                                Visibility="{Binding HasSelectedCalendarWorkHours, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
+                                </Grid>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <Grid Grid.Row="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Content="+ 新建任务"
+                                    Command="{Binding CreateTaskForCalendarDateCommand}"
+                                    CommandParameter="{Binding SelectedCalendarDate}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    HorizontalAlignment="Stretch" />
+                            <Button Grid.Column="2"
+                                    Content="+ 添加人工时"
+                                    Command="{Binding AddWorkHourCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    HorizontalAlignment="Stretch" />
+                        </Grid>
                     </Grid>
                 </Border>
             </Grid>

@@ -95,12 +95,18 @@
                         Command="{Binding ChangeFilterCommand}"
                         CommandParameter="Calendar"
                         Style="{StaticResource TopTabButtonStyle}" />
+                <Button Content="人工时汇总"
+                        Command="{Binding ChangeFilterCommand}"
+                        CommandParameter="WorkHourSummary"
+                        Style="{StaticResource TopTabButtonStyle}" />
             </StackPanel>
 
             <controls:SearchBoxControl Grid.Column="2"
+                                       Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"
                                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
             <controls:DateRangeFilterControl Grid.Column="4"
+                                             Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"
                                              StartDate="{Binding DateFilterStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              EndDate="{Binding DateFilterEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              HasFilter="{Binding HasDateFilter}"

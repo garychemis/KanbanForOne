@@ -1,0 +1,702 @@
+<UserControl x:Class="KanbanForOne.Controls.WorkHourSummaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <!-- UI/UX Pro Max direction: data-dense desktop + Swiss grid + one muted accent. -->
+        <SolidColorBrush x:Key="SummaryCanvasBrush" Color="#F3F2EE" />
+        <SolidColorBrush x:Key="SummarySurfaceBrush" Color="#FCFCFA" />
+        <SolidColorBrush x:Key="SummarySurfaceMutedBrush" Color="#F0F1ED" />
+        <SolidColorBrush x:Key="SummaryHoverBrush" Color="#ECEFEB" />
+        <SolidColorBrush x:Key="SummarySelectedBrush" Color="#E1E7E3" />
+        <SolidColorBrush x:Key="SummaryBorderBrush" Color="#D6D9D3" />
+        <SolidColorBrush x:Key="SummaryAccentBrush" Color="#71877D" />
+        <SolidColorBrush x:Key="SummaryAccentStrongBrush" Color="#50655C" />
+        <SolidColorBrush x:Key="SummaryTrackBrush" Color="#E5E9E6" />
+        <SolidColorBrush x:Key="SummaryTextBrush" Color="#222824" />
+        <SolidColorBrush x:Key="SummaryMutedTextBrush" Color="#68716C" />
+        <FontFamily x:Key="SummaryNumericFont">Cascadia Mono, Consolas, Segoe UI</FontFamily>
+
+        <Style x:Key="SummaryPanelStyle" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{StaticResource SummarySurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SummaryBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+
+        <Style x:Key="SummaryPrimaryButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="80" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#343B37" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#343B37" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#111512" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SummaryAccentBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Chrome" Property="Background" Value="#D7DAD5" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#D7DAD5" />
+                                <Setter Property="Foreground" Value="#818883" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryQuietButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="34" />
+            <Setter Property="Height" Value="34" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummaryHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummarySelectedBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SummaryAccentStrongBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryModeRadioStyle" TargetType="{x:Type RadioButton}">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MinWidth" Value="58" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryMutedTextBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Border x:Name="Chrome"
+                                Padding="{TemplateBinding Padding}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#E7EAE6" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummarySurfaceBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SummaryBorderBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SummaryAccentStrongBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBoxItem}">
+                        <Border x:Name="Chrome" Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummaryHoverBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummarySelectedBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryInlineComboBoxStyle" TargetType="{x:Type ComboBox}">
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="FontFamily" Value="{StaticResource SummaryNumericFont}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SummaryComboBoxItemStyle}" />
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ComboBox}">
+                        <Grid>
+                            <ToggleButton x:Name="DropDownToggle"
+                                          Background="{TemplateBinding Background}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          ClickMode="Press"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="{x:Type ToggleButton}">
+                                        <Border x:Name="Chrome"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="3" />
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SummaryHoverBrush}" />
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SummaryAccentBrush}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter Margin="8,0,22,0"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              IsHitTestVisible="False" />
+                            <TextBlock Margin="0,0,7,1"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       FontFamily="Segoe UI"
+                                       FontSize="10"
+                                       Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       IsHitTestVisible="False"
+                                       Text="⌄" />
+                            <Popup x:Name="PART_Popup"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   PopupAnimation="Fade">
+                                <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                        MaxHeight="230"
+                                        Margin="0,4,0,0"
+                                        Padding="0,4"
+                                        Background="{StaticResource SummarySurfaceBrush}"
+                                        BorderBrush="{StaticResource SummaryBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="12" ShadowDepth="4" Opacity="0.10" />
+                                    </Border.Effect>
+                                    <ScrollViewer CanContentScroll="True">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{StaticResource SummaryAccentStrongBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryProgressStyle" TargetType="{x:Type ProgressBar}">
+            <Setter Property="Height" Value="8" />
+            <Setter Property="Background" Value="{StaticResource SummaryTrackBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryAccentBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ProgressBar}">
+                        <Grid x:Name="PART_Track">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="2" />
+                            <Border x:Name="PART_Indicator"
+                                    HorizontalAlignment="Left"
+                                    Background="{TemplateBinding Foreground}"
+                                    CornerRadius="2" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Background" Value="{StaticResource SummarySurfaceMutedBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SummaryBorderBrush}" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryMutedTextBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridColumnHeader}">
+                        <Border Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryCellStyle" TargetType="{x:Type DataGridCell}">
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#E7E9E5" />
+            <Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type DataGridCell}">
+                        <Border Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SummaryRowStyle" TargetType="{x:Type DataGridRow}">
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SummaryHoverBrush}" />
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource SummarySelectedBrush}" />
+                    <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SummaryDataGridStyle" TargetType="{x:Type DataGrid}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="GridLinesVisibility" Value="None" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="SelectionMode" Value="Single" />
+            <Setter Property="SelectionUnit" Value="FullRow" />
+            <Setter Property="ColumnHeaderStyle" Value="{StaticResource SummaryColumnHeaderStyle}" />
+            <Setter Property="CellStyle" Value="{StaticResource SummaryCellStyle}" />
+            <Setter Property="RowStyle" Value="{StaticResource SummaryRowStyle}" />
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="SummaryContent"
+          Background="{StaticResource SummaryCanvasBrush}"
+          DataContext="{Binding WorkHourSummary}"
+          TextElement.Foreground="{StaticResource SummaryTextBrush}">
+        <Grid Margin="28,22,28,24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="14" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="12" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock FontSize="23" FontWeight="SemiBold" Text="人工时汇总" />
+                    <TextBlock Margin="0,3,0,0"
+                               FontSize="11"
+                               Foreground="{StaticResource SummaryMutedTextBrush}"
+                               Text="项目、专业与工作内容的工时构成" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        VerticalAlignment="Center"
+                        AutomationProperties.Name="导出当前人工时汇总到 Excel"
+                        Command="{Binding ExportCommand}"
+                        Content="导出 Excel"
+                        Style="{StaticResource SummaryPrimaryButtonStyle}" />
+            </Grid>
+
+            <StackPanel Grid.Row="2" HorizontalAlignment="Left">
+                <Border Padding="5"
+                        Background="{StaticResource SummarySurfaceBrush}"
+                        BorderBrush="{StaticResource SummaryBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="13" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="13" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Padding="2" Background="{StaticResource SummarySurfaceMutedBrush}" CornerRadius="4">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton AutomationProperties.Name="按月汇总"
+                                         Command="{Binding SetQueryModeCommand}"
+                                         CommandParameter="Month"
+                                         Content="按月"
+                                         IsChecked="{Binding IsMonthMode, Mode=OneWay}"
+                                         Style="{StaticResource SummaryModeRadioStyle}" />
+                            <RadioButton AutomationProperties.Name="按日期区间汇总"
+                                         Command="{Binding SetQueryModeCommand}"
+                                         CommandParameter="Range"
+                                         Content="日期区间"
+                                         IsChecked="{Binding IsRangeMode, Mode=OneWay}"
+                                         Style="{StaticResource SummaryModeRadioStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="2" Margin="0,7" Background="{StaticResource SummaryBorderBrush}" />
+
+                    <Grid Grid.Column="4"
+                          Visibility="{Binding IsMonthMode, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="4" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Width="34"
+                                AutomationProperties.Name="上一个月"
+                                Command="{Binding PreviousMonthCommand}"
+                                Content="‹"
+                                FontSize="17"
+                                Style="{StaticResource SummaryQuietButtonStyle}"
+                                ToolTip="上一个月" />
+                        <Border Grid.Column="2"
+                                Height="34"
+                                Padding="2,0"
+                                Background="{StaticResource SummarySurfaceMutedBrush}"
+                                BorderBrush="{StaticResource SummaryBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <StackPanel Orientation="Horizontal">
+                                <ComboBox Width="70"
+                                          AutomationProperties.Name="汇总年份"
+                                          ItemsSource="{Binding YearOptions}"
+                                          SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
+                                          Style="{StaticResource SummaryInlineComboBoxStyle}" />
+                                <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource SummaryMutedTextBrush}" Text="年" />
+                                <Border Width="1" Margin="6,7" Background="{StaticResource SummaryBorderBrush}" />
+                                <ComboBox Width="48"
+                                          AutomationProperties.Name="汇总月份"
+                                          ItemsSource="{Binding MonthOptions}"
+                                          SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
+                                          Style="{StaticResource SummaryInlineComboBoxStyle}" />
+                                <TextBlock Margin="0,0,7,0" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource SummaryMutedTextBrush}" Text="月" />
+                            </StackPanel>
+                        </Border>
+                        <Button Grid.Column="4"
+                                Width="34"
+                                AutomationProperties.Name="下一个月"
+                                Command="{Binding NextMonthCommand}"
+                                Content="›"
+                                FontSize="17"
+                                Style="{StaticResource SummaryQuietButtonStyle}"
+                                ToolTip="下一个月" />
+                        <Button Grid.Column="6"
+                                AutomationProperties.Name="回到本月"
+                                Command="{Binding GoToCurrentMonthCommand}"
+                                Content="本月"
+                                Style="{StaticResource SummaryQuietButtonStyle}" />
+                    </Grid>
+
+                    <Grid Grid.Column="4"
+                          Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <Border Height="34"
+                                Padding="9,0"
+                                Background="{StaticResource SummarySurfaceMutedBrush}"
+                                BorderBrush="{StaticResource SummaryBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="28" />
+                                    <ColumnDefinition Width="170" />
+                                </Grid.ColumnDefinitions>
+                                <DatePicker AutomationProperties.Name="汇总开始日期"
+                                            FontSize="12"
+                                            SelectedDate="{Binding RangeStartDate, Mode=TwoWay}"
+                                            Style="{StaticResource DrawerDatePickerStyle}" />
+                                <TextBlock Grid.Column="1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Text="至" />
+                                <DatePicker Grid.Column="2"
+                                            AutomationProperties.Name="汇总结束日期"
+                                            FontSize="12"
+                                            SelectedDate="{Binding RangeEndDate, Mode=TwoWay}"
+                                            Style="{StaticResource DrawerDatePickerStyle}" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                        <Button Grid.Column="6"
+                                AutomationProperties.Name="应用人工时汇总条件"
+                                Command="{Binding RefreshCommand}"
+                                Content="应用"
+                                Style="{StaticResource SummaryPrimaryButtonStyle}"
+                                Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Margin="7,8,0,0"
+                           AutomationProperties.Name="当前人工时汇总日期区间"
+                           FontFamily="{StaticResource SummaryNumericFont}"
+                           FontSize="10"
+                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                           Text="{Binding CurrentRangeQueryDisplay}"
+                           Typography.NumeralAlignment="Tabular"
+                           Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+            </StackPanel>
+
+            <Grid Grid.Row="4" HorizontalAlignment="Left" Height="60">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="174" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="174" />
+                    <ColumnDefinition Width="1" />
+                    <ColumnDefinition Width="174" />
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="总工时" />
+                    <TextBlock Margin="0,3,0,0"
+                               FontFamily="{StaticResource SummaryNumericFont}"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Text="{Binding TotalHoursDisplay}"
+                               Typography.NumeralAlignment="Tabular" />
+                </StackPanel>
+                <Border Grid.Column="1" Margin="0,8" Background="{StaticResource SummaryBorderBrush}" />
+                <StackPanel Grid.Column="2" Margin="18,0,0,0" VerticalAlignment="Center">
+                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="原始记录" />
+                    <TextBlock Margin="0,3,0,0"
+                               FontFamily="{StaticResource SummaryNumericFont}"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Text="{Binding TotalEntryCount, StringFormat={}{0} 条}"
+                               Typography.NumeralAlignment="Tabular" />
+                </StackPanel>
+                <Border Grid.Column="3" Margin="0,8" Background="{StaticResource SummaryBorderBrush}" />
+                <StackPanel Grid.Column="4" Margin="18,0,0,0" VerticalAlignment="Center">
+                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="汇总组合" />
+                    <TextBlock Margin="0,3,0,0"
+                               FontFamily="{StaticResource SummaryNumericFont}"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Text="{Binding CombinationCount, StringFormat={}{0} 组}"
+                               Typography.NumeralAlignment="Tabular" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="6"
+                  Height="{Binding ResultsPanelHeight}"
+                  VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Padding="16,14" Style="{StaticResource SummaryPanelStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="工时分布" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       FontFamily="{StaticResource SummaryNumericFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Text="{Binding CurrentDateRangeDisplay}"
+                                       Typography.NumeralAlignment="Tabular" />
+                        </Grid>
+                        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding Summaries}"
+                                          Visibility="{Binding HasSummaries, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#E8EAE6" BorderThickness="0,0,0,1">
+                                            <Grid Height="58">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="190" />
+                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="64" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Text="{Binding CombinationDisplay}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding CombinationDisplay}" />
+                                                    <TextBlock Margin="0,2,0,0"
+                                                               FontSize="10"
+                                                               Foreground="{StaticResource SummaryMutedTextBrush}"
+                                                               Text="{Binding EntryCount, StringFormat={}{0} 条记录}" />
+                                                </StackPanel>
+                                                <ProgressBar Grid.Column="2"
+                                                             VerticalAlignment="Center"
+                                                             Maximum="{Binding DataContext.MaxSummaryHourUnits, ElementName=SummaryContent}"
+                                                             Style="{StaticResource SummaryProgressStyle}"
+                                                             Value="{Binding TotalHourUnits}" />
+                                                <TextBlock Grid.Column="3"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Center"
+                                                           FontFamily="{StaticResource SummaryNumericFont}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Text="{Binding TotalHoursDisplay}"
+                                                           Typography.NumeralAlignment="Tabular" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <StackPanel Grid.Row="2"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                            <TextBlock HorizontalAlignment="Center"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Text="当前范围没有人工时" />
+                            <TextBlock Margin="0,5,0,0"
+                                       HorizontalAlignment="Center"
+                                       FontSize="11"
+                                       Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Text="调整时间范围，然后重新应用条件。" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Padding="16,14" Style="{StaticResource SummaryPanelStyle}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="汇总明细" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       FontFamily="{StaticResource SummaryNumericFont}"
+                                       FontSize="10"
+                                       Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Text="{Binding CombinationCount, StringFormat={}{0} 项}"
+                                       Typography.NumeralAlignment="Tabular" />
+                        </Grid>
+                        <DataGrid Grid.Row="2"
+                                  AutoGenerateColumns="False"
+                                  ItemsSource="{Binding Summaries}"
+                                  Style="{StaticResource SummaryDataGridStyle}">
+                            <DataGrid.Columns>
+                                <DataGridTemplateColumn Width="*" Header="项目 / 专业 / 工作内容" SortMemberPath="ProjectNumber">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock VerticalAlignment="Center"
+                                                       Text="{Binding CombinationDisplay}"
+                                                       TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding CombinationDisplay}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTextColumn Width="72" Binding="{Binding TotalHoursDisplay}" Header="工时" />
+                                <DataGridTextColumn Width="58" Binding="{Binding EntryCount}" Header="记录" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

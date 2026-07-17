@@ -83,6 +83,10 @@ public sealed class BackupService
         }
 
         archive.CreateEntryFromFile(AppPaths.DatabasePath, "Kanban41.db", CompressionLevel.Optimal);
+        if (File.Exists(AppPaths.WorkHourOptionsPath))
+        {
+            archive.CreateEntryFromFile(AppPaths.WorkHourOptionsPath, "workhour-options.json", CompressionLevel.Optimal);
+        }
         archive.CreateEntry("attachments/");
 
         if (!Directory.Exists(AppPaths.AttachmentRoot))
@@ -109,6 +113,7 @@ public sealed class BackupService
         var oldRoot = Path.Combine(stagingRoot, "old");
         var oldDatabasePath = Path.Combine(oldRoot, "db", "Kanban41.db");
         var oldAttachmentRoot = Path.Combine(oldRoot, "attachments");
+        var oldWorkHourOptionsPath = Path.Combine(oldRoot, "workhour-options.json");
 
         Directory.CreateDirectory(extractRoot);
         Directory.CreateDirectory(oldRoot);
@@ -118,6 +123,7 @@ public sealed class BackupService
             var attachmentCount = ExtractBackupArchive(sourceBackupPath, extractRoot);
             var restoredDatabasePath = Path.Combine(extractRoot, "Kanban41.db");
             var restoredAttachmentRoot = Path.Combine(extractRoot, "attachments");
+            var restoredWorkHourOptionsPath = Path.Combine(extractRoot, "workhour-options.json");
 
             ValidateDatabaseFile(restoredDatabasePath);
 
@@ -129,9 +135,14 @@ public sealed class BackupService
 
             try
             {
-                MoveCurrentDataAside(oldDatabasePath, oldAttachmentRoot);
+                MoveCurrentDataAside(oldDatabasePath, oldAttachmentRoot, oldWorkHourOptionsPath);
                 movedCurrentData = true;
                 File.Copy(restoredDatabasePath, AppPaths.DatabasePath, overwrite: true);
+
+                if (File.Exists(restoredWorkHourOptionsPath))
+                {
+                    File.Copy(restoredWorkHourOptionsPath, AppPaths.WorkHourOptionsPath, overwrite: true);
+                }
 
                 if (Directory.Exists(restoredAttachmentRoot))
                 {
@@ -149,7 +160,7 @@ public sealed class BackupService
             {
                 if (movedCurrentData)
                 {
-                    RestoreMovedCurrentData(oldDatabasePath, oldAttachmentRoot);
+                    RestoreMovedCurrentData(oldDatabasePath, oldAttachmentRoot, oldWorkHourOptionsPath);
                 }
 
                 throw;
@@ -265,12 +276,16 @@ public sealed class BackupService
         }
     }
 
-    private static void MoveCurrentDataAside(string oldDatabasePath, string oldAttachmentRoot)
+    private static void MoveCurrentDataAside(
+        string oldDatabasePath,
+        string oldAttachmentRoot,
+        string oldWorkHourOptionsPath)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(oldDatabasePath)!);
         DeleteDatabaseSidecarFiles();
         var databaseMoved = false;
         var attachmentsMoved = false;
+        var workHourOptionsMoved = false;
 
         try
         {
@@ -285,6 +300,12 @@ public sealed class BackupService
                 Directory.Move(AppPaths.AttachmentRoot, oldAttachmentRoot);
                 attachmentsMoved = true;
             }
+
+            if (File.Exists(AppPaths.WorkHourOptionsPath))
+            {
+                File.Move(AppPaths.WorkHourOptionsPath, oldWorkHourOptionsPath);
+                workHourOptionsMoved = true;
+            }
         }
         catch
         {
@@ -298,15 +319,24 @@ public sealed class BackupService
                 Directory.Move(oldAttachmentRoot, AppPaths.AttachmentRoot);
             }
 
+            if (workHourOptionsMoved && File.Exists(oldWorkHourOptionsPath) && !File.Exists(AppPaths.WorkHourOptionsPath))
+            {
+                File.Move(oldWorkHourOptionsPath, AppPaths.WorkHourOptionsPath);
+            }
+
             throw;
         }
     }
 
-    private static void RestoreMovedCurrentData(string oldDatabasePath, string oldAttachmentRoot)
+    private static void RestoreMovedCurrentData(
+        string oldDatabasePath,
+        string oldAttachmentRoot,
+        string oldWorkHourOptionsPath)
     {
         DeleteFileIfExists(AppPaths.DatabasePath);
         DeleteDatabaseSidecarFiles();
         DeleteDirectoryIfExists(AppPaths.AttachmentRoot);
+        DeleteFileIfExists(AppPaths.WorkHourOptionsPath);
 
         if (File.Exists(oldDatabasePath))
         {
@@ -320,6 +350,11 @@ public sealed class BackupService
         else
         {
             Directory.CreateDirectory(AppPaths.AttachmentRoot);
+        }
+
+        if (File.Exists(oldWorkHourOptionsPath))
+        {
+            File.Move(oldWorkHourOptionsPath, AppPaths.WorkHourOptionsPath);
         }
     }
 

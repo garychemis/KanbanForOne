@@ -6,9 +6,9 @@ namespace KanbanForOne.Services;
 
 public sealed class DatabaseService
 {
-    private const int CurrentSchemaVersion = 3;
+    private const int CurrentSchemaVersion = 4;
 
-    private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "ArchiveSections", "AppSettings"];
+    private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "ArchiveSections", "AppSettings", "WorkHourEntries"];
 
     private static readonly string[] CreateTableCommands =
     [
@@ -74,6 +74,19 @@ public sealed class DatabaseService
             Key TEXT PRIMARY KEY,
             Value TEXT NOT NULL
         )
+        """,
+        """
+        CREATE TABLE IF NOT EXISTS WorkHourEntries (
+            Id TEXT PRIMARY KEY,
+            WorkDate TEXT NOT NULL,
+            ProjectNumber TEXT NOT NULL,
+            Discipline TEXT NOT NULL,
+            WorkActivity TEXT NOT NULL,
+            HourUnits INTEGER NOT NULL CHECK (HourUnits > 0 AND HourUnits <= 2400),
+            Remark TEXT NOT NULL DEFAULT '',
+            CreatedAt TEXT NOT NULL,
+            UpdatedAt TEXT NOT NULL
+        )
         """
     ];
 
@@ -86,7 +99,11 @@ public sealed class DatabaseService
         "CREATE INDEX IF NOT EXISTS IX_Notes_IsArchived ON Notes(IsArchived)",
         "CREATE INDEX IF NOT EXISTS IX_Notes_ArchiveSection ON Notes(IsArchived, ArchiveSectionId)",
         "CREATE INDEX IF NOT EXISTS IX_Attachments_Owner ON Attachments(OwnerType, OwnerId)",
-        "CREATE UNIQUE INDEX IF NOT EXISTS UX_ArchiveSections_Name ON ArchiveSections(Name COLLATE NOCASE)"
+        "CREATE UNIQUE INDEX IF NOT EXISTS UX_ArchiveSections_Name ON ArchiveSections(Name COLLATE NOCASE)",
+        "CREATE INDEX IF NOT EXISTS IX_WorkHourEntries_Date ON WorkHourEntries(WorkDate)",
+        "CREATE INDEX IF NOT EXISTS IX_WorkHourEntries_DateProject ON WorkHourEntries(WorkDate, ProjectNumber COLLATE NOCASE)",
+        "CREATE INDEX IF NOT EXISTS IX_WorkHourEntries_DisciplineDate ON WorkHourEntries(Discipline, WorkDate)",
+        "CREATE INDEX IF NOT EXISTS IX_WorkHourEntries_ActivityDate ON WorkHourEntries(WorkActivity, WorkDate)"
     ];
 
     private static readonly IReadOnlyDictionary<string, string[]> RequiredColumns = new Dictionary<string, string[]>
@@ -136,8 +153,27 @@ public sealed class DatabaseService
             "SortOrder"
         ],
         ["ArchiveSections"] = ["Id", "Name", "SortOrder", "CreatedAt", "UpdatedAt", "IsDefault"],
-        ["AppSettings"] = ["Key", "Value"]
+        ["AppSettings"] = ["Key", "Value"],
+        ["WorkHourEntries"] =
+        [
+            "Id",
+            "WorkDate",
+            "ProjectNumber",
+            "Discipline",
+            "WorkActivity",
+            "HourUnits",
+            "Remark",
+            "CreatedAt",
+            "UpdatedAt"
+        ]
     };
+
+    private readonly string? _databasePathOverride;
+
+    public DatabaseService(string? databasePath = null)
+    {
+        _databasePathOverride = databasePath;
+    }
 
     public string ProjectRoot => AppPaths.ProjectRoot;
 
@@ -147,7 +183,7 @@ public sealed class DatabaseService
 
     public string BackupDirectory => AppPaths.BackupRoot;
 
-    public string DatabasePath => AppPaths.DatabasePath;
+    public string DatabasePath => _databasePathOverride ?? AppPaths.DatabasePath;
 
     public SqliteConnection CreateConnection()
     {
@@ -174,7 +210,13 @@ public sealed class DatabaseService
 
     private void EnsureStorageDirectories()
     {
-        AppPaths.EnsureStorageLayout();
+        if (_databasePathOverride is null)
+        {
+            AppPaths.EnsureStorageLayout();
+            return;
+        }
+
+        Directory.CreateDirectory(Path.GetDirectoryName(DatabasePath)!);
     }
 
     private static async Task InitializeSchemaAsync(SqliteConnection connection)

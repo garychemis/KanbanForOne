@@ -554,17 +554,31 @@
                             ToolTip="&#x6536;&#x8D77;" />
                 </Grid>
 
-                <ScrollViewer Grid.Row="1"
-                              Padding="34,0,24,4"
-                              VerticalScrollBarVisibility="Auto">
-                    <ScrollViewer.Resources>
+                <Grid Grid.Row="1"
+                      Margin="34,0,24,4"
+                      ClipToBounds="True">
+                    <Grid.Resources>
                         <Style TargetType="{x:Type ScrollBar}"
                                BasedOn="{StaticResource SpotlightScrollBarStyle}" />
-                    </ScrollViewer.Resources>
-                    <StackPanel>
-                        <Grid>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0"
+                              MaxHeight="64"
+                              ClipToBounds="True">
                             <TextBlock Text="{Binding FocusedTask.Title}"
                                        Style="{StaticResource SpotlightTitleTextStyle}"
+                                       TextTrimming="CharacterEllipsis"
                                        Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             <TextBox Text="{Binding TaskTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      x:Name="TaskTitleEditor"
@@ -573,8 +587,11 @@
                                      Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
 
-                        <ItemsControl ItemsSource="{Binding FocusedTask.Tags}"
-                                      Margin="0,12,0,4"
+                        <ItemsControl Grid.Row="1"
+                                      ItemsSource="{Binding FocusedTask.Tags}"
+                                      Margin="0,8,0,2"
+                                      MaxHeight="50"
+                                      ClipToBounds="True"
                                       Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -593,13 +610,14 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <StackPanel Margin="0,18,0,0"
+                        <StackPanel Grid.Row="2"
+                                    Margin="0,10,0,0"
                                     Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
-                            <TextBlock Text="&#x5C5E;&#x6027;"
-                                       Style="{StaticResource SpotlightSectionLabelStyle}" />
-                            <Border Style="{StaticResource SpotlightPropertyPanelStyle}">
+                            <Border Style="{StaticResource SpotlightPropertyPanelStyle}"
+                                    Padding="8">
                                 <StackPanel>
-                                    <Grid Style="{StaticResource SpotlightPanelRowStyle}">
+                                    <Grid Style="{StaticResource SpotlightPanelRowStyle}"
+                                          Margin="0,0,0,6">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="56" />
                                             <ColumnDefinition Width="*" />
@@ -626,7 +644,8 @@
                                         </WrapPanel>
                                     </Grid>
 
-                                    <Grid Style="{StaticResource SpotlightPanelRowStyle}">
+                                    <Grid Style="{StaticResource SpotlightPanelRowStyle}"
+                                          Margin="0,0,0,6">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="56" />
                                             <ColumnDefinition Width="*" />
@@ -664,61 +683,98 @@
                             </Border>
                         </StackPanel>
 
-                        <Grid Margin="0,18,0,0">
+                        <Grid Grid.Row="3"
+                              Margin="0,8,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="12" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Style="{StaticResource SpotlightMetaPanelStyle}">
-                                <StackPanel>
+                            <Border Style="{StaticResource SpotlightMetaPanelStyle}"
+                                    Height="44"
+                                    Padding="12,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock Text="&#x8D77;&#x59CB;"
-                                               Style="{StaticResource SpotlightSectionLabelStyle}" />
-                                    <TextBlock Text="{Binding FocusedTask.StartDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
-                                               FontSize="14"
+                                               FontSize="11"
                                                FontWeight="SemiBold"
+                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding FocusedTask.StartDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
                                                Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                                    <DatePicker SelectedDate="{Binding TaskStartDateDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Style="{StaticResource DrawerDatePickerStyle}"
-                                                Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                                </StackPanel>
+                                    <DatePicker Grid.Column="2"
+                                                SelectedDate="{Binding TaskStartDateDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource DrawerDatePickerStyle}"
+                                                 Height="28"
+                                                 FontSize="13"
+                                                 VerticalAlignment="Center"
+                                                 Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                </Grid>
                             </Border>
 
                             <Border Grid.Column="2"
-                                    Style="{StaticResource SpotlightMetaPanelStyle}">
-                                <StackPanel>
+                                    Style="{StaticResource SpotlightMetaPanelStyle}"
+                                    Height="44"
+                                    Padding="12,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
                                     <TextBlock Text="&#x622A;&#x6B62;"
-                                               Style="{StaticResource SpotlightSectionLabelStyle}" />
-                                    <TextBlock Text="{Binding FocusedTask.EndDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
-                                               FontSize="14"
+                                               FontSize="11"
                                                FontWeight="SemiBold"
+                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding FocusedTask.EndDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
                                                Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                                    <DatePicker SelectedDate="{Binding TaskEndDateDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                Style="{StaticResource DrawerDatePickerStyle}"
-                                                Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                                </StackPanel>
+                                    <DatePicker Grid.Column="2"
+                                                SelectedDate="{Binding TaskEndDateDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Style="{StaticResource DrawerDatePickerStyle}"
+                                                 Height="28"
+                                                 FontSize="13"
+                                                 VerticalAlignment="Center"
+                                                 Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                                </Grid>
                             </Border>
                         </Grid>
 
-                        <TextBlock Text="&#x63CF;&#x8FF0;"
+                        <TextBlock Grid.Row="4"
+                                   Text="&#x63CF;&#x8FF0;"
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
-                                   Margin="0,18,0,7" />
-                        <controls:MarkdownViewerControl Markdown="{Binding FocusedTask.Description}"
+                                   Margin="0,8,0,5" />
+                        <controls:MarkdownViewerControl Grid.Row="5"
+                                                        Markdown="{Binding FocusedTask.Description}"
                                                         ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
                                                         ViewerBorderBrush="#E5E7EB"
                                                         ViewerForeground="#1F2937"
-                                                        ForwardMouseWheelToParentScrollViewer="True"
-                                                        MinHeight="130"
-                                                        MaxHeight="220"
+                                                        ForwardMouseWheelToParentScrollViewer="False"
+                                                        MinHeight="48"
+                                                        MaxHeight="10000"
                                                         Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                        <TextBox Text="{Binding TaskDescriptionDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
-                                 MinHeight="180"
-                                 MaxHeight="260"
-                                 Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <TextBox Grid.Row="5"
+                                 Text="{Binding TaskDescriptionDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
+                                  MinHeight="48"
+                                  MaxHeight="10000"
+                                  Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
 
-                        <Grid Margin="0,18,0,8">
+                        <Grid Grid.Row="6"
+                              Margin="0,8,0,6">
                             <TextBlock Text="{Binding FocusedTask.AttachmentCount, StringFormat=&#x9644;&#x4EF6; {0}}"
                                        Style="{StaticResource SpotlightSectionLabelStyle}" />
                             <Button Content="+ &#x6DFB;&#x52A0;&#x9644;&#x4EF6;"
@@ -730,14 +786,16 @@
                                     Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
 
-                        <controls:AttachmentDropZoneControl Owner="{Binding FocusedTask}"
+                        <controls:AttachmentDropZoneControl Grid.Row="7"
+                                                            MinHeight="52"
+                                                            Owner="{Binding FocusedTask}"
                                                             AttachFilesCommand="{Binding AttachFilesCommand}"
                                                             TitleText="拖拽文件到这里添加"
                                                             HelperText="或点击右上角选择文件"
                                                             DropHintText="释放文件以添加附件"
                                                             Visibility="{Binding IsTaskSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-
-                        <StackPanel Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <StackPanel Grid.Row="8"
+                                    Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
                                     Background="{StaticResource SpotlightSurfaceBlockBrush}"
@@ -753,17 +811,20 @@
                                                Foreground="{StaticResource SpotlightTextMutedBrush}" />
                                 </StackPanel>
                             </Border>
-
                         </StackPanel>
-                        <controls:AttachmentListControl ItemsSource="{Binding FocusedTask.Attachments}"
-                                                        OpenCommand="{Binding OpenAttachmentCommand}"
-                                                        RevealCommand="{Binding RevealAttachmentCommand}"
-                                                        DeleteCommand="{Binding DeleteAttachmentCommand}"
-                                                        ShowManageActions="{Binding IsTaskSpotlightEditing}"
-                                                        Margin="0,8,0,0"
-                                                        Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
-                    </StackPanel>
-                </ScrollViewer>
+                        <ScrollViewer Grid.Row="8"
+                                      Margin="0,8,0,0"
+                                      MaxHeight="56"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
+                            <controls:AttachmentListControl ItemsSource="{Binding FocusedTask.Attachments}"
+                                                            OpenCommand="{Binding OpenAttachmentCommand}"
+                                                            RevealCommand="{Binding RevealAttachmentCommand}"
+                                                            DeleteCommand="{Binding DeleteAttachmentCommand}"
+                                                            ShowManageActions="{Binding IsTaskSpotlightEditing}" />
+                        </ScrollViewer>
+                </Grid>
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
@@ -874,17 +935,30 @@
                             ToolTip="&#x6536;&#x8D77;" />
                 </Grid>
 
-                <ScrollViewer Grid.Row="1"
-                              Padding="34,0,24,4"
-                              VerticalScrollBarVisibility="Auto">
-                    <ScrollViewer.Resources>
+                <Grid Grid.Row="1"
+                      Margin="34,0,24,4"
+                      ClipToBounds="True">
+                    <Grid.Resources>
                         <Style TargetType="{x:Type ScrollBar}"
                                BasedOn="{StaticResource SpotlightScrollBarStyle}" />
-                    </ScrollViewer.Resources>
-                    <StackPanel>
-                        <Grid>
+                    </Grid.Resources>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0"
+                              MaxHeight="64"
+                              ClipToBounds="True">
                             <TextBlock Text="{Binding FocusedNote.Title}"
                                        Style="{StaticResource SpotlightTitleTextStyle}"
+                                       TextTrimming="CharacterEllipsis"
                                        Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             <TextBox Text="{Binding NoteTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      x:Name="NoteTitleEditor"
@@ -893,8 +967,11 @@
                                      Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
 
-                        <ItemsControl ItemsSource="{Binding FocusedNote.Tags}"
-                                      Margin="0,12,0,4"
+                        <ItemsControl Grid.Row="1"
+                                      ItemsSource="{Binding FocusedNote.Tags}"
+                                      Margin="0,8,0,2"
+                                      MaxHeight="50"
+                                      ClipToBounds="True"
                                       Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -918,10 +995,11 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <StackPanel Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <StackPanel Grid.Row="2"
+                                    Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x6807;&#x7B7E;"
                                        Style="{StaticResource SpotlightSectionLabelStyle}"
-                                       Margin="0,14,0,7" />
+                                       Margin="0,8,0,5" />
                             <controls:TagChipEditorControl Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                            EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
                                                            EditorBorderBrush="#E5E7EB"
@@ -929,26 +1007,30 @@
                                                            ChipForeground="#9A3412" />
                         </StackPanel>
 
-                        <TextBlock Text="&#x5185;&#x5BB9;"
+                        <TextBlock Grid.Row="3"
+                                   Text="&#x5185;&#x5BB9;"
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
-                                   Margin="0,16,0,7" />
-                        <controls:MarkdownViewerControl Markdown="{Binding FocusedNote.Content}"
+                                   Margin="0,10,0,7" />
+                        <controls:MarkdownViewerControl Grid.Row="4"
+                                                        Markdown="{Binding FocusedNote.Content}"
                                                         ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
                                                         ViewerBorderBrush="#E5E7EB"
                                                         ViewerForeground="#1F2937"
-                                                        ForwardMouseWheelToParentScrollViewer="True"
-                                                        MinHeight="150"
-                                                        MaxHeight="230"
+                                                        ForwardMouseWheelToParentScrollViewer="False"
+                                                        MinHeight="92"
+                                                        MaxHeight="10000"
                                                         Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                        <TextBox Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
-                                 MinHeight="260"
-                                 MaxHeight="300"
-                                 Background="{StaticResource SpotlightSurfaceBlockBrush}"
-                                 BorderBrush="#E5E7EB"
-                                 Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <TextBox Grid.Row="4"
+                                 Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
+                                  MinHeight="92"
+                                  MaxHeight="10000"
+                                  Background="{StaticResource SpotlightSurfaceBlockBrush}"
+                                  BorderBrush="#E5E7EB"
+                                  Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
 
-                        <Grid Margin="0,16,0,8">
+                        <Grid Grid.Row="5"
+                              Margin="0,10,0,8">
                             <TextBlock Text="{Binding FocusedNote.AttachmentCount, StringFormat=&#x9644;&#x4EF6; {0}}"
                                        Style="{StaticResource SpotlightSectionLabelStyle}" />
                             <Button Content="+ &#x6DFB;&#x52A0;&#x9644;&#x4EF6;"
@@ -960,14 +1042,16 @@
                                     Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
 
-                        <controls:AttachmentDropZoneControl Owner="{Binding FocusedNote}"
+                        <controls:AttachmentDropZoneControl Grid.Row="6"
+                                                            MinHeight="52"
+                                                            Owner="{Binding FocusedNote}"
                                                             AttachFilesCommand="{Binding AttachFilesCommand}"
                                                             TitleText="拖拽文件到这里添加"
                                                             HelperText="或点击右上角选择文件"
                                                             DropHintText="释放文件以添加附件"
                                                             Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-
-                        <StackPanel Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <StackPanel Grid.Row="7"
+                                    Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
                                     Background="{StaticResource SpotlightSurfaceBlockBrush}"
@@ -983,17 +1067,20 @@
                                                Foreground="{StaticResource SpotlightTextMutedBrush}" />
                                 </StackPanel>
                             </Border>
-
                         </StackPanel>
-                        <controls:AttachmentListControl ItemsSource="{Binding FocusedNote.Attachments}"
-                                                        OpenCommand="{Binding OpenAttachmentCommand}"
-                                                        RevealCommand="{Binding RevealAttachmentCommand}"
-                                                        DeleteCommand="{Binding DeleteAttachmentCommand}"
-                                                        ShowManageActions="{Binding IsNoteSpotlightEditing}"
-                                                        Margin="0,8,0,0"
-                                                        Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
-                    </StackPanel>
-                </ScrollViewer>
+                        <ScrollViewer Grid.Row="7"
+                                      Margin="0,8,0,0"
+                                      MaxHeight="72"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
+                            <controls:AttachmentListControl ItemsSource="{Binding FocusedNote.Attachments}"
+                                                            OpenCommand="{Binding OpenAttachmentCommand}"
+                                                            RevealCommand="{Binding RevealAttachmentCommand}"
+                                                            DeleteCommand="{Binding DeleteAttachmentCommand}"
+                                                            ShowManageActions="{Binding IsNoteSpotlightEditing}" />
+                        </ScrollViewer>
+                </Grid>
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"

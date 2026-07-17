@@ -23,6 +23,8 @@ public sealed class MainWindowViewModel : ObservableObject
     private readonly NoteRepository _noteRepository;
     private readonly AttachmentRepository _attachmentRepository;
     private readonly ArchiveSectionRepository _archiveSectionRepository;
+    private readonly WorkHourRepository _workHourRepository;
+    private readonly WorkHourOptionsService _workHourOptionsService = new();
     private readonly BackupService _backupService = new();
     private bool _isInitialized;
     private bool _isLoading;
@@ -59,6 +61,9 @@ public sealed class MainWindowViewModel : ObservableObject
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private DateTime _selectedCalendarDate = DateTime.Today;
     private string _calendarViewMode = "Month";
+    private int _workHourLoadVersion;
+    private string _newWorkDiscipline = string.Empty;
+    private string _newWorkActivity = string.Empty;
     private TaskItem? _selectedTask;
     private NoteItem? _selectedNote;
     private TaskItem? _focusedTask;
@@ -74,7 +79,7 @@ public sealed class MainWindowViewModel : ObservableObject
     private double _spotlightTop = 96;
     private double _spotlightWidth = 640;
     private double _spotlightHeight = 540;
-    private double _spotlightAvailableHeight = 620;
+    private Size _spotlightHostSize = new(1180, 820);
 
     public MainWindowViewModel()
     {
@@ -85,6 +90,11 @@ public sealed class MainWindowViewModel : ObservableObject
         _noteRepository = new NoteRepository(_databaseService);
         _attachmentRepository = new AttachmentRepository(_databaseService);
         _archiveSectionRepository = new ArchiveSectionRepository(_databaseService);
+        _workHourRepository = new WorkHourRepository(_databaseService);
+        WorkHourSummary = new WorkHourSummaryViewModel(
+            _workHourRepository,
+            new WorkHourExportService(),
+            SetNotification);
 
         TaskStatusOptions = Enum.GetValues<TaskStatus>();
         TaskPriorityOptions = Enum.GetValues<TaskPriority>();
@@ -124,6 +134,12 @@ public sealed class MainWindowViewModel : ObservableObject
         CreateTaskForCalendarDateCommand = new RelayCommand(CreateTaskForCalendarDateAsync);
         MoveTaskToCalendarDateCommand = new RelayCommand(MoveTaskToCalendarDateAsync);
         SetCalendarViewModeCommand = new RelayCommand(SetCalendarViewMode);
+        AddWorkHourCommand = new RelayCommand(AddWorkHourAsync);
+        OpenWorkHourCommand = new RelayCommand(OpenWorkHourAsync);
+        AddWorkDisciplineCommand = new RelayCommand(AddWorkDisciplineAsync, _ => !string.IsNullOrWhiteSpace(NewWorkDiscipline));
+        RemoveWorkDisciplineCommand = new RelayCommand(RemoveWorkDisciplineAsync);
+        AddWorkActivityCommand = new RelayCommand(AddWorkActivityAsync, _ => !string.IsNullOrWhiteSpace(NewWorkActivity));
+        RemoveWorkActivityCommand = new RelayCommand(RemoveWorkActivityAsync);
 
         RefreshBoard();
     }
@@ -147,6 +163,14 @@ public sealed class MainWindowViewModel : ObservableObject
     public ObservableCollection<CalendarDayItem> CalendarDays { get; } = new();
 
     public ObservableCollection<TaskItem> SelectedCalendarTasks { get; } = new();
+
+    public ObservableCollection<WorkHourEntry> SelectedCalendarWorkHours { get; } = new();
+
+    public ObservableCollection<string> WorkDisciplines { get; } = new();
+
+    public ObservableCollection<string> WorkActivities { get; } = new();
+
+    public WorkHourSummaryViewModel WorkHourSummary { get; }
 
     public ObservableCollection<ArchiveSection> ArchiveSections { get; } = new();
 
@@ -221,6 +245,18 @@ public sealed class MainWindowViewModel : ObservableObject
     public RelayCommand MoveTaskToCalendarDateCommand { get; }
 
     public RelayCommand SetCalendarViewModeCommand { get; }
+
+    public RelayCommand AddWorkHourCommand { get; }
+
+    public RelayCommand OpenWorkHourCommand { get; }
+
+    public RelayCommand AddWorkDisciplineCommand { get; }
+
+    public RelayCommand RemoveWorkDisciplineCommand { get; }
+
+    public RelayCommand AddWorkActivityCommand { get; }
+
+    public RelayCommand RemoveWorkActivityCommand { get; }
 
     public string SearchText
     {
@@ -333,6 +369,30 @@ public sealed class MainWindowViewModel : ObservableObject
         }
     }
 
+    public string NewWorkDiscipline
+    {
+        get => _newWorkDiscipline;
+        set
+        {
+            if (SetProperty(ref _newWorkDiscipline, value))
+            {
+                AddWorkDisciplineCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public string NewWorkActivity
+    {
+        get => _newWorkActivity;
+        set
+        {
+            if (SetProperty(ref _newWorkActivity, value))
+            {
+                AddWorkActivityCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
     public string TaskArchiveActionText => ActiveTask?.IsArchived == true ? "恢复" : "归档";
 
     public string NoteArchiveActionText => ActiveNote?.IsArchived == true ? "恢复" : "归档";
@@ -364,6 +424,8 @@ public sealed class MainWindowViewModel : ObservableObject
     public string DataDirectory => AppPaths.DataRoot;
 
     public string DatabasePath => AppPaths.DatabasePath;
+
+    public string WorkHourOptionsPath => AppPaths.WorkHourOptionsPath;
 
     public string AttachmentDirectory => AppPaths.AttachmentRoot;
 
@@ -786,9 +848,11 @@ public sealed class MainWindowViewModel : ObservableObject
             || !string.Equals(NoteContentDraft, ActiveNote.Content, StringComparison.Ordinal)
             || !string.Equals(NoteTagsDraft, ActiveNote.TagsDisplay, StringComparison.Ordinal));
 
-    public bool IsBoardViewVisible => _currentFilter is not "Calendar" and not "Backup" and not "Settings";
+    public bool IsBoardViewVisible => _currentFilter is not "Calendar" and not "WorkHourSummary" and not "Backup" and not "Settings";
 
     public bool IsCalendarViewVisible => _currentFilter == "Calendar";
+
+    public bool IsWorkHourSummaryViewVisible => _currentFilter == "WorkHourSummary";
 
     public bool IsBackupViewVisible => _currentFilter == "Backup";
 
@@ -812,6 +876,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
                 OnPropertyChanged(nameof(CalendarMonthTitle));
                 RefreshBoard();
+                _ = LoadSelectedWorkHoursAsync();
             }
         }
     }
@@ -827,6 +892,7 @@ public sealed class MainWindowViewModel : ObservableObject
             {
                 OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
                 RefreshCalendarSelection();
+                _ = LoadSelectedWorkHoursAsync();
             }
         }
     }
@@ -858,6 +924,14 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool HasSelectedCalendarTasks => SelectedCalendarTaskCount > 0;
 
+    public int SelectedCalendarWorkHourCount => SelectedCalendarWorkHours.Count;
+
+    public bool HasSelectedCalendarWorkHours => SelectedCalendarWorkHourCount > 0;
+
+    public int SelectedCalendarWorkHourUnits => SelectedCalendarWorkHours.Sum(entry => entry.HourUnits);
+
+    public string SelectedCalendarWorkHourTotalDisplay => $"{WorkHourValueConverter.FormatHours(SelectedCalendarWorkHourUnits)}h";
+
     public int VisibleTaskCount => TodoTasks.Count + DoingTasks.Count + BlockedTasks.Count + DoneTasks.Count;
 
     public int VisibleNoteCount => Notes.Count;
@@ -869,23 +943,87 @@ public sealed class MainWindowViewModel : ObservableObject
             _isLoading = true;
             _isInitialized = false;
             await _databaseService.InitializeAsync();
+            WorkHourSummary.Invalidate();
+            await LoadWorkHourOptionsAsync();
             ClearWorkingSet();
             await LoadArchiveSectionsAsync();
             SelectedArchiveSection = null;
             _loadedArchiveSectionId = null;
             IsArchiveContentLoaded = false;
             await LoadActiveWorkspaceAsync();
+            await LoadSelectedWorkHoursAsync();
             _isInitialized = true;
         }
         catch (Exception ex)
         {
-            SetNotification($"数据库初始化失败：{ex.Message}");
+            SetNotification($"初始化失败：{ex.Message}");
         }
         finally
         {
             _isLoading = false;
             RefreshBoard();
         }
+    }
+
+    private async Task LoadWorkHourOptionsAsync()
+    {
+        var options = await _workHourOptionsService.LoadAsync();
+        Replace(WorkDisciplines, options.Disciplines);
+        Replace(WorkActivities, options.WorkActivities);
+    }
+
+    private async Task AddWorkDisciplineAsync(object? _)
+    {
+        var value = NewWorkDiscipline.Trim();
+        if (value.Length == 0)
+        {
+            return;
+        }
+
+        var options = await _workHourOptionsService.AddDisciplineAsync(value);
+        Replace(WorkDisciplines, options.Disciplines);
+        NewWorkDiscipline = string.Empty;
+        SetNotification($"已添加专业：{value}");
+    }
+
+    private async Task AddWorkActivityAsync(object? _)
+    {
+        var value = NewWorkActivity.Trim();
+        if (value.Length == 0)
+        {
+            return;
+        }
+
+        var options = await _workHourOptionsService.AddWorkActivityAsync(value);
+        Replace(WorkActivities, options.WorkActivities);
+        NewWorkActivity = string.Empty;
+        SetNotification($"已添加工作内容：{value}");
+    }
+
+    private async Task RemoveWorkDisciplineAsync(object? parameter)
+    {
+        if (parameter is not string value ||
+            !ConfirmDialog.Show(GetDialogOwner(), "移除专业选项", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
+        {
+            return;
+        }
+
+        var options = await _workHourOptionsService.RemoveDisciplineAsync(value);
+        Replace(WorkDisciplines, options.Disciplines);
+        SetNotification($"已移除专业选项：{value}");
+    }
+
+    private async Task RemoveWorkActivityAsync(object? parameter)
+    {
+        if (parameter is not string value ||
+            !ConfirmDialog.Show(GetDialogOwner(), "移除工作内容", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
+        {
+            return;
+        }
+
+        var options = await _workHourOptionsService.RemoveWorkActivityAsync(value);
+        Replace(WorkActivities, options.WorkActivities);
+        SetNotification($"已移除工作内容选项：{value}");
     }
 
     private async Task LoadArchiveSectionsAsync()
@@ -1084,7 +1222,6 @@ public sealed class MainWindowViewModel : ObservableObject
             Priority = TaskPriority.Medium,
             SortOrder = NextTaskSortOrder(status)
         };
-        task.Tags.Add("Inbox");
 
         if (!await SaveTaskSafelyAsync(task, "已创建任务"))
         {
@@ -1114,7 +1251,6 @@ public sealed class MainWindowViewModel : ObservableObject
             EndDate = date.Date,
             SortOrder = NextTaskSortOrder(TaskStatus.Todo)
         };
-        task.Tags.Add("Calendar");
 
         if (!await SaveTaskSafelyAsync(task, "已创建日程任务"))
         {
@@ -1140,7 +1276,6 @@ public sealed class MainWindowViewModel : ObservableObject
             Content = "记录一个想法、提醒或临时片段。",
             SortOrder = NextNoteSortOrder()
         };
-        note.Tags.Add("Note");
 
         if (!await SaveNoteSafelyAsync(note, "已创建备忘"))
         {
@@ -1167,7 +1302,7 @@ public sealed class MainWindowViewModel : ObservableObject
         SpotlightDetailDataContext = null;
         SelectedNote = null;
         FocusedNote = null;
-        SetSpotlightLayout(payload, task, edit);
+        SetSpotlightLayout(payload);
         ClearNoteDraft();
         SelectedTask = task;
         IsNoteSpotlightEditing = false;
@@ -1191,7 +1326,7 @@ public sealed class MainWindowViewModel : ObservableObject
         SpotlightDetailDataContext = null;
         SelectedTask = null;
         FocusedTask = null;
-        SetSpotlightLayout(payload, note, edit);
+        SetSpotlightLayout(payload);
         ClearTaskDraft();
         SelectedNote = note;
         IsTaskSpotlightEditing = false;
@@ -1207,30 +1342,21 @@ public sealed class MainWindowViewModel : ObservableObject
             : new CardOpenPayload(item, payload.AnchorBounds, payload.HostSize);
     }
 
-    private void SetSpotlightLayout(CardOpenPayload? payload, object? item, bool edit)
+    private void SetSpotlightLayout(CardOpenPayload? payload)
     {
-        const double margin = 26;
-        const double sidebarWidth = 204;
-        const double topNavHeight = 64;
-        const double minWidth = 420;
-        const double preferredWidth = 640;
         const double fallbackWidth = 240;
         const double fallbackHeight = 140;
 
-        var hostSize = payload?.HostSize ?? Size.Empty;
-        var hostWidth = hostSize.Width > 0 ? hostSize.Width : 1180;
-        var hostHeight = hostSize.Height > 0 ? hostSize.Height : 820;
-        var workAreaLeft = hostWidth > sidebarWidth + minWidth ? sidebarWidth : 0;
-        var workAreaTop = hostHeight > topNavHeight + 360 ? topNavHeight : 0;
-        var workAreaWidth = Math.Max(minWidth, hostWidth - workAreaLeft);
-        var workAreaHeight = Math.Max(320, hostHeight - workAreaTop);
-        var availableWidth = Math.Max(minWidth, workAreaWidth - margin * 2);
-        var width = Math.Min(preferredWidth, availableWidth);
-        var availableHeight = Math.Max(300, workAreaHeight * 0.78);
-        var preferredHeight = PreferredSpotlightHeight(item, edit);
-        var height = Math.Min(preferredHeight, availableHeight);
-        var fallbackLeft = Math.Max(margin, (hostWidth - fallbackWidth) / 2);
-        var fallbackTop = Math.Max(margin, (hostHeight - fallbackHeight) / 2);
+        var payloadHostSize = payload?.HostSize ?? Size.Empty;
+        if (payloadHostSize.Width > 0 && payloadHostSize.Height > 0)
+        {
+            _spotlightHostSize = payloadHostSize;
+        }
+
+        var hostWidth = _spotlightHostSize.Width;
+        var hostHeight = _spotlightHostSize.Height;
+        var fallbackLeft = Math.Max(0, (hostWidth - fallbackWidth) / 2);
+        var fallbackTop = Math.Max(0, (hostHeight - fallbackHeight) / 2);
         var anchor = payload?.AnchorBounds ?? new Rect(fallbackLeft, fallbackTop, fallbackWidth, fallbackHeight);
 
         if (anchor.Width <= 0 || anchor.Height <= 0)
@@ -1238,47 +1364,44 @@ public sealed class MainWindowViewModel : ObservableObject
             anchor = new Rect(fallbackLeft, fallbackTop, fallbackWidth, fallbackHeight);
         }
 
-        var left = workAreaLeft + (workAreaWidth - width) / 2;
-        var top = workAreaTop + (workAreaHeight - height) / 2;
-        var maxLeft = Math.Max(workAreaLeft + margin, hostWidth - width - margin);
-        var maxTop = Math.Max(workAreaTop + margin, hostHeight - height - margin);
-
         SpotlightSourceLeft = anchor.Left;
         SpotlightSourceTop = anchor.Top;
         SpotlightSourceWidth = Math.Max(80, anchor.Width);
         SpotlightSourceHeight = Math.Max(72, anchor.Height);
-        SpotlightLeft = Math.Min(Math.Max(workAreaLeft + margin, left), maxLeft);
-        SpotlightTop = Math.Min(Math.Max(workAreaTop + margin, top), maxTop);
-        SpotlightWidth = width;
-        SpotlightHeight = height;
-        _spotlightAvailableHeight = availableHeight;
+        ApplySpotlightTargetLayout(new Size(hostWidth, hostHeight));
     }
 
-    private static double PreferredSpotlightHeight(object? item, bool edit)
+    public void UpdateSpotlightLayout(Size hostSize)
     {
-        if (edit)
+        if (hostSize.Width <= 0 || hostSize.Height <= 0)
         {
-            return 620;
+            return;
         }
 
-        var textLength = item switch
-        {
-            TaskItem task => task.Description?.Length ?? 0,
-            NoteItem note => note.Content?.Length ?? 0,
-            _ => 0
-        };
-        var attachmentCount = item switch
-        {
-            TaskItem task => task.AttachmentCount,
-            NoteItem note => note.AttachmentCount,
-            _ => 0
-        };
+        _spotlightHostSize = hostSize;
 
-        var baseHeight = item is NoteItem ? 450 : 495;
-        var descriptionExtra = Math.Min(80, Math.Max(0, textLength - 180) * 0.14);
-        var attachmentExtra = Math.Min(110, attachmentCount * 34);
+        if (!IsSpotlightOpen)
+        {
+            return;
+        }
 
-        return Math.Clamp(baseHeight + descriptionExtra + attachmentExtra, 420, 580);
+        ApplySpotlightTargetLayout(hostSize);
+    }
+
+    private void ApplySpotlightTargetLayout(Size hostSize)
+    {
+        const double margin = 26;
+        const double preferredWidth = 640;
+        const double minWidth = 420;
+
+        var availableWidth = Math.Max(minWidth, hostSize.Width - margin * 2);
+        var width = Math.Min(preferredWidth, availableWidth);
+        var height = hostSize.Height * 0.85;
+
+        SpotlightLeft = Math.Max(0, (hostSize.Width - width) / 2);
+        SpotlightTop = Math.Max(0, (hostSize.Height - height) / 2);
+        SpotlightWidth = width;
+        SpotlightHeight = height;
     }
 
     private void CloseSpotlight()
@@ -1324,7 +1447,6 @@ public sealed class MainWindowViewModel : ObservableObject
             LoadTaskDraft(FocusedTask);
             IsTaskSpotlightEditing = true;
             IsNoteSpotlightEditing = false;
-            SpotlightHeight = Math.Min(PreferredSpotlightHeight(FocusedTask, edit: true), _spotlightAvailableHeight);
             return;
         }
 
@@ -1336,7 +1458,6 @@ public sealed class MainWindowViewModel : ObservableObject
         LoadNoteDraft(FocusedNote);
         IsNoteSpotlightEditing = true;
         IsTaskSpotlightEditing = false;
-        SpotlightHeight = Math.Min(PreferredSpotlightHeight(FocusedNote, edit: true), _spotlightAvailableHeight);
     }
 
     private void CancelSpotlightEdit()
@@ -1345,14 +1466,12 @@ public sealed class MainWindowViewModel : ObservableObject
         {
             LoadTaskDraft(FocusedTask);
             IsTaskSpotlightEditing = false;
-            SpotlightHeight = Math.Min(PreferredSpotlightHeight(FocusedTask, edit: false), _spotlightAvailableHeight);
         }
 
         if (FocusedNote is not null)
         {
             LoadNoteDraft(FocusedNote);
             IsNoteSpotlightEditing = false;
-            SpotlightHeight = Math.Min(PreferredSpotlightHeight(FocusedNote, edit: false), _spotlightAvailableHeight);
         }
     }
 
@@ -2172,6 +2291,120 @@ public sealed class MainWindowViewModel : ObservableObject
         OnDateFilterChanged();
     }
 
+    private Task AddWorkHourAsync(object? _)
+    {
+        return ShowWorkHourDialogAsync(null);
+    }
+
+    private Task OpenWorkHourAsync(object? parameter)
+    {
+        return parameter is WorkHourEntry entry
+            ? ShowWorkHourDialogAsync(entry)
+            : Task.CompletedTask;
+    }
+
+    private async Task ShowWorkHourDialogAsync(WorkHourEntry? entry)
+    {
+        var result = WorkHourEntryDialog.Show(
+            GetDialogOwner(),
+            entry,
+            SelectedCalendarDate,
+            WorkDisciplines,
+            WorkActivities);
+
+        if (result is null || result.Action == WorkHourDialogAction.None)
+        {
+            return;
+        }
+
+        if (result.Action == WorkHourDialogAction.Delete)
+        {
+            await _workHourRepository.DeleteAsync(result.Id);
+            WorkHourSummary.Invalidate();
+            await LoadSelectedWorkHoursAsync();
+            SetNotification("已删除人工时记录");
+            return;
+        }
+
+        var otherUnits = await _workHourRepository.GetTotalUnitsByDateAsync(
+            result.WorkDate,
+            entry?.Id);
+        if (otherUnits + result.HourUnits > WorkHourValueConverter.MaximumEntryUnits &&
+            !ConfirmDialog.Show(
+                GetDialogOwner(),
+                "当天工时超过 24 小时",
+                $"保存后 {result.WorkDate:yyyy/M/d} 的总工时将超过 24 小时，是否继续？",
+                "继续保存"))
+        {
+            SetNotification("已取消保存人工时");
+            return;
+        }
+
+        var now = DateTime.Now;
+        var savedEntry = new WorkHourEntry
+        {
+            Id = result.Id,
+            WorkDate = result.WorkDate,
+            ProjectNumber = WorkHourValueConverter.NormalizeProjectNumber(result.ProjectNumber),
+            Discipline = result.Discipline.Trim(),
+            WorkActivity = result.WorkActivity.Trim(),
+            HourUnits = result.HourUnits,
+            Remark = result.Remark.Trim(),
+            CreatedAt = result.CreatedAt,
+            UpdatedAt = now
+        };
+
+        var options = await _workHourOptionsService.AddDisciplineAsync(savedEntry.Discipline);
+        options = await _workHourOptionsService.AddWorkActivityAsync(savedEntry.WorkActivity);
+        await _workHourRepository.UpsertAsync(savedEntry);
+        WorkHourSummary.Invalidate();
+        Replace(WorkDisciplines, options.Disciplines);
+        Replace(WorkActivities, options.WorkActivities);
+
+        if (savedEntry.WorkDate != SelectedCalendarDate)
+        {
+            SelectCalendarDate(savedEntry.WorkDate);
+        }
+        else
+        {
+            await LoadSelectedWorkHoursAsync();
+        }
+
+        SetNotification(entry is null ? "已添加人工时" : "已保存人工时");
+    }
+
+    private async Task LoadSelectedWorkHoursAsync()
+    {
+        var version = ++_workHourLoadVersion;
+        var selectedDate = SelectedCalendarDate;
+        try
+        {
+            var entries = await _workHourRepository.GetByDateAsync(selectedDate);
+            if (version != _workHourLoadVersion || selectedDate != SelectedCalendarDate)
+            {
+                return;
+            }
+
+            Replace(SelectedCalendarWorkHours, entries);
+            NotifySelectedWorkHourSummaryChanged();
+        }
+        catch (Exception ex)
+        {
+            if (version == _workHourLoadVersion)
+            {
+                SetNotification($"加载人工时失败：{ex.Message}");
+            }
+        }
+    }
+
+    private void NotifySelectedWorkHourSummaryChanged()
+    {
+        OnPropertyChanged(nameof(SelectedCalendarWorkHourCount));
+        OnPropertyChanged(nameof(HasSelectedCalendarWorkHours));
+        OnPropertyChanged(nameof(SelectedCalendarWorkHourUnits));
+        OnPropertyChanged(nameof(SelectedCalendarWorkHourTotalDisplay));
+    }
+
     private void GoToToday()
     {
         var today = DateTime.Today;
@@ -2182,6 +2415,7 @@ public sealed class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedCalendarDate));
         OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
         RefreshBoard();
+        _ = LoadSelectedWorkHoursAsync();
     }
 
     private void SelectCalendarDate(object? parameter)
@@ -2212,10 +2446,12 @@ public sealed class MainWindowViewModel : ObservableObject
             OnPropertyChanged(nameof(CalendarMonth));
             OnPropertyChanged(nameof(CalendarMonthTitle));
             RefreshBoard();
+            _ = LoadSelectedWorkHoursAsync();
             return;
         }
 
         RefreshCalendarSelection();
+        _ = LoadSelectedWorkHoursAsync();
     }
 
     private void SetCalendarViewMode(object? parameter)
@@ -2373,6 +2609,7 @@ public sealed class MainWindowViewModel : ObservableObject
             "AllTasks" => "全部任务",
             "Today" => "今日任务",
             "Calendar" => "日历",
+            "WorkHourSummary" => "人工时汇总",
             "High" => "高优先级",
             "Overdue" => "超期未完成",
             "WithAttachments" => "有附件",
@@ -2384,6 +2621,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         OnPropertyChanged(nameof(IsBoardViewVisible));
         OnPropertyChanged(nameof(IsCalendarViewVisible));
+        OnPropertyChanged(nameof(IsWorkHourSummaryViewVisible));
         OnPropertyChanged(nameof(IsBackupViewVisible));
         OnPropertyChanged(nameof(IsSettingsViewVisible));
         OnPropertyChanged(nameof(IsArchiveWaitingForSection));
@@ -2403,6 +2641,11 @@ public sealed class MainWindowViewModel : ObservableObject
             else if (previousFilter == "Archived")
             {
                 await LoadActiveWorkspaceAsync();
+            }
+
+            if (filter == "WorkHourSummary")
+            {
+                await WorkHourSummary.EnsureLoadedAsync();
             }
         }
         catch (Exception ex)
@@ -2614,7 +2857,7 @@ public sealed class MainWindowViewModel : ObservableObject
 
         if (!ShowConfirmationDialog(
                 "恢复备份",
-                "恢复备份会覆盖当前数据库和附件。恢复前会自动创建一份当前数据的保护备份，是否继续？",
+                "恢复备份会覆盖当前数据库、附件和人工时选项。恢复前会自动创建一份当前数据的保护备份，是否继续？",
                 "恢复"))
         {
             return;
@@ -3052,7 +3295,6 @@ public sealed class MainWindowViewModel : ObservableObject
 
             LoadTaskDraft(task);
             IsTaskSpotlightEditing = false;
-            SpotlightHeight = Math.Min(PreferredSpotlightHeight(task, edit: false), _spotlightAvailableHeight);
             RefreshBoard();
             SetNotification("已保存");
         }
@@ -3099,7 +3341,6 @@ public sealed class MainWindowViewModel : ObservableObject
 
             LoadNoteDraft(note);
             IsNoteSpotlightEditing = false;
-            SpotlightHeight = Math.Min(PreferredSpotlightHeight(note, edit: false), _spotlightAvailableHeight);
             RefreshBoard(refreshCalendar: false);
             SetNotification("已保存");
         }

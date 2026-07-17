@@ -8,7 +8,7 @@
              Drop="OnDrop">
     <Grid>
         <Border x:Name="DropBorder"
-                MinHeight="64"
+                MinHeight="{Binding MinHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Padding="14,10"
                 CornerRadius="16"
                 BorderThickness="0"

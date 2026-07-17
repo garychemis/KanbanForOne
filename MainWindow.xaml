@@ -7,7 +7,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Kanban41"
-        Icon="icon/icon.ico"
+        Icon="icon/icon-transparent.ico"
         Height="900"
         Width="1512"
         MinHeight="720"
@@ -53,6 +53,7 @@
                     <Grid Grid.Row="1">
                         <controls:BoardView Visibility="{Binding IsBoardViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:CalendarView Visibility="{Binding IsCalendarViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:WorkHourSummaryView Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:BackupView Visibility="{Binding IsBackupViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:SettingsView Visibility="{Binding IsSettingsViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                     </Grid>

@@ -18,6 +18,8 @@ public static class AppPaths
 
     public static string DatabasePath => Path.Combine(DbRoot, "Kanban41.db");
 
+    public static string WorkHourOptionsPath => Path.Combine(DataRoot, "workhour-options.json");
+
     public static void EnsureStorageLayout()
     {
         Directory.CreateDirectory(DataRoot);

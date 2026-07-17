@@ -43,6 +43,7 @@ namespace KanbanForOne
         private void OnWindowRootSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ApplyWindowRootClip();
+            _viewModel.UpdateSpotlightLayout(e.NewSize);
         }
 
         private void OnWindowStateChanged(object? sender, EventArgs e)
@@ -194,14 +195,14 @@ namespace KanbanForOne
 
         private static Drawing.Icon? LoadTrayIcon()
         {
-            var iconPath = Path.Combine(AppContext.BaseDirectory, "icon", "icon.ico");
+            var iconPath = Path.Combine(AppContext.BaseDirectory, "icon", "icon-transparent.ico");
 
             if (File.Exists(iconPath))
             {
                 return new Drawing.Icon(iconPath);
             }
 
-            var resource = Application.GetResourceStream(new Uri("pack://application:,,,/icon/icon.ico"));
+            var resource = Application.GetResourceStream(new Uri("pack://application:,,,/icon/icon-transparent.ico"));
 
             if (resource is null)
             {
