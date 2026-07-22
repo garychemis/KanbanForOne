@@ -2,7 +2,7 @@
 
 Kanban41 是一个 Windows 本地个人看板应用，用来管理个人任务、备忘、简单日程和本地附件。它不包含登录、团队协作或云同步逻辑，所有数据都保存在本机。
 
-当前版本：`V0.4`
+当前版本：`V0.41`
 
 ## 功能特性
 
@@ -86,7 +86,7 @@ powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1
 脚本会先发布 `win-x64` 自包含版本，再生成安装器：
 
 ```text
-artifacts\installer\Kanban41_Setup_v0.4.0.exe
+artifacts\installer\Kanban41_Setup_v0.41.0.exe
 ```
 
 安装器会将应用安装到当前用户目录：

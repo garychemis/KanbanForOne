@@ -19,6 +19,7 @@
     <converters:CollectionEmptyToVisibilityConverter x:Key="CollectionEmptyToVisibilityConverter" />
     <converters:TagDisplayConverter x:Key="TagDisplayConverter" />
     <converters:TagListDisplayConverter x:Key="TagListDisplayConverter" />
+    <converters:SizeMultiplierConverter x:Key="SizeMultiplierConverter" />
 
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#ECEEEF" />
     <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#ECEEEF" />

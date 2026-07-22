@@ -444,3 +444,26 @@ public sealed class TagListDisplayConverter : IValueConverter
         return Binding.DoNothing;
     }
 }
+
+public sealed class SizeMultiplierConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not double size || size < 0)
+        {
+            return 0d;
+        }
+
+        var factor = parameter is not null
+            && double.TryParse(parameter.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : 1d;
+
+        return size * factor;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        return Binding.DoNothing;
+    }
+}

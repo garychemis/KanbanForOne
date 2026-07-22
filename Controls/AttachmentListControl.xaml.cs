@@ -26,6 +26,12 @@ public partial class AttachmentListControl : UserControl
         typeof(AttachmentListControl),
         new PropertyMetadata(true));
 
+    public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
+        nameof(IsCompact),
+        typeof(bool),
+        typeof(AttachmentListControl),
+        new PropertyMetadata(false));
+
     public static readonly DependencyProperty OpenCommandProperty = DependencyProperty.Register(
         nameof(OpenCommand),
         typeof(ICommand),
@@ -67,6 +73,12 @@ public partial class AttachmentListControl : UserControl
     {
         get => (bool)GetValue(ShowManageActionsProperty);
         set => SetValue(ShowManageActionsProperty, value);
+    }
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        set => SetValue(IsCompactProperty, value);
     }
 
     public ICommand? OpenCommand

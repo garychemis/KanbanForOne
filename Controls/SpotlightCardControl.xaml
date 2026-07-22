@@ -814,7 +814,7 @@
                         </StackPanel>
                         <ScrollViewer Grid.Row="8"
                                       Margin="0,8,0,0"
-                                      MaxHeight="56"
+                                      MaxHeight="112"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled"
                                       Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
@@ -822,6 +822,7 @@
                                                             OpenCommand="{Binding OpenAttachmentCommand}"
                                                             RevealCommand="{Binding RevealAttachmentCommand}"
                                                             DeleteCommand="{Binding DeleteAttachmentCommand}"
+                                                            IsCompact="True"
                                                             ShowManageActions="{Binding IsTaskSpotlightEditing}" />
                         </ScrollViewer>
                 </Grid>

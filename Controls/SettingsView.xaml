@@ -572,9 +572,12 @@
                             </Border>
                         </Grid>
 
-                        <ItemsControl ItemsSource="{Binding ReleaseNotes}"
-                                      Margin="0,16,0,0">
-                            <ItemsControl.ItemTemplate>
+                        <ScrollViewer Margin="0,16,0,0"
+                                      MaxHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Converter={StaticResource SizeMultiplierConverter}, ConverterParameter=0.6}"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <ItemsControl ItemsSource="{Binding ReleaseNotes}">
+                                <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Grid Margin="0,0,0,4">
                                         <Grid.ColumnDefinitions>
@@ -632,8 +635,9 @@
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
                     </StackPanel>
                 </Border>
             </StackPanel>

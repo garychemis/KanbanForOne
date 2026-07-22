@@ -1,19 +1,108 @@
 <UserControl x:Class="KanbanForOne.Controls.AttachmentListControl"
+             x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Focusable="False">
+    <UserControl.Resources>
+        <Style x:Key="AttachmentRowStyle" TargetType="{x:Type Border}">
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Padding" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{StaticResource DrawerSoftSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="Margin" Value="0,0,0,4" />
+                    <Setter Property="Padding" Value="6,3" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentFileIconStyle" TargetType="{x:Type Border}">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Background" Value="{StaticResource DrawerStrongSurfaceBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="Width" Value="20" />
+                    <Setter Property="Height" Value="20" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentFileNameStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="FontSize" Value="10" />
+                    <Setter Property="LineHeight" Value="12" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentFileIconTextStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="FontSize" Value="9" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentMetadataStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="FontSize" Value="9" />
+                    <Setter Property="LineHeight" Value="10" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentMetadataPanelStyle" TargetType="{x:Type StackPanel}">
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Margin" Value="0,3,0,0" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="Margin" Value="0,1,0,0" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AttachmentActionButtonStyle"
+               TargetType="{x:Type Button}"
+               BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="MinWidth" Value="34" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
+                    <Setter Property="MinWidth" Value="30" />
+                    <Setter Property="Height" Value="20" />
+                    <Setter Property="FontSize" Value="9" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Focusable="False">
         <ItemsControl ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource AncestorType=UserControl}}"
                       Focusable="False"
                       Visibility="{Binding HasItems, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Margin="0,0,0,6"
-                            Padding="8"
-                            CornerRadius="4"
-                            Background="{StaticResource DrawerSoftSurfaceBrush}"
-                            BorderBrush="{StaticResource DrawerSoftDividerBrush}"
-                            BorderThickness="1">
+                    <Border Style="{StaticResource AttachmentRowStyle}">
                         <Grid Focusable="False">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30" />
@@ -21,37 +110,23 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Border Width="24"
-                                    Height="24"
-                                    CornerRadius="4"
-                                    Background="{StaticResource DrawerStrongSurfaceBrush}"
-                                    VerticalAlignment="Center">
+                            <Border Style="{StaticResource AttachmentFileIconStyle}">
                                 <TextBlock Text="&#x6587;"
-                                           FontSize="10"
-                                           FontWeight="SemiBold"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}" />
+                                           Style="{StaticResource AttachmentFileIconTextStyle}" />
                             </Border>
 
                             <StackPanel Grid.Column="1"
                                         Margin="3,0,10,0"
                                         VerticalAlignment="Center">
                                 <TextBlock Text="{Binding OriginalFileName}"
-                                           FontSize="11"
-                                           FontWeight="SemiBold"
-                                           TextTrimming="CharacterEllipsis" />
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,3,0,0">
+                                           Style="{StaticResource AttachmentFileNameStyle}" />
+                                <StackPanel Style="{StaticResource AttachmentMetadataPanelStyle}">
                                     <TextBlock Text="{Binding FileSizeBytes, Converter={StaticResource AttachmentSizeConverter}}"
-                                               FontSize="10"
-                                               Foreground="{StaticResource TextSecondaryBrush}" />
-                                    <TextBlock Text=" · "
-                                               FontSize="10"
-                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                               Style="{StaticResource AttachmentMetadataStyle}" />
+                                    <TextBlock Text=" 路 "
+                                               Style="{StaticResource AttachmentMetadataStyle}" />
                                     <TextBlock Text="{Binding CreatedAt, Converter={StaticResource DateDisplayConverter}}"
-                                               FontSize="10"
-                                               Foreground="{StaticResource TextSecondaryBrush}" />
+                                               Style="{StaticResource AttachmentMetadataStyle}" />
                                 </StackPanel>
                             </StackPanel>
 
@@ -61,31 +136,19 @@
                                 <Button Content="&#x6253;&#x5F00;"
                                         Command="{Binding OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        Style="{StaticResource IconButtonStyle}"
-                                        MinWidth="34"
-                                        Height="24"
-                                        FontSize="10"
-                                        FocusVisualStyle="{x:Null}" />
+                                        Style="{StaticResource AttachmentActionButtonStyle}" />
                                 <Button Content="&#x5B9A;&#x4F4D;"
                                         Command="{Binding RevealCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        Style="{StaticResource IconButtonStyle}"
-                                        MinWidth="34"
-                                        Height="24"
-                                        FontSize="10"
+                                        Style="{StaticResource AttachmentActionButtonStyle}"
                                         Margin="4,0,0,0"
-                                        FocusVisualStyle="{x:Null}"
                                         Visibility="{Binding ShowManageActions, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                                 <Button Content="&#x5220;&#x9664;"
                                         Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
-                                        Style="{StaticResource IconButtonStyle}"
+                                        Style="{StaticResource AttachmentActionButtonStyle}"
                                         Foreground="#9A3412"
-                                        MinWidth="34"
-                                        Height="24"
-                                        FontSize="10"
                                         Margin="4,0,0,0"
-                                        FocusVisualStyle="{x:Null}"
                                         Visibility="{Binding ShowManageActions, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             </StackPanel>
                         </Grid>

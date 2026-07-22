@@ -25,10 +25,12 @@ public sealed class ReleaseNotesServiceTests
     {
         var entries = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        Assert.Equal(2, entries.Count);
-        Assert.Equal("V0.4", entries[0].Version);
-        Assert.Equal("2026-07-17", entries[0].Date);
-        Assert.Contains("新增个人工时录入与管理，支持项目号、专业、工作内容、工时及可选备注", entries[0].Items);
-        Assert.Contains("新增超期未完成筛选入口", entries[1].Items);
+        Assert.Equal(3, entries.Count);
+        Assert.Equal("V0.41", entries[0].Version);
+        Assert.Equal("2026-07-22", entries[0].Date);
+        Assert.Contains("修复人工时汇总“工时分布”列表的滚动条遮挡文字问题，预留滚动条安全间距", entries[0].Items);
+        Assert.Contains("设置页更新日志最高占窗体高度的 60%，超出后可在区域内滚动查看", entries[0].Items);
+        Assert.Equal("V0.4", entries[1].Version);
+        Assert.Contains("新增超期未完成筛选入口", entries[2].Items);
     }
 }
