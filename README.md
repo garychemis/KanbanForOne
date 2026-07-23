@@ -1,43 +1,139 @@
 # KanbanForOne / Kanban41
 
-Kanban41 是一个 Windows 本地个人看板应用，用来管理个人任务、备忘、简单日程和本地附件。它不包含登录、团队协作或云同步逻辑，所有数据都保存在本机。
+Kanban41 是一款面向个人使用的 Windows 本地看板应用，用于统一管理任务、备忘、日程、人工时和附件。
+
+应用不需要登录，不依赖在线服务，也不包含团队协作或云同步功能。数据库、附件、人工时配置和备份文件均保存在应用程序所在目录，适合希望自主掌控数据的个人用户。
 
 当前版本：`V0.4.2`
 
-## 功能特性
+## 核心能力
 
-- 五列看板：待办、进行中、卡住、完成、备忘录
-- 任务管理：创建、编辑、删除、状态流转、优先级、标签、起止日期
-- 备忘管理：创建、编辑、删除、标签和正文记录
-- 拖拽排序：任务可在四个任务列之间移动，备忘只在备忘列内排序
-- 全局搜索：按标题、描述/正文、标签和附件原始文件名过滤
-- 基础筛选：全部任务、今日任务、高优先级、有附件
-- 日历视图：展示设置了起始日期或终止日期的任务
-- 人工时管理：按日期录入项目号、专业、工作内容、工时和可选备注
-- 人工时汇总：支持按月或日期区间查看工时分布与汇总明细，并按项目、专业、工作内容联动筛选
-- Excel 导出：输出人工时汇总和原始明细两个工作表
-- 本地附件：支持从文件资源管理器拖入卡片或详情抽屉，也支持手动选择文件
-- 附件操作：打开、在资源管理器中定位、删除
-- 本地备份：将 `Kanban41.db` 和 `attachments/` 打包为 zip，并支持从备份恢复
+### 任务看板
 
-## 技术栈
+- 使用“待办、进行中、卡住、完成”四个任务列管理工作状态。
+- 单独提供“备忘录”列，备忘与任务采用不同的数据模型。
+- 支持创建、查看、编辑、删除任务和备忘。
+- 任务支持低、中、高三级优先级、多个标签、开始日期和截止日期。
+- 任务描述与备忘正文支持 Markdown 编辑和预览。
+- 支持拖拽调整卡片顺序，以及在四个任务列之间移动任务。
+- 备忘可在备忘录列内排序，不参与任务状态流转。
+- 已完成任务会记录完成时间。
+- 待办、进行中和卡住状态的任务超过截止日期后会显示“超期”标记。
 
-- .NET 8
-- WPF
-- MVVM 风格的数据绑定
-- SQLite
-- `Microsoft.Data.Sqlite`
-- 原生 WPF 控件和 `ResourceDictionary` 样式
+### 搜索与筛选
 
-## 环境要求
+- 全局搜索支持匹配任务标题、任务描述、备忘标题、备忘正文、标签和附件原始文件名。
+- 支持“全部任务、今日任务、高优先级、超期未完成、归档”等快捷入口。
+- 顶部日期条件可按开始日期和结束日期过滤当前内容。
+- 搜索、日期条件和当前入口可以组合使用。
 
-- Windows 10/11
-- .NET 8 SDK
-- Visual Studio 2022、Rider，或任意支持 .NET/WPF 的编辑器
+### 归档分区
+
+- 任务和备忘均可归档，也可从归档状态恢复。
+- 归档时可以选择默认分区或创建自定义分区。
+- 归档页按分区查看卡片，并显示每个分区的任务、备忘和总数。
+- 支持新建、选择和删除自定义归档分区。
+- 删除自定义分区时，其中的卡片会移动到默认分区，避免内容丢失。
+
+### 日历
+
+- 提供月视图和列表视图。
+- 设置了开始日期或截止日期的任务会显示在日历中。
+- 选择日期后，可在右侧查看当天任务和当天人工时。
+- 支持从所选日期快速新建任务或添加人工时。
+- 月份可以前后切换，也可以一键返回当前月份。
+
+### 人工时管理
+
+- 按日期记录项目号、专业、工作内容、工时和可选备注。
+- 支持查看、编辑和删除已有人工时记录。
+- 项目号保存时会自动移除空格并转换为大写。
+- 工时支持最多两位小数，单条记录以及同一天的累计工时不能超过 24 小时。
+- 专业和工作内容使用下拉选项，也允许在录入时输入新值。
+- 新输入的专业或工作内容会自动写入 `data/workhour-options.json`。
+- 设置页可以新增或移除专业、工作内容选项；移除选项不会影响已经保存的记录。
+
+### 人工时汇总
+
+- 支持按月查询，也支持自定义日期区间查询。
+- 显示总工时、原始记录数和汇总组合数。
+- “工时分布”按项目、专业、工作内容组合展示工时占比。
+- “汇总明细”以表格形式展示每个组合的工时和记录数。
+- 支持按项目、专业、工作内容进行组合筛选。
+- 三个筛选下拉框采用级联逻辑：选择任一条件后，其余下拉框只保留与当前条件匹配的可选项。
+- 下拉框顶部空白项表示该字段不参与筛选。
+- 筛选结果会同步作用于工时分布、汇总明细和顶部统计。
+- 可将当前查询结果导出为 Excel，文件包含“人工时汇总”和“人工时明细”两个工作表。
+
+### 本地附件
+
+- 任务和备忘都可以保存本地附件。
+- 支持从文件资源管理器拖入卡片或详情区域，也支持手动选择文件。
+- 支持直接打开附件、在文件资源管理器中定位附件和删除附件。
+- 附件文件保存在本地目录中，SQLite 仅保存附件元数据。
+
+附件限制：
+
+- 单次最多添加 10 个文件。
+- 单个文件最大 200 MB。
+- 单次添加的文件总大小最大 1 GB。
+
+### 数据备份与恢复
+
+- 可在“数据备份”页创建 ZIP 格式的完整备份。
+- 备份文件默认保存在 `data/backups/`。
+- 可选择已有备份文件恢复数据。
+- 恢复会覆盖当前数据库、附件和人工时选项。
+- 执行恢复前，应用会自动创建一份恢复前保护备份。
+- 备份包路径会进行安全检查，并在恢复前检查数据库结构。
+
+完整备份包含：
+
+```text
+Kanban41.db
+workhour-options.json
+attachments/
+```
+
+其中，`Kanban41.db` 包含任务、备忘、归档分区、附件元数据、应用设置和人工时记录；`workhour-options.json` 保存专业与工作内容选项；`attachments/` 保存实际附件文件。
+
+### 设置与版本信息
+
+- 查看数据目录、数据库、附件目录、备份目录和人工时选项文件的实际路径。
+- 管理人工时专业和工作内容选项。
+- 查看当前版本、版权信息和版本更新日志。
+
+## 界面导航
+
+顶部主导航：
+
+- **看板**：查看和管理任务、备忘及归档内容。
+- **日历**：按日期查看任务与人工时。
+- **人工时汇总**：查询、筛选并导出人工时统计。
+
+左侧快捷入口：
+
+- **全部任务**：显示当前未归档的任务和备忘。
+- **今日任务**：显示与今天相关的任务。
+- **高优先级**：筛选高优先级任务。
+- **超期未完成**：筛选已超过截止日期且尚未完成的任务。
+- **归档**：按归档分区管理历史卡片。
+- **数据备份**：创建或恢复本地备份。
+- **设置**：查看数据位置、管理人工时选项和版本信息。
+
+顶部工具区还提供全局搜索、日期条件、通知提示和窗口控制。
 
 ## 快速开始
 
-在项目根目录运行：
+### 环境要求
+
+- Windows 10 或 Windows 11
+- .NET 8 SDK
+- Visual Studio 2022、Rider，或其他支持 .NET 8 和 WPF 的开发环境
+
+### 运行项目
+
+在项目根目录执行：
 
 ```powershell
 dotnet restore
@@ -45,11 +141,113 @@ dotnet build
 dotnet run --project KanbanForOne.csproj
 ```
 
-应用启动后会自动初始化 SQLite 数据库和本地数据目录。
+应用首次启动时会自动创建所需的数据目录、SQLite 数据库、数据表和默认人工时选项。
+
+## 常用操作
+
+### 创建任务或备忘
+
+1. 在对应看板列中创建卡片。
+2. 填写标题、描述或正文。
+3. 任务可继续设置优先级、标签、开始日期和截止日期。
+4. 在编辑状态下拖入或选择附件。
+5. 保存后，任务可以通过拖拽切换状态或调整顺序。
+
+### 录入人工时
+
+1. 打开“日历”。
+2. 选择需要录入的日期。
+3. 点击“添加人工时”。
+4. 填写项目号、专业、工作内容、工时和备注。
+5. 保存后，当天人工时会立即显示在日历详情中。
+
+### 查询和导出人工时
+
+1. 打开“人工时汇总”。
+2. 选择“按月”或“日期区间”。
+3. 设置查询月份或起止日期。
+4. 根据需要选择项目、专业和工作内容筛选条件。
+5. 查看工时分布和汇总明细。
+6. 点击“导出 Excel”保存当前结果。
+
+### 创建备份
+
+1. 打开“数据备份”。
+2. 点击“创建备份”。
+3. 在页面中确认备份路径、创建时间、附件数量和压缩包大小。
+4. 如需长期保存，请将生成的 ZIP 文件复制到其他磁盘或可靠的外部存储位置。
+
+### 恢复备份
+
+1. 打开“数据备份”。
+2. 点击“恢复备份”并选择 ZIP 文件。
+3. 确认覆盖当前数据。
+4. 恢复完成后，应用会重新加载数据库、附件、人工时选项和当前页面数据。
+
+## 数据存储
+
+应用以 EXE 所在目录作为数据根位置，所有运行数据集中保存在 `data/` 下：
+
+```text
+data/
+  db/
+    Kanban41.db
+  attachments/
+    tasks/
+      {TaskId}/
+        {AttachmentId}_{SafeFileName}
+    notes/
+      {NoteId}/
+        {AttachmentId}_{SafeFileName}
+  backups/
+    Kanban41_Backup_yyyyMMdd_HHmmss.zip
+    Kanban41_PreRestore_yyyyMMdd_HHmmss.zip
+  workhour-options.json
+```
+
+说明：
+
+- `data/db/Kanban41.db` 是主数据库。
+- `data/attachments/` 保存任务和备忘的附件文件。
+- `data/backups/` 保存手动备份和恢复前保护备份。
+- `data/workhour-options.json` 保存人工时专业与工作内容选项。
+- 恢复过程会临时使用 `data/.restore-staging/`，完成后自动清理。
+- 如果发现旧版本位于 EXE 目录根部的数据库、附件或备份目录，应用启动时会自动迁移到新的 `data/` 结构。
+
+开发运行时，数据通常位于：
+
+```text
+bin\Debug\net8.0-windows\data\
+```
+
+使用默认发布配置后，数据通常位于：
+
+```text
+bin\Release\net8.0-windows\publish\win-x64\data\
+```
+
+> 数据目录与程序目录绑定。移动、覆盖或删除程序目录前，请先创建备份并将备份文件复制到安全位置。
+
+## 数据库
+
+应用使用 SQLite 保存结构化数据，当前数据库 schema 版本为 `4`。
+
+主要数据表：
+
+| 数据表 | 用途 |
+| --- | --- |
+| `Tasks` | 任务内容、状态、优先级、日期、排序和归档信息 |
+| `Notes` | 备忘标题、正文、排序和归档信息 |
+| `ArchiveSections` | 默认及自定义归档分区 |
+| `Attachments` | 附件所有者、原始文件名、存储路径、大小等元数据 |
+| `AppSettings` | 应用设置 |
+| `WorkHourEntries` | 人工时日期、项目、专业、工作内容、工时和备注 |
+
+启动时会自动创建缺失的数据表和索引，并将受支持的旧数据库结构升级到当前版本。
 
 ## 发布
 
-项目内置了文件夹发布配置：
+项目内置 `win-x64` 文件夹发布配置：
 
 ```powershell
 dotnet publish KanbanForOne.csproj /p:PublishProfile=FolderProfile
@@ -61,162 +259,82 @@ dotnet publish KanbanForOne.csproj /p:PublishProfile=FolderProfile
 bin\Release\net8.0-windows\publish\win-x64\
 ```
 
-发布配置使用：
+默认发布参数：
 
 - `Release`
+- `net8.0-windows`
 - `win-x64`
-- 自包含发布
-- 单文件发布
-- ReadyToRun
+- 自包含
+- 单文件
+- 未启用 ReadyToRun
 
-也可以直接使用命令行参数发布：
-
-```powershell
-dotnet publish KanbanForOne.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true
-```
-
-## 制作安装包
-
-项目提供了一个基于 Windows IExpress 的安装包构建脚本：
+也可以直接使用命令行发布：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-installer.ps1
+dotnet publish KanbanForOne.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=false
 ```
 
-脚本会先发布 `win-x64` 自包含版本，再生成安装器：
+自包含发布不要求目标电脑预先安装 .NET 运行时。应用仍仅支持 Windows x64。
 
-```text
-artifacts\installer\Kanban41_Setup_v0.41.0.exe
-```
+## 技术栈
 
-安装器会将应用安装到当前用户目录：
+- .NET 8
+- WPF
+- C#
+- MVVM 风格的数据绑定与命令
+- SQLite
+- `Microsoft.Data.Sqlite`
+- `ClosedXML`
+- 原生 WPF 控件、ControlTemplate 和 ResourceDictionary
 
-```text
-%LocalAppData%\Programs\Kanban41
-```
-
-安装后会创建开始菜单快捷方式和桌面快捷方式，并在 Windows“应用和功能”中注册卸载入口。卸载时会移除程序文件和快捷方式，但会保留 `Kanban41.db`、`attachments/` 和 `backups/`，避免误删本地看板数据。
-
-## 数据存储
-
-当前实现会把数据保存在应用 EXE 所在目录，便于连同程序目录一起迁移或备份。
-
-运行后会生成：
-
-```text
-Kanban41.db
-attachments\
-backups\
-```
-
-在开发模式下，数据通常位于：
-
-```text
-bin\Debug\net8.0-windows\
-```
-
-在发布版本中，数据通常位于：
-
-```text
-bin\Release\net8.0-windows\publish\win-x64\
-```
-
-附件不会以 BLOB 形式写入 SQLite。应用会把附件文件复制到 `attachments/`，并在 SQLite 中保存原始文件名、存储文件名、相对路径、文件大小、所属任务/备忘等元数据。
-
-附件目录结构示例：
-
-```text
-attachments\
-  tasks\
-    {TaskId}\
-      {AttachmentId}_{SafeFileName}
-  notes\
-    {NoteId}\
-      {AttachmentId}_{SafeFileName}
-```
-
-附件限制：
-
-- 单次最多保存 10 个文件
-- 单个文件最大 200 MB
-- 单次拖入总大小最大 1 GB
-
-## 备份与恢复
-
-在“数据备份”页面可以创建完整备份。备份文件保存在 `backups/`，命名格式类似：
-
-```text
-Kanban41_Backup_yyyyMMdd_HHmmss.zip
-```
-
-备份包包含：
-
-```text
-Kanban41.db
-attachments/
-```
-
-恢复备份会覆盖当前数据库和附件目录。恢复前应用会自动创建一份保护备份：
-
-```text
-Kanban41_PreRestore_yyyyMMdd_HHmmss.zip
-```
-
-## 项目结构
+## 工程结构
 
 ```text
 KanbanForOne/
-  Controls/       WPF 用户控件：看板、列、卡片、抽屉、附件列表等
-  Converters/     XAML 绑定转换器
-  Models/         TaskItem、NoteItem、AttachmentItem 和拖拽 payload
-  Services/       SQLite、仓储、附件存储、备份恢复、路径管理
-  Styles/         主题样式和抽屉样式
-  ViewModels/     MainWindowViewModel、命令和通知基类
-  doc/            产品和交付说明
-  MainWindow.*    应用主窗口
+  Controls/       页面、卡片、对话框、导航、编辑器和通用 WPF 控件
+  Converters/     XAML 数据绑定转换器
+  Models/         任务、备忘、附件、归档、日历和人工时模型
+  Services/       数据库、仓储、附件、备份、导出、配置和路径服务
+  Styles/         全局主题、字体、控件和抽屉样式
+  ViewModels/     主窗口、人工时汇总及命令通知逻辑
+  Properties/     发布配置
+  icon/           应用图标资源
+  doc/            产品与开发交付说明
   App.xaml        应用资源入口
+  MainWindow.*    主窗口与页面容器
 ```
 
-## 数据模型概览
+关键入口：
 
-核心实体：
+- `MainWindow.xaml`：主窗口布局和页面容器。
+- `ViewModels/MainWindowViewModel.cs`：主界面状态、导航和主要交互逻辑。
+- `Controls/BoardView.xaml`：任务、备忘和归档看板。
+- `Controls/CalendarView.xaml`：日历及当天任务、人工时详情。
+- `Controls/WorkHourSummaryView.xaml`：人工时查询、筛选、分布和明细。
+- `Services/DatabaseService.cs`：SQLite 初始化、结构升级和数据库连接。
+- `Services/AttachmentStorageService.cs`：附件复制、打开、定位和删除。
+- `Services/BackupService.cs`：备份创建、恢复和恢复前保护。
+- `Services/WorkHourExportService.cs`：人工时 Excel 导出。
+- `Services/AppPaths.cs`：数据目录及旧目录迁移规则。
 
-- `TaskItem`：任务标题、描述、状态、优先级、标签、起止日期、完成时间、附件集合
-- `NoteItem`：备忘标题、正文、标签、附件集合
-- `AttachmentItem`：附件所有者、原始文件名、存储文件名、相对路径、大小、创建时间
-- `WorkHourEntry`：日期、项目号、专业、工作内容、工时和可选备注
+## 产品边界
 
-SQLite 表：
+Kanban41 当前定位为本地单用户工具：
 
-- `Tasks`
-- `Notes`
-- `Attachments`
-- `AppSettings`
-- `WorkHourEntries`
+- 不包含账号、登录和权限体系。
+- 不包含团队成员、评论、共享看板或协同编辑。
+- 不提供云同步、网络上传或跨设备自动同步。
+- 不内置远程备份；如需异地保存，请手动复制备份 ZIP 文件。
+- 任务和备忘是独立实体，备忘不是一种任务状态。
+- SQLite 保存结构化数据，附件以文件形式保存在本地目录。
 
-数据库当前 schema 版本为 `4`，启动时会自动创建表、索引，并完成既有数据迁移。
+## V0.4.2 更新摘要
 
-## 开发说明
-
-- 入口 ViewModel 是 `ViewModels/MainWindowViewModel.cs`
-- 数据路径由 `Services/AppPaths.cs` 决定
-- 数据库初始化和迁移在 `Services/DatabaseService.cs`
-- 附件复制、打开、定位和删除在 `Services/AttachmentStorageService.cs`
-- 备份和恢复逻辑在 `Services/BackupService.cs`
-- 看板 UI 入口是 `Controls/BoardView.xaml`
-
-设计边界：
-
-- 不添加登录、账号、团队协作、评论、云同步或网络上传
-- 任务和备忘是两种不同实体，备忘不是任务状态
-- SQLite 是主数据库，附件文件保存在本地目录
-- 备份必须同时包含数据库和附件目录
-
-## 常用命令
-
-```powershell
-dotnet restore
-dotnet build
-dotnet run --project KanbanForOne.csproj
-dotnet publish KanbanForOne.csproj /p:PublishProfile=FolderProfile
-```
+- 优化人工时汇总页面的结构、字体层级、数字排版和内容区域高度。
+- 将查询条件和总工时、原始记录、汇总组合统计整合到同一行。
+- 新增项目、专业、工作内容组合筛选和下拉选项级联更新。
+- 筛选条件同步作用于工时分布、汇总明细和统计信息。
+- 修复下拉菜单无法选择及联动失效问题。
+- 优化筛选标签、下拉菜单宽度、间距和浅绿色背景。
+- 统一侧栏和顶部导航图标。
+- 设置页内容卡片随窗口宽度自适应伸展。
