@@ -25,12 +25,18 @@ public sealed class ReleaseNotesServiceTests
     {
         var entries = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        Assert.Equal(3, entries.Count);
-        Assert.Equal("V0.41", entries[0].Version);
-        Assert.Equal("2026-07-22", entries[0].Date);
-        Assert.Contains("修复人工时汇总“工时分布”列表的滚动条遮挡文字问题，预留滚动条安全间距", entries[0].Items);
-        Assert.Contains("设置页更新日志最高占窗体高度的 60%，超出后可在区域内滚动查看", entries[0].Items);
-        Assert.Equal("V0.4", entries[1].Version);
-        Assert.Contains("新增超期未完成筛选入口", entries[2].Items);
+        Assert.Equal(4, entries.Count);
+        Assert.Equal("V0.4.2", entries[0].Version);
+        Assert.Equal("2026-07-23", entries[0].Date);
+        Assert.Contains(
+            "新增按项目、专业、工作内容的组合筛选与级联选项更新，空白项表示不筛选，并同步作用于工时分布和汇总明细",
+            entries[0].Items);
+        Assert.Contains(
+            "统一汇总页字体层级、数字与单位排版、列表与表格行高及数值列对齐，并统一侧栏和顶部导航图标",
+            entries[0].Items);
+        Assert.Equal("V0.4.1", entries[1].Version);
+        Assert.Contains("设置页更新日志最高占窗体高度的 60%，超出后可在区域内滚动查看", entries[1].Items);
+        Assert.Equal("V0.4", entries[2].Version);
+        Assert.Contains("新增超期未完成筛选入口", entries[3].Items);
     }
 }

@@ -6,7 +6,9 @@
         <Style x:Key="TopTabButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Height" Value="44" />
             <Setter Property="Padding" Value="0,0" />
-            <Setter Property="Margin" Value="0,0,22,0" />
+            <Setter Property="Margin" Value="0,0,24,0" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
@@ -128,30 +130,42 @@
             </Border>
 
             <Button Grid.Column="8"
-                    Content="⚙"
+                    AutomationProperties.Name="设置"
+                    Content="&#xE713;"
                     Command="{Binding ChangeFilterCommand}"
                     CommandParameter="Settings"
+                    FontFamily="{StaticResource AppIconFontFamily}"
+                    FontSize="14"
                     Style="{StaticResource IconButtonStyle}"
                     ToolTip="设置" />
 
             <StackPanel Grid.Column="10"
                         Orientation="Horizontal"
                         VerticalAlignment="Center">
-                <Button Content="−"
+                <Button Content="&#xE921;"
+                        AutomationProperties.Name="最小化"
                         Click="OnMinimizeClick"
+                        FontFamily="{StaticResource AppIconFontFamily}"
+                        FontSize="12"
                         Style="{StaticResource IconButtonStyle}"
                         Width="34"
                         Height="30"
                         ToolTip="最小化" />
-                <Button Content="□"
+                <Button Content="&#xE922;"
+                        AutomationProperties.Name="最大化或还原"
                         Click="OnMaximizeClick"
+                        FontFamily="{StaticResource AppIconFontFamily}"
+                        FontSize="12"
                         Style="{StaticResource IconButtonStyle}"
                         Width="34"
                         Height="30"
                         Margin="4,0,0,0"
                         ToolTip="最大化/还原" />
-                <Button Content="×"
+                <Button Content="&#xE8BB;"
+                        AutomationProperties.Name="关闭"
                         Click="OnCloseClick"
+                        FontFamily="{StaticResource AppIconFontFamily}"
+                        FontSize="12"
                         Style="{StaticResource WindowCloseButtonStyle}"
                         Width="34"
                         Height="30"

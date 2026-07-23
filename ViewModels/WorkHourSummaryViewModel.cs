@@ -21,6 +21,14 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
     private bool _isLoaded;
     private bool _isQueryDirty = true;
     private int _queryVersion;
+    private IReadOnlyList<WorkHourSummaryItem> _allSummaries = [];
+    private IReadOnlyList<string> _projectFilterOptions = [string.Empty];
+    private IReadOnlyList<string> _disciplineFilterOptions = [string.Empty];
+    private IReadOnlyList<string> _workActivityFilterOptions = [string.Empty];
+    private string _selectedProjectFilter = string.Empty;
+    private string _selectedDisciplineFilter = string.Empty;
+    private string _selectedWorkActivityFilter = string.Empty;
+    private bool _isRefreshingDimensionFilters;
 
     public WorkHourSummaryViewModel(
         WorkHourRepository repository,
@@ -45,6 +53,24 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
 
     public ObservableCollection<WorkHourSummaryItem> Summaries { get; } = new();
 
+    public IReadOnlyList<string> ProjectFilterOptions
+    {
+        get => _projectFilterOptions;
+        private set => SetProperty(ref _projectFilterOptions, value);
+    }
+
+    public IReadOnlyList<string> DisciplineFilterOptions
+    {
+        get => _disciplineFilterOptions;
+        private set => SetProperty(ref _disciplineFilterOptions, value);
+    }
+
+    public IReadOnlyList<string> WorkActivityFilterOptions
+    {
+        get => _workActivityFilterOptions;
+        private set => SetProperty(ref _workActivityFilterOptions, value);
+    }
+
     public IReadOnlyList<int> YearOptions { get; } = Enumerable.Range(1990, 111).ToArray();
 
     public IReadOnlyList<int> MonthOptions { get; } = Enumerable.Range(1, 12).ToArray();
@@ -60,6 +86,24 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
     public RelayCommand RefreshCommand { get; }
 
     public RelayCommand ExportCommand { get; }
+
+    public string SelectedProjectFilter
+    {
+        get => _selectedProjectFilter;
+        set => SetDimensionFilter(ref _selectedProjectFilter, value, nameof(SelectedProjectFilter));
+    }
+
+    public string SelectedDisciplineFilter
+    {
+        get => _selectedDisciplineFilter;
+        set => SetDimensionFilter(ref _selectedDisciplineFilter, value, nameof(SelectedDisciplineFilter));
+    }
+
+    public string SelectedWorkActivityFilter
+    {
+        get => _selectedWorkActivityFilter;
+        set => SetDimensionFilter(ref _selectedWorkActivityFilter, value, nameof(SelectedWorkActivityFilter));
+    }
 
     public bool IsMonthMode
     {
@@ -137,6 +181,7 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
                 OnPropertyChanged(nameof(IsEmpty));
                 OnPropertyChanged(nameof(CanRefresh));
                 OnPropertyChanged(nameof(CanExport));
+                OnPropertyChanged(nameof(CanUseDimensionFilters));
                 RefreshCommand.RaiseCanExecuteChanged();
                 ExportCommand.RaiseCanExecuteChanged();
             }
@@ -145,7 +190,23 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
 
     public bool HasSummaries => Summaries.Count > 0;
 
+    public bool HasUnfilteredSummaries => _allSummaries.Count > 0;
+
     public bool IsEmpty => !IsLoading && !HasSummaries;
+
+    public bool HasActiveDimensionFilters => !string.IsNullOrEmpty(_selectedProjectFilter)
+                                             || !string.IsNullOrEmpty(_selectedDisciplineFilter)
+                                             || !string.IsNullOrEmpty(_selectedWorkActivityFilter);
+
+    public bool CanUseDimensionFilters => !IsLoading && HasUnfilteredSummaries;
+
+    public string EmptyStateTitle => HasUnfilteredSummaries && HasActiveDimensionFilters
+        ? "当前筛选条件下没有匹配的人工时"
+        : "当前范围没有人工时";
+
+    public string EmptyStateDescription => HasUnfilteredSummaries && HasActiveDimensionFilters
+        ? "将一个或多个筛选下拉框恢复为空白。"
+        : "调整时间范围，然后重新应用条件。";
 
     public bool CanRefresh => !IsLoading && TryGetSelectedRange(out _, out _);
 
@@ -153,13 +214,13 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
 
     public int TotalHourUnits => Summaries.Sum(item => item.TotalHourUnits);
 
+    public string TotalHoursValueDisplay => WorkHourValueConverter.FormatHours(TotalHourUnits);
+
     public string TotalHoursDisplay => $"{WorkHourValueConverter.FormatHours(TotalHourUnits)} 小时";
 
     public int TotalEntryCount => Summaries.Sum(item => item.EntryCount);
 
     public int CombinationCount => Summaries.Count;
-
-    public double ResultsPanelHeight => Math.Clamp((CombinationCount * 58) + 88, 240, 440);
 
     public int MaxSummaryHourUnits => Math.Max(1, Summaries.Select(item => item.TotalHourUnits).DefaultIfEmpty(1).Max());
 
@@ -268,12 +329,14 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
                 return;
             }
 
-            Replace(Summaries, summaries);
+            _allSummaries = summaries;
+            RefreshDimensionFilterOptions();
+            ApplyDimensionFilters();
             _currentStartDate = startDate;
             _currentEndDate = endDate;
             _isLoaded = true;
             _isQueryDirty = false;
-            NotifySummaryChanged();
+            NotifyQueryStateChanged();
         }
         catch (Exception ex)
         {
@@ -313,11 +376,24 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
         {
             IsLoading = true;
             var summaries = Summaries.ToArray();
-            var details = await _repository.GetByDateRangeAsync(_currentStartDate, _currentEndDate);
+            var startDate = _currentStartDate;
+            var endDate = _currentEndDate;
+            var projectFilter = _selectedProjectFilter;
+            var disciplineFilter = _selectedDisciplineFilter;
+            var workActivityFilter = _selectedWorkActivityFilter;
+            var details = (await _repository.GetByDateRangeAsync(startDate, endDate))
+                .Where(entry => MatchesDimensionFilters(
+                    entry.ProjectNumber,
+                    entry.Discipline,
+                    entry.WorkActivity,
+                    projectFilter,
+                    disciplineFilter,
+                    workActivityFilter))
+                .ToArray();
             await _exportService.ExportAsync(
                 dialog.FileName,
-                _currentStartDate,
-                _currentEndDate,
+                startDate,
+                endDate,
                 summaries,
                 details);
             _notify($"人工时汇总已导出：{dialog.FileName}");
@@ -363,17 +439,159 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
     private void NotifySummaryChanged()
     {
         OnPropertyChanged(nameof(HasSummaries));
+        OnPropertyChanged(nameof(HasUnfilteredSummaries));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(HasActiveDimensionFilters));
+        OnPropertyChanged(nameof(CanUseDimensionFilters));
+        OnPropertyChanged(nameof(EmptyStateTitle));
+        OnPropertyChanged(nameof(EmptyStateDescription));
         OnPropertyChanged(nameof(CanExport));
         OnPropertyChanged(nameof(TotalHourUnits));
+        OnPropertyChanged(nameof(TotalHoursValueDisplay));
         OnPropertyChanged(nameof(TotalHoursDisplay));
         OnPropertyChanged(nameof(TotalEntryCount));
         OnPropertyChanged(nameof(CombinationCount));
-        OnPropertyChanged(nameof(ResultsPanelHeight));
         OnPropertyChanged(nameof(MaxSummaryHourUnits));
         OnPropertyChanged(nameof(CurrentDateRangeDisplay));
         OnPropertyChanged(nameof(CurrentRangeQueryDisplay));
         ExportCommand.RaiseCanExecuteChanged();
+    }
+
+    private void NotifyQueryStateChanged()
+    {
+        OnPropertyChanged(nameof(HasUnfilteredSummaries));
+        OnPropertyChanged(nameof(CanUseDimensionFilters));
+        OnPropertyChanged(nameof(CanExport));
+        OnPropertyChanged(nameof(CurrentDateRangeDisplay));
+        OnPropertyChanged(nameof(CurrentRangeQueryDisplay));
+        ExportCommand.RaiseCanExecuteChanged();
+    }
+
+    private void SetDimensionFilter(ref string field, string? value, string propertyName)
+    {
+        if (_isRefreshingDimensionFilters)
+        {
+            return;
+        }
+
+        var normalized = value?.Trim() ?? string.Empty;
+        if (!SetProperty(ref field, normalized, propertyName))
+        {
+            return;
+        }
+
+        RefreshDimensionFilterOptions();
+        ApplyDimensionFilters();
+    }
+
+    private void RefreshDimensionFilterOptions()
+    {
+        _isRefreshingDimensionFilters = true;
+        try
+        {
+            var attempt = 0;
+            bool selectionChanged;
+            IReadOnlyList<string> projectOptions;
+            IReadOnlyList<string> disciplineOptions;
+            IReadOnlyList<string> workActivityOptions;
+            do
+            {
+                projectOptions = BuildDimensionFilterOptions(_allSummaries
+                        .Where(item => MatchesDimension(item.Discipline, _selectedDisciplineFilter)
+                                       && MatchesDimension(item.WorkActivity, _selectedWorkActivityFilter))
+                        .Select(item => item.ProjectNumber));
+                disciplineOptions = BuildDimensionFilterOptions(_allSummaries
+                        .Where(item => MatchesDimension(item.ProjectNumber, _selectedProjectFilter)
+                                       && MatchesDimension(item.WorkActivity, _selectedWorkActivityFilter))
+                        .Select(item => item.Discipline));
+                workActivityOptions = BuildDimensionFilterOptions(_allSummaries
+                        .Where(item => MatchesDimension(item.ProjectNumber, _selectedProjectFilter)
+                                       && MatchesDimension(item.Discipline, _selectedDisciplineFilter))
+                        .Select(item => item.WorkActivity));
+
+                selectionChanged = RestoreDimensionFilter(
+                    ref _selectedProjectFilter,
+                    projectOptions);
+                selectionChanged |= RestoreDimensionFilter(
+                    ref _selectedDisciplineFilter,
+                    disciplineOptions);
+                selectionChanged |= RestoreDimensionFilter(
+                    ref _selectedWorkActivityFilter,
+                    workActivityOptions);
+                attempt++;
+            } while (selectionChanged && attempt < 3);
+
+            ProjectFilterOptions = projectOptions;
+            DisciplineFilterOptions = disciplineOptions;
+            WorkActivityFilterOptions = workActivityOptions;
+        }
+        finally
+        {
+            _isRefreshingDimensionFilters = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedProjectFilter));
+        OnPropertyChanged(nameof(SelectedDisciplineFilter));
+        OnPropertyChanged(nameof(SelectedWorkActivityFilter));
+    }
+
+    private static bool RestoreDimensionFilter(ref string field, IReadOnlyList<string> options)
+    {
+        var current = field;
+        var restored = options.FirstOrDefault(option => string.Equals(option, current, StringComparison.OrdinalIgnoreCase))
+                       ?? string.Empty;
+        if (string.Equals(field, restored, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        field = restored;
+        return true;
+    }
+
+    private void ApplyDimensionFilters()
+    {
+        var filtered = _allSummaries
+            .Where(item => MatchesDimensionFilters(
+                item.ProjectNumber,
+                item.Discipline,
+                item.WorkActivity,
+                _selectedProjectFilter,
+                _selectedDisciplineFilter,
+                _selectedWorkActivityFilter))
+            .ToArray();
+        Replace(Summaries, filtered);
+        NotifySummaryChanged();
+    }
+
+    private static IReadOnlyList<string> BuildDimensionFilterOptions(IEnumerable<string> values)
+    {
+        return [
+            string.Empty,
+            .. values
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+        ];
+    }
+
+    private static bool MatchesDimensionFilters(
+        string projectNumber,
+        string discipline,
+        string workActivity,
+        string projectFilter,
+        string disciplineFilter,
+        string workActivityFilter)
+    {
+        return MatchesDimension(projectNumber, projectFilter)
+               && MatchesDimension(discipline, disciplineFilter)
+               && MatchesDimension(workActivity, workActivityFilter);
+    }
+
+    private static bool MatchesDimension(string value, string filter)
+    {
+        return string.IsNullOrEmpty(filter)
+               || string.Equals(value, filter, StringComparison.OrdinalIgnoreCase);
     }
 
     private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> source)

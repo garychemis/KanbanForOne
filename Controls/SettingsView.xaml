@@ -117,10 +117,11 @@
     </UserControl.Resources>
 
     <Grid Background="{StaticResource MainContentBackgroundBrush}">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer HorizontalContentAlignment="Stretch"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="32"
-                        MaxWidth="760"
-                        HorizontalAlignment="Left">
+                        HorizontalAlignment="Stretch">
                 <TextBlock Text="设置"
                            FontSize="20"
                            FontWeight="SemiBold" />

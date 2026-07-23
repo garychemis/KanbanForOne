@@ -11,6 +11,8 @@ public sealed record WorkHourSummaryItem(
 {
     public decimal TotalHours => WorkHourValueConverter.FromUnits(TotalHourUnits);
 
+    public string TotalHoursValueDisplay => WorkHourValueConverter.FormatHours(TotalHourUnits);
+
     public string TotalHoursDisplay => $"{WorkHourValueConverter.FormatHours(TotalHourUnits)} 小时";
 
     public string CombinationDisplay => $"{ProjectNumber} / {Discipline} / {WorkActivity}";

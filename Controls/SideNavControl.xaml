@@ -1,24 +1,33 @@
 <UserControl x:Class="KanbanForOne.Controls.SideNavControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="SideNavIconStyle" TargetType="{x:Type TextBlock}">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="FontFamily" Value="{StaticResource AppIconFontFamily}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+
     <Border Background="{StaticResource SideNavBackgroundBrush}"
             BorderBrush="{StaticResource BorderBrushSoft}"
             BorderThickness="0,0,1,0">
         <DockPanel Margin="16,22">
             <StackPanel DockPanel.Dock="Top">
                 <TextBlock Text="Kanban41"
-                           FontSize="16"
-                           FontWeight="SemiBold"
+                           Style="{StaticResource AppBrandTextStyle}"
                            Foreground="{StaticResource TextPrimaryBrush}" />
                 <TextBlock Text="{Binding AppVersion}"
                            Margin="0,8,0,0"
-                           FontSize="11"
                            FontWeight="SemiBold"
+                           Style="{StaticResource AppMetaTextStyle}"
                            Foreground="{StaticResource TextSecondaryBrush}" />
                 <TextBlock Text="{Binding CopyrightText}"
                            Margin="0,3,0,0"
-                           FontSize="10"
-                           LineHeight="14"
+                           LineHeight="16"
+                           Style="{StaticResource AppMetaTextStyle}"
                            TextWrapping="Wrap"
                            Foreground="{StaticResource TextSecondaryBrush}" />
                 <StackPanel Margin="0,22,0,0">
@@ -26,10 +35,8 @@
                             CommandParameter="Board"
                             Style="{StaticResource NavButtonStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="▦"
-                                       Width="24"
-                                       FontSize="15"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="&#xE8A9;"
+                                       Style="{StaticResource SideNavIconStyle}" />
                             <TextBlock Text="全部任务" />
                         </StackPanel>
                     </Button>
@@ -37,10 +44,8 @@
                             CommandParameter="Today"
                             Style="{StaticResource NavButtonStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="▣"
-                                       Width="24"
-                                       FontSize="15"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="&#xE787;"
+                                       Style="{StaticResource SideNavIconStyle}" />
                             <TextBlock Text="今日任务" />
                         </StackPanel>
                     </Button>
@@ -48,11 +53,8 @@
                             CommandParameter="High"
                             Style="{StaticResource NavButtonStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="!"
-                                       Width="24"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="&#xE814;"
+                                       Style="{StaticResource SideNavIconStyle}" />
                             <TextBlock Text="高优先级" />
                         </StackPanel>
                     </Button>
@@ -60,10 +62,8 @@
                             CommandParameter="Overdue"
                             Style="{StaticResource NavButtonStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="!"
-                                       Width="24"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
+                            <TextBlock Text="&#xE7BA;"
+                                       Style="{StaticResource SideNavIconStyle}"
                                        Foreground="#BE185D" />
                             <TextBlock Text="超期未完成" />
                         </StackPanel>
@@ -72,10 +72,8 @@
                             CommandParameter="Archived"
                             Style="{StaticResource NavButtonStyle}">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="▱"
-                                       Width="24"
-                                       FontSize="15"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <TextBlock Text="&#xE7B8;"
+                                       Style="{StaticResource SideNavIconStyle}" />
                             <TextBlock Text="归档" />
                         </StackPanel>
                     </Button>
@@ -87,10 +85,8 @@
                         CommandParameter="Backup"
                         Style="{StaticResource NavButtonStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="♧"
-                                   Width="24"
-                                   FontSize="15"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="&#xE753;"
+                                   Style="{StaticResource SideNavIconStyle}" />
                         <TextBlock Text="数据备份" />
                     </StackPanel>
                 </Button>
@@ -98,10 +94,8 @@
                         CommandParameter="Settings"
                         Style="{StaticResource NavButtonStyle}">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="⚙"
-                                   Width="24"
-                                   FontSize="15"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="&#xE713;"
+                                   Style="{StaticResource SideNavIconStyle}" />
                         <TextBlock Text="设置" />
                     </StackPanel>
                 </Button>

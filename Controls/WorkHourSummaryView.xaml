@@ -12,9 +12,10 @@
         <SolidColorBrush x:Key="SummaryAccentBrush" Color="#71877D" />
         <SolidColorBrush x:Key="SummaryAccentStrongBrush" Color="#50655C" />
         <SolidColorBrush x:Key="SummaryTrackBrush" Color="#E5E9E6" />
+        <SolidColorBrush x:Key="SummaryFilterSurfaceBrush" Color="#E7EFEA" />
+        <SolidColorBrush x:Key="SummaryFilterBorderBrush" Color="#B9C9C1" />
         <SolidColorBrush x:Key="SummaryTextBrush" Color="#222824" />
         <SolidColorBrush x:Key="SummaryMutedTextBrush" Color="#68716C" />
-        <FontFamily x:Key="SummaryNumericFont">Cascadia Mono, Consolas, Segoe UI</FontFamily>
 
         <Style x:Key="SummaryPanelStyle" TargetType="{x:Type Border}">
             <Setter Property="Background" Value="{StaticResource SummarySurfaceBrush}" />
@@ -177,7 +178,7 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
-            <Setter Property="FontFamily" Value="{StaticResource SummaryNumericFont}" />
+            <Setter Property="FontFamily" Value="{StaticResource AppNumericFontFamily}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="ItemContainerStyle" Value="{StaticResource SummaryComboBoxItemStyle}" />
             <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -216,14 +217,14 @@
                                               Content="{TemplateBinding SelectionBoxItem}"
                                               ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
                                               IsHitTestVisible="False" />
-                            <TextBlock Margin="0,0,7,1"
+                            <TextBlock Margin="0,0,8,0"
                                        HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
-                                       FontFamily="Segoe UI"
+                                       FontFamily="{StaticResource AppIconFontFamily}"
                                        FontSize="10"
                                        Foreground="{StaticResource SummaryMutedTextBrush}"
                                        IsHitTestVisible="False"
-                                       Text="⌄" />
+                                       Text="&#xE70D;" />
                             <Popup x:Name="PART_Popup"
                                    AllowsTransparency="True"
                                    Focusable="False"
@@ -255,6 +256,15 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="SummaryFilterComboBoxStyle"
+               TargetType="{x:Type ComboBox}"
+               BasedOn="{StaticResource SummaryInlineComboBoxStyle}">
+            <Setter Property="Background" Value="{StaticResource SummaryFilterSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource SummaryFilterBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
         </Style>
 
         <Style x:Key="SummaryProgressStyle" TargetType="{x:Type ProgressBar}">
@@ -301,8 +311,15 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SummaryNumericColumnHeaderStyle"
+               TargetType="{x:Type DataGridColumnHeader}"
+               BasedOn="{StaticResource SummaryColumnHeaderStyle}">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+        </Style>
+
         <Style x:Key="SummaryCellStyle" TargetType="{x:Type DataGridCell}">
             <Setter Property="Padding" Value="10,0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="#E7E9E5" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
@@ -315,7 +332,8 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
-                            <ContentPresenter VerticalAlignment="Center" />
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -323,7 +341,7 @@
         </Style>
 
         <Style x:Key="SummaryRowStyle" TargetType="{x:Type DataGridRow}">
-            <Setter Property="Height" Value="42" />
+            <Setter Property="Height" Value="44" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource SummaryTextBrush}" />
             <Setter Property="BorderThickness" Value="0" />
@@ -340,6 +358,7 @@
 
         <Style x:Key="SummaryDataGridStyle" TargetType="{x:Type DataGrid}">
             <Setter Property="Background" Value="Transparent" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="GridLinesVisibility" Value="None" />
             <Setter Property="HeadersVisibility" Value="Column" />
@@ -359,13 +378,13 @@
     <Grid x:Name="SummaryContent"
           Background="{StaticResource SummaryCanvasBrush}"
           DataContext="{Binding WorkHourSummary}"
-          TextElement.Foreground="{StaticResource SummaryTextBrush}">
+          TextElement.FontFamily="{StaticResource AppFontFamily}"
+          TextElement.Foreground="{StaticResource SummaryTextBrush}"
+          TextOptions.TextFormattingMode="Display">
         <Grid Margin="28,22,28,24">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="14" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="12" />
+                <RowDefinition Height="16" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="16" />
                 <RowDefinition Height="*" />
@@ -377,10 +396,11 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel>
-                    <TextBlock FontSize="23" FontWeight="SemiBold" Text="人工时汇总" />
+                    <TextBlock Style="{StaticResource AppPageTitleTextStyle}"
+                               Text="人工时汇总" />
                     <TextBlock Margin="0,3,0,0"
-                               FontSize="11"
                                Foreground="{StaticResource SummaryMutedTextBrush}"
+                               Style="{StaticResource AppPageSubtitleTextStyle}"
                                Text="项目、专业与工作内容的工时构成" />
                 </StackPanel>
                 <Button Grid.Column="1"
@@ -391,12 +411,19 @@
                         Style="{StaticResource SummaryPrimaryButtonStyle}" />
             </Grid>
 
-            <StackPanel Grid.Row="2" HorizontalAlignment="Left">
-                <Border Padding="5"
-                        Background="{StaticResource SummarySurfaceBrush}"
-                        BorderBrush="{StaticResource SummaryBorderBrush}"
-                        BorderThickness="1"
-                        CornerRadius="6">
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <Border Padding="5"
+                            Background="{StaticResource SummarySurfaceBrush}"
+                            BorderBrush="{StaticResource SummaryBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="6">
                     <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -441,8 +468,9 @@
                         <Button Width="34"
                                 AutomationProperties.Name="上一个月"
                                 Command="{Binding PreviousMonthCommand}"
-                                Content="‹"
-                                FontSize="17"
+                                Content="&#xE76B;"
+                                FontFamily="{StaticResource AppIconFontFamily}"
+                                FontSize="10"
                                 Style="{StaticResource SummaryQuietButtonStyle}"
                                 ToolTip="上一个月" />
                         <Border Grid.Column="2"
@@ -458,22 +486,30 @@
                                           ItemsSource="{Binding YearOptions}"
                                           SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
                                           Style="{StaticResource SummaryInlineComboBoxStyle}" />
-                                <TextBlock VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource SummaryMutedTextBrush}" Text="年" />
+                                <TextBlock VerticalAlignment="Center"
+                                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="年" />
                                 <Border Width="1" Margin="6,7" Background="{StaticResource SummaryBorderBrush}" />
                                 <ComboBox Width="48"
                                           AutomationProperties.Name="汇总月份"
                                           ItemsSource="{Binding MonthOptions}"
                                           SelectedItem="{Binding SelectedMonth, Mode=TwoWay}"
                                           Style="{StaticResource SummaryInlineComboBoxStyle}" />
-                                <TextBlock Margin="0,0,7,0" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource SummaryMutedTextBrush}" Text="月" />
+                                <TextBlock Margin="0,0,7,0"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="月" />
                             </StackPanel>
                         </Border>
                         <Button Grid.Column="4"
                                 Width="34"
                                 AutomationProperties.Name="下一个月"
                                 Command="{Binding NextMonthCommand}"
-                                Content="›"
-                                FontSize="17"
+                                Content="&#xE76C;"
+                                FontFamily="{StaticResource AppIconFontFamily}"
+                                FontSize="10"
                                 Style="{StaticResource SummaryQuietButtonStyle}"
                                 ToolTip="下一个月" />
                         <Button Grid.Column="6"
@@ -493,9 +529,9 @@
                                 CornerRadius="4">
                             <Grid>
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="130" />
                                     <ColumnDefinition Width="28" />
-                                    <ColumnDefinition Width="170" />
+                                    <ColumnDefinition Width="130" />
                                 </Grid.ColumnDefinitions>
                                 <DatePicker AutomationProperties.Name="汇总开始日期"
                                             FontSize="12"
@@ -504,8 +540,8 @@
                                 <TextBlock Grid.Column="1"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="11"
                                            Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Style="{StaticResource AppMetaTextStyle}"
                                            Text="至" />
                                 <DatePicker Grid.Column="2"
                                             AutomationProperties.Name="汇总结束日期"
@@ -523,107 +559,204 @@
                                 Style="{StaticResource SummaryPrimaryButtonStyle}"
                                 Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                     </Grid>
+                    </Border>
+
+                    <TextBlock Margin="7,8,0,0"
+                               AutomationProperties.Name="当前人工时汇总日期区间"
+                               Foreground="{StaticResource SummaryMutedTextBrush}"
+                               Style="{StaticResource AppNumericTextStyle}"
+                               Text="{Binding CurrentRangeQueryDisplay}"
+                               Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                </StackPanel>
+
+                <Border Grid.Column="2"
+                        Height="46"
+                        MinWidth="222"
+                        Padding="12,3"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Background="{StaticResource SummarySurfaceBrush}"
+                        BorderBrush="{StaticResource SummaryBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Style="{StaticResource AppLabelTextStyle}"
+                                       Text="总工时" />
+                            <StackPanel Margin="0,1,0,0"
+                                        Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource AppMetricValueTextStyle}"
+                                           Text="{Binding TotalHoursValueDisplay}" />
+                                <TextBlock Margin="6,0,0,1"
+                                           VerticalAlignment="Bottom"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="小时" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                Margin="0,3"
+                                Background="{StaticResource SummaryBorderBrush}" />
+                        <StackPanel Grid.Column="2"
+                                    Margin="14,0,0,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Style="{StaticResource AppLabelTextStyle}"
+                                       Text="原始记录" />
+                            <StackPanel Margin="0,1,0,0"
+                                        Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource AppMetricValueTextStyle}"
+                                           Text="{Binding TotalEntryCount}" />
+                                <TextBlock Margin="6,0,0,1"
+                                           VerticalAlignment="Bottom"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="条" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Border Grid.Column="3"
+                                Margin="0,3"
+                                Background="{StaticResource SummaryBorderBrush}" />
+                        <StackPanel Grid.Column="4"
+                                    Margin="14,0,0,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Style="{StaticResource AppLabelTextStyle}"
+                                       Text="汇总组合" />
+                            <StackPanel Margin="0,1,0,0"
+                                        Orientation="Horizontal">
+                                <TextBlock Style="{StaticResource AppMetricValueTextStyle}"
+                                           Text="{Binding CombinationCount}" />
+                                <TextBlock Margin="6,0,0,1"
+                                           VerticalAlignment="Bottom"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="组" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
                 </Border>
-
-                <TextBlock Margin="7,8,0,0"
-                           AutomationProperties.Name="当前人工时汇总日期区间"
-                           FontFamily="{StaticResource SummaryNumericFont}"
-                           FontSize="10"
-                           Foreground="{StaticResource SummaryMutedTextBrush}"
-                           Text="{Binding CurrentRangeQueryDisplay}"
-                           Typography.NumeralAlignment="Tabular"
-                           Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-            </StackPanel>
-
-            <Grid Grid.Row="4" HorizontalAlignment="Left" Height="60">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="174" />
-                    <ColumnDefinition Width="1" />
-                    <ColumnDefinition Width="174" />
-                    <ColumnDefinition Width="1" />
-                    <ColumnDefinition Width="174" />
-                </Grid.ColumnDefinitions>
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="总工时" />
-                    <TextBlock Margin="0,3,0,0"
-                               FontFamily="{StaticResource SummaryNumericFont}"
-                               FontSize="22"
-                               FontWeight="SemiBold"
-                               Text="{Binding TotalHoursDisplay}"
-                               Typography.NumeralAlignment="Tabular" />
-                </StackPanel>
-                <Border Grid.Column="1" Margin="0,8" Background="{StaticResource SummaryBorderBrush}" />
-                <StackPanel Grid.Column="2" Margin="18,0,0,0" VerticalAlignment="Center">
-                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="原始记录" />
-                    <TextBlock Margin="0,3,0,0"
-                               FontFamily="{StaticResource SummaryNumericFont}"
-                               FontSize="22"
-                               FontWeight="SemiBold"
-                               Text="{Binding TotalEntryCount, StringFormat={}{0} 条}"
-                               Typography.NumeralAlignment="Tabular" />
-                </StackPanel>
-                <Border Grid.Column="3" Margin="0,8" Background="{StaticResource SummaryBorderBrush}" />
-                <StackPanel Grid.Column="4" Margin="18,0,0,0" VerticalAlignment="Center">
-                    <TextBlock FontSize="10" Foreground="{StaticResource SummaryMutedTextBrush}" Text="汇总组合" />
-                    <TextBlock Margin="0,3,0,0"
-                               FontFamily="{StaticResource SummaryNumericFont}"
-                               FontSize="22"
-                               FontWeight="SemiBold"
-                               Text="{Binding CombinationCount, StringFormat={}{0} 组}"
-                               Typography.NumeralAlignment="Tabular" />
-                </StackPanel>
             </Grid>
 
-            <Grid Grid.Row="6"
-                  Height="{Binding ResultsPanelHeight}"
-                  VerticalAlignment="Top">
+            <Grid Grid.Row="4"
+                  MinHeight="240">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="3*" />
-                    <ColumnDefinition Width="14" />
+                    <ColumnDefinition Width="16" />
                     <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Padding="16,14" Style="{StaticResource SummaryPanelStyle}">
+                <Border Padding="16" Style="{StaticResource SummaryPanelStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="16" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid>
-                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="工时分布" />
+                            <TextBlock Style="{StaticResource AppSectionTitleTextStyle}"
+                                       Text="工时分布" />
                             <TextBlock HorizontalAlignment="Right"
-                                       FontFamily="{StaticResource SummaryNumericFont}"
-                                       FontSize="10"
+                                       VerticalAlignment="Center"
+                                       FontSize="11"
                                        Foreground="{StaticResource SummaryMutedTextBrush}"
+                                       Style="{StaticResource AppNumericTextStyle}"
                                        Text="{Binding CurrentDateRangeDisplay}"
-                                       Typography.NumeralAlignment="Tabular" />
+                                       />
                         </Grid>
-                        <ScrollViewer Grid.Row="2"
-                                      Padding="0,0,12,0"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
+
+                        <Grid Grid.Row="2"
+                              IsEnabled="{Binding CanUseDimensionFilters}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="20" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Margin="8,0">
+                                <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           HorizontalAlignment="Center"
+                                           Style="{StaticResource AppLabelTextStyle}"
+                                           TextAlignment="Center"
+                                           Text="项目" />
+                                <ComboBox Margin="0,4,0,0"
+                                          AutomationProperties.Name="按项目筛选人工时汇总"
+                                          AutomationProperties.HelpText="选择空白项表示不按项目筛选"
+                                          HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding ProjectFilterOptions}"
+                                          SelectedItem="{Binding SelectedProjectFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource SummaryFilterComboBoxStyle}"
+                                          ToolTip="选择空白项表示不按项目筛选" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2"
+                                        Margin="8,0">
+                                <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           HorizontalAlignment="Center"
+                                           Style="{StaticResource AppLabelTextStyle}"
+                                           TextAlignment="Center"
+                                           Text="专业" />
+                                <ComboBox Margin="0,4,0,0"
+                                          AutomationProperties.Name="按专业筛选人工时汇总"
+                                          AutomationProperties.HelpText="选择空白项表示不按专业筛选"
+                                          HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding DisciplineFilterOptions}"
+                                          SelectedItem="{Binding SelectedDisciplineFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource SummaryFilterComboBoxStyle}"
+                                          ToolTip="选择空白项表示不按专业筛选" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4"
+                                        Margin="8,0">
+                                <TextBlock Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           HorizontalAlignment="Center"
+                                           Style="{StaticResource AppLabelTextStyle}"
+                                           TextAlignment="Center"
+                                           Text="工作内容" />
+                                <ComboBox Margin="0,4,0,0"
+                                          AutomationProperties.Name="按工作内容筛选人工时汇总"
+                                          AutomationProperties.HelpText="选择空白项表示不按工作内容筛选"
+                                          HorizontalAlignment="Stretch"
+                                          ItemsSource="{Binding WorkActivityFilterOptions}"
+                                          SelectedItem="{Binding SelectedWorkActivityFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource SummaryFilterComboBoxStyle}"
+                                          ToolTip="选择空白项表示不按工作内容筛选" />
+                            </StackPanel>
+                        </Grid>
+
+                        <ScrollViewer Grid.Row="4"
+                                       Padding="0,0,12,0"
+                                       VerticalScrollBarVisibility="Auto"
+                                       HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding Summaries}"
                                           Visibility="{Binding HasSummaries, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border BorderBrush="#E8EAE6" BorderThickness="0,0,0,1">
-                                            <Grid Height="58">
+                                            <Grid Height="56">
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="190" />
-                                                    <ColumnDefinition Width="14" />
+                                                    <ColumnDefinition Width="176" />
+                                                    <ColumnDefinition Width="16" />
                                                     <ColumnDefinition Width="*" />
                                                     <ColumnDefinition Width="64" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock FontSize="12"
-                                                               FontWeight="SemiBold"
+                                                    <TextBlock Style="{StaticResource AppBodyStrongTextStyle}"
                                                                Text="{Binding CombinationDisplay}"
                                                                TextTrimming="CharacterEllipsis"
                                                                ToolTip="{Binding CombinationDisplay}" />
                                                     <TextBlock Margin="0,2,0,0"
-                                                               FontSize="10"
                                                                Foreground="{StaticResource SummaryMutedTextBrush}"
+                                                               Style="{StaticResource AppMetaTextStyle}"
                                                                Text="{Binding EntryCount, StringFormat={}{0} 条记录}" />
                                                 </StackPanel>
                                                 <ProgressBar Grid.Column="2"
@@ -631,38 +764,40 @@
                                                              Maximum="{Binding DataContext.MaxSummaryHourUnits, ElementName=SummaryContent}"
                                                              Style="{StaticResource SummaryProgressStyle}"
                                                              Value="{Binding TotalHourUnits}" />
-                                                <TextBlock Grid.Column="3"
-                                                           HorizontalAlignment="Right"
-                                                           VerticalAlignment="Center"
-                                                           FontFamily="{StaticResource SummaryNumericFont}"
-                                                           FontSize="11"
-                                                           FontWeight="SemiBold"
-                                                           Text="{Binding TotalHoursDisplay}"
-                                                           Typography.NumeralAlignment="Tabular" />
+                                                <StackPanel Grid.Column="3"
+                                                            HorizontalAlignment="Right"
+                                                            VerticalAlignment="Center"
+                                                            Orientation="Horizontal">
+                                                    <TextBlock FontWeight="SemiBold"
+                                                               Style="{StaticResource AppNumericTextStyle}"
+                                                               Text="{Binding TotalHoursValueDisplay}" />
+                                                    <TextBlock Margin="4,0,0,0"
+                                                               Style="{StaticResource AppMetaTextStyle}"
+                                                               Text="小时" />
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
-                        <StackPanel Grid.Row="2"
-                                    HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                        <StackPanel Grid.Row="4"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock HorizontalAlignment="Center"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Text="当前范围没有人工时" />
+                                       Style="{StaticResource AppSectionTitleTextStyle}"
+                                       Text="{Binding EmptyStateTitle}" />
                             <TextBlock Margin="0,5,0,0"
                                        HorizontalAlignment="Center"
-                                       FontSize="11"
                                        Foreground="{StaticResource SummaryMutedTextBrush}"
-                                       Text="调整时间范围，然后重新应用条件。" />
+                                       Style="{StaticResource AppMetaTextStyle}"
+                                       Text="{Binding EmptyStateDescription}" />
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <Border Grid.Column="2" Padding="16,14" Style="{StaticResource SummaryPanelStyle}">
+                <Border Grid.Column="2" Padding="16" Style="{StaticResource SummaryPanelStyle}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -670,13 +805,20 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Grid>
-                            <TextBlock FontSize="13" FontWeight="SemiBold" Text="汇总明细" />
-                            <TextBlock HorizontalAlignment="Right"
-                                       FontFamily="{StaticResource SummaryNumericFont}"
-                                       FontSize="10"
-                                       Foreground="{StaticResource SummaryMutedTextBrush}"
-                                       Text="{Binding CombinationCount, StringFormat={}{0} 项}"
-                                       Typography.NumeralAlignment="Tabular" />
+                            <TextBlock Style="{StaticResource AppSectionTitleTextStyle}"
+                                       Text="汇总明细" />
+                            <StackPanel HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                <TextBlock FontSize="11"
+                                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Style="{StaticResource AppNumericTextStyle}"
+                                           Text="{Binding CombinationCount}" />
+                                <TextBlock Margin="4,0,0,0"
+                                           Foreground="{StaticResource SummaryMutedTextBrush}"
+                                           Style="{StaticResource AppMetaTextStyle}"
+                                           Text="项" />
+                            </StackPanel>
                         </Grid>
                         <DataGrid Grid.Row="2"
                                   AutoGenerateColumns="False"
@@ -687,14 +829,42 @@
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock VerticalAlignment="Center"
+                                                       Style="{StaticResource AppBodyTextStyle}"
                                                        Text="{Binding CombinationDisplay}"
                                                        TextTrimming="CharacterEllipsis"
                                                        ToolTip="{Binding CombinationDisplay}" />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
-                                <DataGridTextColumn Width="72" Binding="{Binding TotalHoursDisplay}" Header="工时" />
-                                <DataGridTextColumn Width="58" Binding="{Binding EntryCount}" Header="记录" />
+                                <DataGridTemplateColumn Width="78"
+                                                        Header="工时"
+                                                        HeaderStyle="{StaticResource SummaryNumericColumnHeaderStyle}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Orientation="Horizontal">
+                                                <TextBlock Style="{StaticResource AppNumericTextStyle}"
+                                                           Text="{Binding TotalHoursValueDisplay}" />
+                                                <TextBlock Margin="4,0,0,0"
+                                                           Style="{StaticResource AppMetaTextStyle}"
+                                                           Text="小时" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Width="62"
+                                                        Header="记录"
+                                                        HeaderStyle="{StaticResource SummaryNumericColumnHeaderStyle}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock HorizontalAlignment="Right"
+                                                       VerticalAlignment="Center"
+                                                       Style="{StaticResource AppNumericTextStyle}"
+                                                       Text="{Binding EntryCount}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

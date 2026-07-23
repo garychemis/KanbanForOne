@@ -34,6 +34,62 @@
     <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />
 
     <FontFamily x:Key="AppFontFamily">Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei</FontFamily>
+    <FontFamily x:Key="AppNumericFontFamily">Cascadia Mono, Consolas, Segoe UI</FontFamily>
+    <FontFamily x:Key="AppIconFontFamily">Segoe MDL2 Assets</FontFamily>
+
+    <Style x:Key="AppBrandTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="AppPageTitleTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="AppPageSubtitleTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
+    <Style x:Key="AppSectionTitleTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="AppBodyTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
+    <Style x:Key="AppBodyStrongTextStyle"
+           TargetType="{x:Type TextBlock}"
+           BasedOn="{StaticResource AppBodyTextStyle}">
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <Style x:Key="AppLabelTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+
+    <Style x:Key="AppMetaTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="Normal" />
+    </Style>
+
+    <Style x:Key="AppNumericTextStyle" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontFamily" Value="{StaticResource AppNumericFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+    </Style>
+
+    <Style x:Key="AppMetricValueTextStyle"
+           TargetType="{x:Type TextBlock}"
+           BasedOn="{StaticResource AppNumericTextStyle}">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
 
     <Style TargetType="{x:Type Window}">
         <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
@@ -120,6 +176,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="Padding" Value="10,0" />
         <Setter Property="Margin" Value="0,4" />
+        <Setter Property="FontSize" Value="13" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
