@@ -21,7 +21,7 @@ public partial class CalendarView : UserControl
     private void OnDayPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: CalendarDayItem day } ||
-            DataContext is not MainWindowViewModel viewModel)
+            DataContext is not CalendarViewModel viewModel)
         {
             return;
         }
@@ -52,7 +52,7 @@ public partial class CalendarView : UserControl
     private void OnDayDrop(object sender, DragEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: CalendarDayItem day } ||
-            DataContext is not MainWindowViewModel viewModel ||
+            DataContext is not CalendarViewModel viewModel ||
             GetDraggedTask(e) is not { } task)
         {
             e.Effects = DragDropEffects.None;
@@ -128,7 +128,7 @@ public partial class CalendarView : UserControl
         }
 
         if (task is not null &&
-            DataContext is MainWindowViewModel viewModel &&
+            DataContext is CalendarViewModel viewModel &&
             viewModel.OpenTaskCommand.CanExecute(task))
         {
             viewModel.OpenTaskCommand.Execute(task);

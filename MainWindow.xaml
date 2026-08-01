@@ -51,16 +51,20 @@
 
                     <controls:TopNavControl Grid.Row="0" />
                     <Grid Grid.Row="1">
-                        <controls:BoardView Visibility="{Binding IsBoardViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                        <controls:CalendarView Visibility="{Binding IsCalendarViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:BoardView DataContext="{Binding Board}"
+                                            Visibility="{Binding DataContext.IsBoardViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:CalendarView DataContext="{Binding Calendar}"
+                                               Visibility="{Binding DataContext.IsCalendarViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:WorkHourSummaryView Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                        <controls:BackupView Visibility="{Binding IsBackupViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
-                        <controls:SettingsView Visibility="{Binding IsSettingsViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:BackupView DataContext="{Binding Backup}"
+                                             Visibility="{Binding DataContext.IsBackupViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:SettingsView DataContext="{Binding Settings}"
+                                               Visibility="{Binding DataContext.IsSettingsViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                     </Grid>
                 </Grid>
             </Grid>
 
-            <controls:SpotlightCardControl Visibility="{Binding IsSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+            <controls:SpotlightCardControl DataContext="{Binding Board}" Visibility="{Binding IsSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
         </Grid>
     </Border>
 </Window>

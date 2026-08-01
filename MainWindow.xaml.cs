@@ -6,6 +6,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using KanbanForOne.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
 using Drawing = System.Drawing;
 using Forms = System.Windows.Forms;
 
@@ -13,7 +14,7 @@ namespace KanbanForOne
 {
     public partial class MainWindow : Window
     {
-        private readonly MainWindowViewModel _viewModel = new();
+        private readonly MainWindowViewModel _viewModel = App.Services.GetRequiredService<MainWindowViewModel>();
         private Forms.NotifyIcon? _trayIcon;
         private Drawing.Icon? _trayIconImage;
         private bool _isExitRequested;
@@ -43,7 +44,7 @@ namespace KanbanForOne
         private void OnWindowRootSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ApplyWindowRootClip();
-            _viewModel.UpdateSpotlightLayout(e.NewSize);
+            _viewModel.Board.UpdateSpotlightLayout(e.NewSize);
         }
 
         private void OnWindowStateChanged(object? sender, EventArgs e)
@@ -53,7 +54,7 @@ namespace KanbanForOne
 
         private void OnWindowRootPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (_viewModel.IsSpotlightOpen)
+            if (_viewModel.Board.IsSpotlightOpen)
             {
                 return;
             }

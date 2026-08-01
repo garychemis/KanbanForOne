@@ -18,9 +18,20 @@ public sealed record RestoreBackupResult(
 
 public sealed class BackupService
 {
+    private readonly DatabaseService _database;
+
+    public BackupService(DatabaseService database)
+    {
+        _database = database;
+    }
+
     public async Task<BackupResult> CreateBackupAsync()
     {
         AppPaths.EnsureStorageLayout();
+
+        // WAL 模式下未 checkpoint 的数据在 -wal 边车文件中，
+        // 先合并回主数据库文件，确保 ZIP 备份包含全部数据。
+        await _database.CheckpointAsync();
 
         var backupPath = CreateUniqueBackupPath();
         var attachmentCount = await Task.Run(() => CreateBackupArchive(backupPath));
@@ -44,6 +55,11 @@ public sealed class BackupService
         }
 
         AppPaths.EnsureStorageLayout();
+
+        // WAL 模式下未 checkpoint 的数据在 -wal 边车文件中：
+        // 1) 恢复前先把当前数据全部落盘，protective backup 才完整；
+        // 2) 恢复过程会删除 -wal 边车，不先 checkpoint 会静默丢失已提交数据。
+        await _database.CheckpointAsync();
 
         return await Task.Run(() => RestoreBackup(sourceBackupPath));
     }

@@ -52,13 +52,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#F6F7F8" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#CBD5E1" />
+                                <Setter TargetName="Chrome" Property="Background" Value="#F1F3F5" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                                <Setter TargetName="Chrome" Property="Background" Value="#212529" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#212529" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SelectedBackgroundBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -76,6 +74,43 @@
             <Setter Property="BorderBrush" Value="#D8E0EA" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#334155" />
+        </Style>
+
+        <Style x:Key="PickerDangerButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="48" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="7">
+                            <ContentPresenter Margin="{TemplateBinding Padding}"
+                                              HorizontalAlignment="Center"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#FCE9E4" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#E8B7AA" />
+                                <Setter Property="Foreground" Value="#B3422E" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#F7D8CF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -119,11 +154,25 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="选择归档分区"
-                                   VerticalAlignment="Center"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7B8;"
+                                           FontFamily="{StaticResource AppIconFontFamily}"
+                                           FontSize="15"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="选择归档分区"
+                                           Margin="8,0,0,0"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="搜索、新建或删除分区"
+                                       Margin="0,3,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                        </StackPanel>
 
                         <Button Grid.Column="1"
                                 Content="&#x00D7;"
@@ -156,18 +205,33 @@
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{Binding Name}"
                                                FontSize="13"
                                                FontWeight="SemiBold"
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                                               TextTrimming="CharacterEllipsis" />
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
 
                                     <Border Grid.Column="1"
+                                            Margin="10,0,0,0"
+                                            Padding="6,2"
+                                            CornerRadius="6"
+                                            Background="{StaticResource AppBackgroundBrush}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                                        <TextBlock Text="默认"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+
+                                    <Border Grid.Column="2"
                                             MinWidth="40"
                                             Height="22"
-                                            Margin="12,0,0,0"
+                                            Margin="10,0,0,0"
                                             Padding="8,0"
                                             CornerRadius="8"
                                             Background="#F0F1F3"
@@ -180,29 +244,35 @@
                                                    Foreground="{StaticResource TextSecondaryBrush}" />
                                     </Border>
 
-                                    <Button Grid.Column="2"
+                                    <Button Grid.Column="3"
                                             Content="删除"
                                             Click="OnDeleteSectionClick"
                                             CommandParameter="{Binding}"
-                                            Style="{StaticResource IconButtonStyle}"
-                                            MinWidth="42"
-                                            Height="24"
-                                            Margin="8,0,0,0"
+                                            Style="{StaticResource PickerDangerButtonStyle}"
+                                            Margin="10,0,0,0"
                                             FontSize="10"
-                                            Foreground="#9A3412"
-                                            FocusVisualStyle="{x:Null}"
+                                            FontWeight="SemiBold"
                                             Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
 
-                    <TextBlock x:Name="EmptyResultText"
-                               Text="没有匹配的分区"
-                               Visibility="Collapsed"
-                               Margin="0,2,0,12"
-                               FontSize="12"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                    <StackPanel x:Name="EmptyResultText"
+                                Visibility="Collapsed"
+                                Margin="0,2,0,12"
+                                Orientation="Horizontal">
+                        <TextBlock Text="&#xE721;"
+                                   FontFamily="{StaticResource AppIconFontFamily}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Text="没有匹配的分区"
+                                   Margin="6,0,0,0"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
 
                     <TextBlock Text="新建分区"
                                Margin="0,6,0,0"

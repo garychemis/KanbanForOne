@@ -55,7 +55,7 @@ public partial class SpotlightCardControl : UserControl
 
     private bool TryPasteClipboardImage()
     {
-        if (DataContext is not MainWindowViewModel viewModel || !viewModel.IsSpotlightEditing)
+        if (DataContext is not BoardViewModel viewModel || !viewModel.IsSpotlightEditing)
         {
             return false;
         }
@@ -134,7 +134,7 @@ public partial class SpotlightCardControl : UserControl
             return;
         }
 
-        if (DataContext is not MainWindowViewModel viewModel)
+        if (DataContext is not BoardViewModel viewModel)
         {
             ExecuteClose();
             return;
@@ -151,7 +151,7 @@ public partial class SpotlightCardControl : UserControl
 
     private void StartPopupTransition(bool opening, Action? completed = null)
     {
-        if (DataContext is not MainWindowViewModel viewModel)
+        if (DataContext is not BoardViewModel viewModel)
         {
             completed?.Invoke();
             return;
@@ -305,7 +305,7 @@ public partial class SpotlightCardControl : UserControl
         shell.ClearValue(UIElement.EffectProperty);
     }
 
-    private Border? ActiveShell(MainWindowViewModel viewModel)
+    private Border? ActiveShell(BoardViewModel viewModel)
     {
         return viewModel.IsTaskSpotlightOpen
             ? TaskShell
@@ -314,7 +314,7 @@ public partial class SpotlightCardControl : UserControl
                 : null;
     }
 
-    private FrameworkElement? ActiveDetail(MainWindowViewModel viewModel)
+    private FrameworkElement? ActiveDetail(BoardViewModel viewModel)
     {
         return viewModel.IsTaskSpotlightOpen
             ? TaskDetailContent
@@ -323,7 +323,7 @@ public partial class SpotlightCardControl : UserControl
                 : null;
     }
 
-    private TranslateTransform? ActiveDetailTransform(MainWindowViewModel viewModel)
+    private TranslateTransform? ActiveDetailTransform(BoardViewModel viewModel)
     {
         return viewModel.IsTaskSpotlightOpen
             ? TaskDetailTransform
@@ -401,7 +401,7 @@ public partial class SpotlightCardControl : UserControl
 
     private void ExecuteClose()
     {
-        if (DataContext is not MainWindowViewModel viewModel ||
+        if (DataContext is not BoardViewModel viewModel ||
             !viewModel.CloseSpotlightCommand.CanExecute(null))
         {
             return;

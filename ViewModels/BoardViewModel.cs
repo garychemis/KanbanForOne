@@ -1,0 +1,2597 @@
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Windows;
+using System.Windows.Media.Imaging;
+using KanbanForOne.Controls;
+using KanbanForOne.Models;
+using KanbanForOne.Services;
+using Microsoft.Win32;
+using TaskStatus = KanbanForOne.Models.TaskStatus;
+
+namespace KanbanForOne.ViewModels;
+
+/// <summary>
+/// 看板页：任务/备忘的加载与增删改、归档分区、Spotlight 详情弹窗、本地附件。
+/// </summary>
+public sealed class BoardViewModel : ObservableObject
+{
+    private readonly ObservableCollection<TaskItem> _allTasks = new();
+    private readonly ObservableCollection<NoteItem> _allNotes = new();
+    private readonly TaskRepository _taskRepository;
+    private readonly NoteRepository _noteRepository;
+    private readonly AttachmentRepository _attachmentRepository;
+    private readonly ArchiveSectionRepository _archiveSectionRepository;
+    private readonly AttachmentStorageService _attachmentStorage;
+    private readonly NotificationService _notifications;
+    private readonly WorkspaceFilterState _filter;
+    private bool _isInitialized;
+    private bool _isLoading;
+    private ArchiveSection? _selectedArchiveSection;
+    private Guid? _loadedArchiveSectionId;
+    private bool _isArchiveContentLoaded;
+    private string _taskTitleDraft = string.Empty;
+    private string _taskDescriptionDraft = string.Empty;
+    private string _taskTagsDraft = string.Empty;
+    private TaskStatus _taskStatusDraft;
+    private TaskPriority _taskPriorityDraft = TaskPriority.Medium;
+    private DateTime? _taskStartDateDraft;
+    private DateTime? _taskEndDateDraft;
+    private string _noteTitleDraft = string.Empty;
+    private string _noteContentDraft = string.Empty;
+    private string _noteTagsDraft = string.Empty;
+    private TaskItem? _selectedTask;
+    private NoteItem? _selectedNote;
+    private TaskItem? _focusedTask;
+    private NoteItem? _focusedNote;
+    private object? _spotlightDetailDataContext;
+    private bool _isTaskSpotlightEditing;
+    private bool _isNoteSpotlightEditing;
+    private double _spotlightSourceLeft = 260;
+    private double _spotlightSourceTop = 96;
+    private double _spotlightSourceWidth = 240;
+    private double _spotlightSourceHeight = 140;
+    private double _spotlightLeft = 260;
+    private double _spotlightTop = 96;
+    private double _spotlightWidth = 640;
+    private double _spotlightHeight = 540;
+    private Size _spotlightHostSize = new(1180, 820);
+
+    public BoardViewModel(
+        TaskRepository taskRepository,
+        NoteRepository noteRepository,
+        AttachmentRepository attachmentRepository,
+        ArchiveSectionRepository archiveSectionRepository,
+        AttachmentStorageService attachmentStorage,
+        NotificationService notifications,
+        WorkspaceFilterState filter)
+    {
+        _taskRepository = taskRepository;
+        _noteRepository = noteRepository;
+        _attachmentRepository = attachmentRepository;
+        _archiveSectionRepository = archiveSectionRepository;
+        _attachmentStorage = attachmentStorage;
+        _notifications = notifications;
+        _filter = filter;
+
+        _filter.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(WorkspaceFilterState.CurrentFilter))
+            {
+                OnPropertyChanged(nameof(IsArchiveFilter));
+                OnPropertyChanged(nameof(IsArchiveWaitingForSection));
+            }
+        };
+
+        CreateTaskCommand = new RelayCommand(CreateTaskAsync);
+        CreateNoteCommand = new RelayCommand(CreateNoteAsync);
+        OpenTaskCommand = new RelayCommand(OpenTaskFromParameter);
+        OpenNoteCommand = new RelayCommand(OpenNoteFromParameter);
+        CloseSpotlightCommand = new RelayCommand(CloseSpotlight);
+        EditSpotlightCommand = new RelayCommand(_ => EnterSpotlightEditMode(), _ => IsSpotlightOpen && !IsSpotlightEditing);
+        CancelSpotlightEditCommand = new RelayCommand(_ => CancelSpotlightEdit(), _ => IsSpotlightEditing);
+        ArchiveTaskCommand = new RelayCommand(ArchiveTaskAsync, _ => ActiveTask is not null);
+        ArchiveNoteCommand = new RelayCommand(ArchiveNoteAsync, _ => ActiveNote is not null);
+        DeleteTaskCommand = new RelayCommand(DeleteSelectedTaskAsync, _ => ActiveTask is not null);
+        DeleteNoteCommand = new RelayCommand(DeleteSelectedNoteAsync, _ => ActiveNote is not null);
+        SaveTaskCommand = new RelayCommand(SaveSelectedTaskAsync, _ => ActiveTask is not null && HasUnsavedTaskChanges);
+        SaveNoteCommand = new RelayCommand(SaveSelectedNoteAsync, _ => ActiveNote is not null && HasUnsavedNoteChanges);
+        MoveCardCommand = new RelayCommand(MoveCardAsync);
+        AttachFilesCommand = new RelayCommand(AttachFilesAsync);
+        PickFilesCommand = new RelayCommand(PickFilesAsync);
+        PasteClipboardImageCommand = new RelayCommand(PasteClipboardImageAsync, _ => IsSpotlightEditing);
+        OpenAttachmentCommand = new RelayCommand(OpenAttachment);
+        RevealAttachmentCommand = new RelayCommand(RevealAttachment);
+        DeleteAttachmentCommand = new RelayCommand(DeleteAttachmentAsync);
+        OpenArchiveSectionPickerCommand = new RelayCommand(OpenArchiveSectionPickerAsync);
+    }
+
+    /// <summary>看板数据变化后触发；参数表示是否需要同步刷新日历（任务日期/归档等变化）。</summary>
+    public event Action<bool>? DataChanged;
+
+    public IReadOnlyList<TaskStatus> TaskStatusOptions { get; } = Enum.GetValues<TaskStatus>();
+
+    public IReadOnlyList<TaskPriority> TaskPriorityOptions { get; } = Enum.GetValues<TaskPriority>();
+
+    public ObservableCollection<TaskItem> TodoTasks { get; } = new();
+
+    public ObservableCollection<TaskItem> DoingTasks { get; } = new();
+
+    public ObservableCollection<TaskItem> BlockedTasks { get; } = new();
+
+    public ObservableCollection<TaskItem> DoneTasks { get; } = new();
+
+    public ObservableCollection<NoteItem> Notes { get; } = new();
+
+    public ObservableCollection<ArchiveSection> ArchiveSections { get; } = new();
+
+    public IReadOnlyList<TaskItem> AllTasks => _allTasks;
+
+    public RelayCommand CreateTaskCommand { get; }
+
+    public RelayCommand CreateNoteCommand { get; }
+
+    public RelayCommand OpenTaskCommand { get; }
+
+    public RelayCommand OpenNoteCommand { get; }
+
+    public RelayCommand CloseSpotlightCommand { get; }
+
+    public RelayCommand EditSpotlightCommand { get; }
+
+    public RelayCommand CancelSpotlightEditCommand { get; }
+
+    public RelayCommand ArchiveTaskCommand { get; }
+
+    public RelayCommand ArchiveNoteCommand { get; }
+
+    public RelayCommand DeleteTaskCommand { get; }
+
+    public RelayCommand DeleteNoteCommand { get; }
+
+    public RelayCommand SaveTaskCommand { get; }
+
+    public RelayCommand SaveNoteCommand { get; }
+
+    public RelayCommand MoveCardCommand { get; }
+
+    public RelayCommand AttachFilesCommand { get; }
+
+    public RelayCommand PickFilesCommand { get; }
+
+    public RelayCommand PasteClipboardImageCommand { get; }
+
+    public RelayCommand OpenAttachmentCommand { get; }
+
+    public RelayCommand RevealAttachmentCommand { get; }
+
+    public RelayCommand DeleteAttachmentCommand { get; }
+
+    public RelayCommand OpenArchiveSectionPickerCommand { get; }
+
+    public ArchiveSection? SelectedArchiveSection
+    {
+        get => _selectedArchiveSection;
+        private set
+        {
+            if (ReferenceEquals(_selectedArchiveSection, value))
+            {
+                return;
+            }
+
+            if (_selectedArchiveSection is not null)
+            {
+                _selectedArchiveSection.IsSelected = false;
+            }
+
+            _selectedArchiveSection = value;
+
+            if (_selectedArchiveSection is not null)
+            {
+                _selectedArchiveSection.IsSelected = true;
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasSelectedArchiveSection));
+            OnPropertyChanged(nameof(ArchiveSectionSelectorText));
+        }
+    }
+
+    public bool HasSelectedArchiveSection => SelectedArchiveSection is not null;
+
+    public string ArchiveSectionSelectorText => SelectedArchiveSection is null
+        ? "选择分区"
+        : $"{SelectedArchiveSection.Name} · {SelectedArchiveSection.TotalCount}";
+
+    public string ArchiveSectionSelectorHint => $"{ArchiveSections.Count} 个分区";
+
+    public bool IsArchiveFilter => _filter.IsArchiveFilter;
+
+    public bool IsArchiveContentLoaded
+    {
+        get => _isArchiveContentLoaded;
+        private set
+        {
+            if (SetProperty(ref _isArchiveContentLoaded, value))
+            {
+                OnPropertyChanged(nameof(IsArchiveWaitingForSection));
+            }
+        }
+    }
+
+    public bool IsArchiveWaitingForSection => _filter.IsArchiveFilter && !IsArchiveContentLoaded;
+
+    public string TaskArchiveActionText => ActiveTask?.IsArchived == true ? "恢复" : "归档";
+
+    public string NoteArchiveActionText => ActiveNote?.IsArchived == true ? "恢复" : "归档";
+
+    public bool IsFocusedTaskAttachmentEmpty => FocusedTask?.AttachmentCount == 0;
+
+    public bool IsFocusedNoteAttachmentEmpty => FocusedNote?.AttachmentCount == 0;
+
+    public object? SpotlightDetailDataContext
+    {
+        get => _spotlightDetailDataContext;
+        private set => SetProperty(ref _spotlightDetailDataContext, value);
+    }
+
+    public string TaskTitleDraft
+    {
+        get => _taskTitleDraft;
+        set
+        {
+            if (SetProperty(ref _taskTitleDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public string TaskDescriptionDraft
+    {
+        get => _taskDescriptionDraft;
+        set
+        {
+            if (SetProperty(ref _taskDescriptionDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public string TaskTagsDraft
+    {
+        get => _taskTagsDraft;
+        set
+        {
+            if (SetProperty(ref _taskTagsDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public TaskStatus TaskStatusDraft
+    {
+        get => _taskStatusDraft;
+        set
+        {
+            if (SetProperty(ref _taskStatusDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public TaskPriority TaskPriorityDraft
+    {
+        get => _taskPriorityDraft;
+        set
+        {
+            if (SetProperty(ref _taskPriorityDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public DateTime? TaskStartDateDraft
+    {
+        get => _taskStartDateDraft;
+        set
+        {
+            if (SetProperty(ref _taskStartDateDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public DateTime? TaskEndDateDraft
+    {
+        get => _taskEndDateDraft;
+        set
+        {
+            if (SetProperty(ref _taskEndDateDraft, value))
+            {
+                OnTaskDraftChanged();
+            }
+        }
+    }
+
+    public string NoteTitleDraft
+    {
+        get => _noteTitleDraft;
+        set
+        {
+            if (SetProperty(ref _noteTitleDraft, value))
+            {
+                OnNoteDraftChanged();
+            }
+        }
+    }
+
+    public string NoteContentDraft
+    {
+        get => _noteContentDraft;
+        set
+        {
+            if (SetProperty(ref _noteContentDraft, value))
+            {
+                OnNoteDraftChanged();
+            }
+        }
+    }
+
+    public string NoteTagsDraft
+    {
+        get => _noteTagsDraft;
+        set
+        {
+            if (SetProperty(ref _noteTagsDraft, value))
+            {
+                OnNoteDraftChanged();
+            }
+        }
+    }
+
+    public TaskItem? FocusedTask
+    {
+        get => _focusedTask;
+        private set
+        {
+            if (ReferenceEquals(_focusedTask, value))
+            {
+                return;
+            }
+
+            if (_focusedTask is not null)
+            {
+                _focusedTask.IsExpanded = false;
+            }
+
+            _focusedTask = value;
+
+            if (_focusedTask is not null)
+            {
+                _focusedTask.IsExpanded = true;
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsTaskSpotlightOpen));
+            OnPropertyChanged(nameof(IsSpotlightOpen));
+            OnPropertyChanged(nameof(IsTaskSpotlightPreviewing));
+            OnPropertyChanged(nameof(ActiveTask));
+            OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+            OnPropertyChanged(nameof(TaskArchiveActionText));
+            OnPropertyChanged(nameof(IsFocusedTaskAttachmentEmpty));
+            RaiseTaskActionCanExecuteChanged();
+
+            if (!IsSpotlightOpen)
+            {
+                SpotlightDetailDataContext = null;
+            }
+        }
+    }
+
+    public NoteItem? FocusedNote
+    {
+        get => _focusedNote;
+        private set
+        {
+            if (ReferenceEquals(_focusedNote, value))
+            {
+                return;
+            }
+
+            if (_focusedNote is not null)
+            {
+                _focusedNote.IsExpanded = false;
+            }
+
+            _focusedNote = value;
+
+            if (_focusedNote is not null)
+            {
+                _focusedNote.IsExpanded = true;
+            }
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsNoteSpotlightOpen));
+            OnPropertyChanged(nameof(IsSpotlightOpen));
+            OnPropertyChanged(nameof(IsNoteSpotlightPreviewing));
+            OnPropertyChanged(nameof(ActiveNote));
+            OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+            OnPropertyChanged(nameof(NoteArchiveActionText));
+            OnPropertyChanged(nameof(IsFocusedNoteAttachmentEmpty));
+            RaiseNoteActionCanExecuteChanged();
+
+            if (!IsSpotlightOpen)
+            {
+                SpotlightDetailDataContext = null;
+            }
+        }
+    }
+
+    public TaskItem? ActiveTask => FocusedTask ?? SelectedTask;
+
+    public NoteItem? ActiveNote => FocusedNote ?? SelectedNote;
+
+    public TaskItem? SelectedTask
+    {
+        get => _selectedTask;
+        private set
+        {
+            if (SetProperty(ref _selectedTask, value))
+            {
+                OnPropertyChanged(nameof(ActiveTask));
+                OnPropertyChanged(nameof(TaskArchiveActionText));
+                OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+                RaiseTaskActionCanExecuteChanged();
+            }
+        }
+    }
+
+    public NoteItem? SelectedNote
+    {
+        get => _selectedNote;
+        private set
+        {
+            if (SetProperty(ref _selectedNote, value))
+            {
+                OnPropertyChanged(nameof(ActiveNote));
+                OnPropertyChanged(nameof(NoteArchiveActionText));
+                OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+                RaiseNoteActionCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsTaskSpotlightOpen => FocusedTask is not null;
+
+    public bool IsNoteSpotlightOpen => FocusedNote is not null;
+
+    public bool IsSpotlightOpen => IsTaskSpotlightOpen || IsNoteSpotlightOpen;
+
+    public bool IsTaskSpotlightEditing
+    {
+        get => _isTaskSpotlightEditing;
+        private set
+        {
+            if (SetProperty(ref _isTaskSpotlightEditing, value))
+            {
+                OnPropertyChanged(nameof(IsSpotlightEditing));
+                OnPropertyChanged(nameof(IsTaskSpotlightPreviewing));
+                EditSpotlightCommand.RaiseCanExecuteChanged();
+                CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+                PasteClipboardImageCommand.RaiseCanExecuteChanged();
+                SaveTaskCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsNoteSpotlightEditing
+    {
+        get => _isNoteSpotlightEditing;
+        private set
+        {
+            if (SetProperty(ref _isNoteSpotlightEditing, value))
+            {
+                OnPropertyChanged(nameof(IsSpotlightEditing));
+                OnPropertyChanged(nameof(IsNoteSpotlightPreviewing));
+                EditSpotlightCommand.RaiseCanExecuteChanged();
+                CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+                PasteClipboardImageCommand.RaiseCanExecuteChanged();
+                SaveNoteCommand.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsTaskSpotlightPreviewing => IsTaskSpotlightOpen && !IsTaskSpotlightEditing;
+
+    public bool IsNoteSpotlightPreviewing => IsNoteSpotlightOpen && !IsNoteSpotlightEditing;
+
+    public bool IsSpotlightEditing => IsTaskSpotlightEditing || IsNoteSpotlightEditing;
+
+    public double SpotlightSourceLeft
+    {
+        get => _spotlightSourceLeft;
+        private set => SetProperty(ref _spotlightSourceLeft, value);
+    }
+
+    public double SpotlightSourceTop
+    {
+        get => _spotlightSourceTop;
+        private set => SetProperty(ref _spotlightSourceTop, value);
+    }
+
+    public double SpotlightSourceWidth
+    {
+        get => _spotlightSourceWidth;
+        private set => SetProperty(ref _spotlightSourceWidth, value);
+    }
+
+    public double SpotlightSourceHeight
+    {
+        get => _spotlightSourceHeight;
+        private set => SetProperty(ref _spotlightSourceHeight, value);
+    }
+
+    public double SpotlightLeft
+    {
+        get => _spotlightLeft;
+        private set => SetProperty(ref _spotlightLeft, value);
+    }
+
+    public double SpotlightTop
+    {
+        get => _spotlightTop;
+        private set => SetProperty(ref _spotlightTop, value);
+    }
+
+    public double SpotlightWidth
+    {
+        get => _spotlightWidth;
+        private set => SetProperty(ref _spotlightWidth, value);
+    }
+
+    public double SpotlightHeight
+    {
+        get => _spotlightHeight;
+        private set => SetProperty(ref _spotlightHeight, value);
+    }
+
+    public bool HasUnsavedTaskChanges => ActiveTask is not null
+        && (!string.Equals(TaskTitleDraft, ActiveTask.Title, StringComparison.Ordinal)
+            || !string.Equals(TaskDescriptionDraft, ActiveTask.Description, StringComparison.Ordinal)
+            || !string.Equals(TaskTagsDraft, ActiveTask.TagsDisplay, StringComparison.Ordinal)
+            || TaskStatusDraft != ActiveTask.Status
+            || TaskPriorityDraft != ActiveTask.Priority
+            || TaskStartDateDraft?.Date != ActiveTask.StartDate?.Date
+            || TaskEndDateDraft?.Date != ActiveTask.EndDate?.Date);
+
+    public bool HasUnsavedNoteChanges => ActiveNote is not null
+        && (!string.Equals(NoteTitleDraft, ActiveNote.Title, StringComparison.Ordinal)
+            || !string.Equals(NoteContentDraft, ActiveNote.Content, StringComparison.Ordinal)
+            || !string.Equals(NoteTagsDraft, ActiveNote.TagsDisplay, StringComparison.Ordinal));
+
+    public int VisibleTaskCount => TodoTasks.Count + DoingTasks.Count + BlockedTasks.Count + DoneTasks.Count;
+
+    public int VisibleNoteCount => Notes.Count;
+
+    /// <summary>首次加载：清空工作集、加载归档分区、加载活动任务与备忘。</summary>
+    public async Task InitializeWorkspaceAsync()
+    {
+        _isInitialized = false;
+        ClearWorkingSet();
+        await LoadArchiveSectionsAsync();
+        SelectedArchiveSection = null;
+        _loadedArchiveSectionId = null;
+        IsArchiveContentLoaded = false;
+        await LoadActiveWorkspaceAsync();
+        _isInitialized = true;
+    }
+
+    /// <summary>进入归档视图：清空工作集并复位归档选择状态。</summary>
+    public void PrepareArchiveView()
+    {
+        ClearWorkingSet();
+        SelectedArchiveSection = null;
+        _loadedArchiveSectionId = null;
+        IsArchiveContentLoaded = false;
+    }
+
+    /// <summary>导航切换时关闭 Spotlight 并清空草稿。</summary>
+    public void CloseSpotlightForNavigation()
+    {
+        FocusedTask = null;
+        FocusedNote = null;
+        SelectedTask = null;
+        SelectedNote = null;
+        IsTaskSpotlightEditing = false;
+        IsNoteSpotlightEditing = false;
+        ClearTaskDraft();
+        ClearNoteDraft();
+    }
+
+    /// <summary>恢复备份前清理 Spotlight 选择与草稿。</summary>
+    public void ClearSpotlightState()
+    {
+        SelectedTask = null;
+        SelectedNote = null;
+        ClearTaskDraft();
+        ClearNoteDraft();
+    }
+
+    public bool ConfirmSpotlightClose()
+    {
+        return ConfirmDiscardSpotlightChanges();
+    }
+
+    public bool ConfirmDiscardSpotlightChanges()
+    {
+        return ConfirmDiscardTaskChanges() && ConfirmDiscardNoteChanges();
+    }
+
+    public async Task SaveAllAsync()
+    {
+        await _taskRepository.UpsertRangeAsync(_allTasks);
+        await _noteRepository.UpsertRangeAsync(_allNotes);
+    }
+
+    public void CompleteSpotlightOpen()
+    {
+        if (IsSpotlightOpen)
+        {
+            SpotlightDetailDataContext = this;
+        }
+    }
+
+    public void CompleteSpotlightClose()
+    {
+        SpotlightDetailDataContext = null;
+        FocusedTask = null;
+        FocusedNote = null;
+        SelectedTask = null;
+        SelectedNote = null;
+        IsTaskSpotlightEditing = false;
+        IsNoteSpotlightEditing = false;
+        ClearTaskDraft();
+        ClearNoteDraft();
+    }
+
+    public void UpdateSpotlightLayout(Size hostSize)
+    {
+        if (hostSize.Width <= 0 || hostSize.Height <= 0)
+        {
+            return;
+        }
+
+        _spotlightHostSize = hostSize;
+
+        if (!IsSpotlightOpen)
+        {
+            return;
+        }
+
+        ApplySpotlightTargetLayout(hostSize);
+    }
+
+    /// <summary>由日历在任务日期变化或切换月份时调用，确保日历内容与看板数据一致。</summary>
+    public void Refresh(bool refreshCalendar = true)
+    {
+        var showArchived = _filter.IsArchiveFilter;
+        var tasks = _allTasks
+            .Where(task => task.IsArchived == showArchived)
+            .Where(PassesTaskFilter)
+            .Where(PassesTaskDateFilter)
+            .Where(PassesTaskSearch)
+            .OrderBy(task => task.SortOrder)
+            .ToArray();
+
+        CollectionHelper.Replace(TodoTasks, tasks.Where(task => task.Status == TaskStatus.Todo));
+        CollectionHelper.Replace(DoingTasks, tasks.Where(task => task.Status == TaskStatus.Doing));
+        CollectionHelper.Replace(BlockedTasks, tasks.Where(task => task.Status == TaskStatus.Blocked));
+        CollectionHelper.Replace(DoneTasks, tasks.Where(task => task.Status == TaskStatus.Done));
+
+        var notes = _allNotes
+            .Where(note => note.IsArchived == showArchived)
+            .Where(PassesNoteFilter)
+            .Where(PassesNoteDateFilter)
+            .Where(PassesNoteSearch)
+            .OrderBy(note => note.SortOrder);
+
+        CollectionHelper.Replace(
+            Notes,
+            _filter.CurrentFilter is "Board" or "WithAttachments" or "Archived" ? notes : Enumerable.Empty<NoteItem>());
+
+        OnPropertyChanged(nameof(VisibleTaskCount));
+        OnPropertyChanged(nameof(VisibleNoteCount));
+        OnPropertyChanged(nameof(IsFocusedTaskAttachmentEmpty));
+        OnPropertyChanged(nameof(IsFocusedNoteAttachmentEmpty));
+
+        // 归档视图下日历不可见，跳过日历刷新转发，避免无意义的空转；
+        // 切出归档视图时 IsArchiveFilter 恢复为 false，日历自动恢复刷新。
+        DataChanged?.Invoke(refreshCalendar && !IsArchiveFilter);
+    }
+
+    /// <summary>归档页分区列表（主窗口切换视图时调用）。</summary>
+    public async Task LoadArchiveSectionsAsync()
+    {
+        var previousSelectedId = SelectedArchiveSection?.Id;
+        var sections = await _archiveSectionRepository.GetAllAsync();
+        CollectionHelper.Replace(ArchiveSections, sections);
+        OnPropertyChanged(nameof(ArchiveSectionSelectorHint));
+
+        var selected = previousSelectedId.HasValue
+            ? ArchiveSections.FirstOrDefault(section => section.Id == previousSelectedId.Value)
+            : null;
+        SelectedArchiveSection = selected;
+    }
+
+    /// <summary>重新加载活动任务与备忘（主窗口切换视图时调用）。</summary>
+    public async Task LoadActiveWorkspaceAsync()
+    {
+        _isLoading = true;
+
+        try
+        {
+            ClearWorkingSet();
+            var tasks = await _taskRepository.GetActiveAsync();
+            var notes = await _noteRepository.GetActiveAsync();
+            await AttachLoadedAttachmentsAsync(tasks, notes);
+
+            foreach (var task in tasks)
+            {
+                AddTaskToMemory(task);
+            }
+
+            foreach (var note in notes)
+            {
+                AddNoteToMemory(note);
+            }
+
+            _loadedArchiveSectionId = null;
+            SelectedArchiveSection = null;
+            IsArchiveContentLoaded = false;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadArchiveSectionAsync(ArchiveSection section)
+    {
+        try
+        {
+            _isLoading = true;
+            ClearWorkingSet();
+            var tasks = await _taskRepository.GetArchivedBySectionAsync(section.Id);
+            var notes = await _noteRepository.GetArchivedBySectionAsync(section.Id);
+            await AttachLoadedAttachmentsAsync(tasks, notes);
+
+            foreach (var task in tasks)
+            {
+                AddTaskToMemory(task);
+            }
+
+            foreach (var note in notes)
+            {
+                AddNoteToMemory(note);
+            }
+
+            SelectedArchiveSection = ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+            _loadedArchiveSectionId = section.Id;
+            IsArchiveContentLoaded = true;
+            _notifications.Notify($"已打开归档分区：{section.Name}");
+        }
+        catch (Exception ex)
+        {
+            ClearWorkingSet();
+            _loadedArchiveSectionId = null;
+            SelectedArchiveSection = null;
+            IsArchiveContentLoaded = false;
+            _notifications.Notify($"加载归档失败：{ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            Refresh();
+        }
+    }
+
+    private async Task AttachLoadedAttachmentsAsync(
+        IReadOnlyList<TaskItem> tasks,
+        IReadOnlyList<NoteItem> notes)
+    {
+        var taskAttachments = await _attachmentRepository.GetByOwnerIdsAsync(
+            AttachmentOwnerType.Task,
+            tasks.Select(task => task.Id));
+        var noteAttachments = await _attachmentRepository.GetByOwnerIdsAsync(
+            AttachmentOwnerType.Note,
+            notes.Select(note => note.Id));
+
+        AttachItems(tasks, taskAttachments);
+        AttachItems(notes, noteAttachments);
+    }
+
+    private static void AttachItems(IEnumerable<TaskItem> tasks, IEnumerable<AttachmentItem> attachments)
+    {
+        var groupedAttachments = attachments
+            .GroupBy(attachment => attachment.OwnerId)
+            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
+
+        foreach (var task in tasks)
+        {
+            if (!groupedAttachments.TryGetValue(task.Id, out var items))
+            {
+                continue;
+            }
+
+            foreach (var attachment in items)
+            {
+                task.Attachments.Add(attachment);
+            }
+        }
+    }
+
+    private static void AttachItems(IEnumerable<NoteItem> notes, IEnumerable<AttachmentItem> attachments)
+    {
+        var groupedAttachments = attachments
+            .GroupBy(attachment => attachment.OwnerId)
+            .ToDictionary(group => group.Key, group => group.OrderBy(item => item.SortOrder).ToArray());
+
+        foreach (var note in notes)
+        {
+            if (!groupedAttachments.TryGetValue(note.Id, out var items))
+            {
+                continue;
+            }
+
+            foreach (var attachment in items)
+            {
+                note.Attachments.Add(attachment);
+            }
+        }
+    }
+
+    private void ClearWorkingSet()
+    {
+        foreach (var task in _allTasks)
+        {
+            UntrackTask(task);
+        }
+
+        foreach (var note in _allNotes)
+        {
+            UntrackNote(note);
+        }
+
+        _allTasks.Clear();
+        _allNotes.Clear();
+    }
+
+    private void OpenTaskFromParameter(object? parameter)
+    {
+        if (parameter is CardOpenPayload { Item: TaskItem task } payload)
+        {
+            OpenTask(task, payload);
+            return;
+        }
+
+        OpenTask(parameter as TaskItem, null);
+    }
+
+    private void OpenNoteFromParameter(object? parameter)
+    {
+        if (parameter is CardOpenPayload { Item: NoteItem note } payload)
+        {
+            OpenNote(note, payload);
+            return;
+        }
+
+        OpenNote(parameter as NoteItem, null);
+    }
+
+    private async Task CreateTaskAsync(object? parameter)
+    {
+        if (!ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        var createPayload = parameter as CardCreatePayload;
+        var columnParameter = createPayload?.ColumnKind ?? parameter;
+        var status = columnParameter switch
+        {
+            TaskStatus typedStatus => typedStatus,
+            KanbanColumnKind.Todo => TaskStatus.Todo,
+            KanbanColumnKind.Doing => TaskStatus.Doing,
+            KanbanColumnKind.Blocked => TaskStatus.Blocked,
+            KanbanColumnKind.Done => TaskStatus.Done,
+            _ => TaskStatus.Todo
+        };
+
+        var task = new TaskItem
+        {
+            Title = "新任务",
+            Description = "在放大的卡片中补充任务说明。",
+            Status = status,
+            Priority = TaskPriority.Medium,
+            SortOrder = NextTaskSortOrder(status)
+        };
+
+        if (!await SaveTaskSafelyAsync(task, "已创建任务"))
+        {
+            return;
+        }
+
+        AddTaskToMemory(task);
+        Refresh();
+        OpenTask(task, CreateOpenPayload(task, createPayload), true);
+    }
+
+    /// <summary>从日历创建日程任务（由 CalendarViewModel 调用）。</summary>
+    public async Task CreateTaskForCalendarDateAsync(DateTime date)
+    {
+        if (!ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        var task = new TaskItem
+        {
+            Title = "新日程任务",
+            Description = $"安排在 {date:yyyy/M/d} 的任务。",
+            Status = TaskStatus.Todo,
+            Priority = TaskPriority.Medium,
+            StartDate = date.Date,
+            EndDate = date.Date,
+            SortOrder = NextTaskSortOrder(TaskStatus.Todo)
+        };
+
+        if (!await SaveTaskSafelyAsync(task, "已创建日程任务"))
+        {
+            return;
+        }
+
+        AddTaskToMemory(task);
+        Refresh();
+        OpenTask(task);
+    }
+
+    private async Task CreateNoteAsync(object? parameter)
+    {
+        if (!ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        var note = new NoteItem
+        {
+            Title = "新备忘",
+            Content = "记录一个想法、提醒或临时片段。",
+            SortOrder = NextNoteSortOrder()
+        };
+
+        if (!await SaveNoteSafelyAsync(note, "已创建备忘"))
+        {
+            return;
+        }
+
+        AddNoteToMemory(note);
+        Refresh();
+        OpenNote(note, CreateOpenPayload(note, parameter as CardCreatePayload), true);
+    }
+
+    private void OpenTask(TaskItem? task, CardOpenPayload? payload = null, bool edit = false)
+    {
+        if (task is null)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(ActiveTask, task) && !ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        SpotlightDetailDataContext = null;
+        SelectedNote = null;
+        FocusedNote = null;
+        SetSpotlightLayout(payload);
+        ClearNoteDraft();
+        SelectedTask = task;
+        IsNoteSpotlightEditing = false;
+        IsTaskSpotlightEditing = edit;
+        LoadTaskDraft(task);
+        FocusedTask = task;
+    }
+
+    private void OpenNote(NoteItem? note, CardOpenPayload? payload = null, bool edit = false)
+    {
+        if (note is null)
+        {
+            return;
+        }
+
+        if (!ReferenceEquals(ActiveNote, note) && !ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        SpotlightDetailDataContext = null;
+        SelectedTask = null;
+        FocusedTask = null;
+        SetSpotlightLayout(payload);
+        ClearTaskDraft();
+        SelectedNote = note;
+        IsTaskSpotlightEditing = false;
+        IsNoteSpotlightEditing = edit;
+        LoadNoteDraft(note);
+        FocusedNote = note;
+    }
+
+    private static CardOpenPayload? CreateOpenPayload(object item, CardCreatePayload? payload)
+    {
+        return payload is null
+            ? null
+            : new CardOpenPayload(item, payload.AnchorBounds, payload.HostSize);
+    }
+
+    private void SetSpotlightLayout(CardOpenPayload? payload)
+    {
+        const double fallbackWidth = 240;
+        const double fallbackHeight = 140;
+
+        var payloadHostSize = payload?.HostSize ?? Size.Empty;
+        if (payloadHostSize.Width > 0 && payloadHostSize.Height > 0)
+        {
+            _spotlightHostSize = payloadHostSize;
+        }
+
+        var hostWidth = _spotlightHostSize.Width;
+        var hostHeight = _spotlightHostSize.Height;
+        var fallbackLeft = Math.Max(0, (hostWidth - fallbackWidth) / 2);
+        var fallbackTop = Math.Max(0, (hostHeight - fallbackHeight) / 2);
+        var anchor = payload?.AnchorBounds ?? new Rect(fallbackLeft, fallbackTop, fallbackWidth, fallbackHeight);
+
+        if (anchor.Width <= 0 || anchor.Height <= 0)
+        {
+            anchor = new Rect(fallbackLeft, fallbackTop, fallbackWidth, fallbackHeight);
+        }
+
+        SpotlightSourceLeft = anchor.Left;
+        SpotlightSourceTop = anchor.Top;
+        SpotlightSourceWidth = Math.Max(80, anchor.Width);
+        SpotlightSourceHeight = Math.Max(72, anchor.Height);
+        ApplySpotlightTargetLayout(new Size(hostWidth, hostHeight));
+    }
+
+    private void ApplySpotlightTargetLayout(Size hostSize)
+    {
+        const double margin = 26;
+        const double preferredWidth = 640;
+        const double minWidth = 420;
+
+        var availableWidth = Math.Max(minWidth, hostSize.Width - margin * 2);
+        var width = Math.Min(preferredWidth, availableWidth);
+        var height = hostSize.Height * 0.85;
+
+        SpotlightLeft = Math.Max(0, (hostSize.Width - width) / 2);
+        SpotlightTop = Math.Max(0, (hostSize.Height - height) / 2);
+        SpotlightWidth = width;
+        SpotlightHeight = height;
+    }
+
+    private void CloseSpotlight()
+    {
+        if (!ConfirmSpotlightClose())
+        {
+            return;
+        }
+
+        CompleteSpotlightClose();
+    }
+
+    private void EnterSpotlightEditMode()
+    {
+        if (FocusedTask is not null)
+        {
+            LoadTaskDraft(FocusedTask);
+            IsTaskSpotlightEditing = true;
+            IsNoteSpotlightEditing = false;
+            return;
+        }
+
+        if (FocusedNote is null)
+        {
+            return;
+        }
+
+        LoadNoteDraft(FocusedNote);
+        IsNoteSpotlightEditing = true;
+        IsTaskSpotlightEditing = false;
+    }
+
+    private void CancelSpotlightEdit()
+    {
+        if (FocusedTask is not null)
+        {
+            LoadTaskDraft(FocusedTask);
+            IsTaskSpotlightEditing = false;
+        }
+
+        if (FocusedNote is not null)
+        {
+            LoadNoteDraft(FocusedNote);
+            IsNoteSpotlightEditing = false;
+        }
+    }
+
+    private async Task<ArchiveSection?> ChooseArchiveTargetSectionAsync()
+    {
+        await LoadArchiveSectionsAsync();
+        var defaultSection = ArchiveSections.FirstOrDefault(section => section.IsDefault)
+            ?? ArchiveSections.FirstOrDefault(section => section.Id == ArchiveSection.DefaultId)
+            ?? await _archiveSectionRepository.GetDefaultAsync();
+        var selection = ArchiveSectionDialog.Show(DialogHelper.GetDialogOwner(), ArchiveSections, defaultSection);
+
+        if (selection is null)
+        {
+            return null;
+        }
+
+        ArchiveSection section;
+
+        if (!string.IsNullOrWhiteSpace(selection.NewSectionName))
+        {
+            section = await _archiveSectionRepository.GetOrCreateAsync(selection.NewSectionName);
+        }
+        else
+        {
+            var sectionId = selection.SectionId ?? defaultSection.Id;
+            section = ArchiveSections.FirstOrDefault(item => item.Id == sectionId) ?? defaultSection;
+        }
+
+        await LoadArchiveSectionsAsync();
+        return ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+    }
+
+    private async Task SelectArchiveSectionAsync(object? parameter)
+    {
+        if (parameter is not ArchiveSection section)
+        {
+            return;
+        }
+
+        if (!ConfirmDiscardSpotlightChanges())
+        {
+            return;
+        }
+
+        FocusedTask = null;
+        FocusedNote = null;
+        SelectedTask = null;
+        SelectedNote = null;
+        IsTaskSpotlightEditing = false;
+        IsNoteSpotlightEditing = false;
+        ClearTaskDraft();
+        ClearNoteDraft();
+
+        if (_loadedArchiveSectionId == section.Id && IsArchiveContentLoaded)
+        {
+            SelectedArchiveSection = section;
+            Refresh();
+            return;
+        }
+
+        await LoadArchiveSectionAsync(section);
+    }
+
+    private async Task OpenArchiveSectionPickerAsync(object? _)
+    {
+        if (!_filter.IsArchiveFilter)
+        {
+            return;
+        }
+
+        await LoadArchiveSectionsAsync();
+
+        var selection = ArchiveSectionPickerDialog.Show(DialogHelper.GetDialogOwner(), ArchiveSections, SelectedArchiveSection);
+
+        if (selection is null)
+        {
+            return;
+        }
+
+        if (selection.DeleteSectionId.HasValue)
+        {
+            await DeleteArchiveSectionAsync(selection.DeleteSectionId.Value);
+            return;
+        }
+
+        ArchiveSection section;
+
+        if (!string.IsNullOrWhiteSpace(selection.NewSectionName))
+        {
+            section = await _archiveSectionRepository.GetOrCreateAsync(selection.NewSectionName);
+            await LoadArchiveSectionsAsync();
+            section = ArchiveSections.FirstOrDefault(item => item.Id == section.Id) ?? section;
+        }
+        else if (selection.SectionId.HasValue)
+        {
+            section = ArchiveSections.FirstOrDefault(item => item.Id == selection.SectionId.Value)
+                ?? await _archiveSectionRepository.GetDefaultAsync();
+        }
+        else
+        {
+            return;
+        }
+
+        await SelectArchiveSectionAsync(section);
+    }
+
+    private async Task DeleteArchiveSectionAsync(Guid sectionId)
+    {
+        var section = ArchiveSections.FirstOrDefault(item => item.Id == sectionId);
+
+        if (section?.IsDefault == true || sectionId == ArchiveSection.DefaultId)
+        {
+            _notifications.Notify("默认分区不能删除");
+            return;
+        }
+
+        try
+        {
+            var deletingLoadedSection = _loadedArchiveSectionId == sectionId;
+            var defaultSectionWasLoaded = _loadedArchiveSectionId == ArchiveSection.DefaultId;
+            var deleted = await _archiveSectionRepository.DeleteAndMoveContentsToDefaultAsync(sectionId);
+
+            if (!deleted)
+            {
+                _notifications.Notify("分区不存在或不能删除");
+                await LoadArchiveSectionsAsync();
+                return;
+            }
+
+            await LoadArchiveSectionsAsync();
+            var defaultSection = ArchiveSections.FirstOrDefault(item => item.IsDefault)
+                ?? ArchiveSections.FirstOrDefault(item => item.Id == ArchiveSection.DefaultId)
+                ?? await _archiveSectionRepository.GetDefaultAsync();
+
+            if (_filter.IsArchiveFilter && (deletingLoadedSection || defaultSectionWasLoaded))
+            {
+                await LoadArchiveSectionAsync(defaultSection);
+            }
+            else
+            {
+                Refresh();
+            }
+
+            _notifications.Notify($"已删除归档分区，卡片已移动到默认分区");
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify($"删除归档分区失败：{ex.Message}");
+        }
+    }
+
+    private async Task DeleteSelectedTaskAsync()
+    {
+        if (ActiveTask is null)
+        {
+            return;
+        }
+
+        var task = ActiveTask;
+
+        if (!DialogHelper.Confirm(
+                "删除任务",
+                "删除后会同时删除这张任务卡片的本地附件，是否继续？",
+                "删除"))
+        {
+            return;
+        }
+
+        IReadOnlyList<StagedAttachmentDelete> stagedDeletes = [];
+        var attachmentsDeleted = false;
+        var taskDeleted = false;
+
+        try
+        {
+            stagedDeletes = StageAttachmentDeletes(task.Attachments);
+            await _attachmentRepository.DeleteByOwnerAsync(AttachmentOwnerType.Task, task.Id);
+            attachmentsDeleted = true;
+            await _taskRepository.DeleteAsync(task.Id);
+            taskDeleted = true;
+            CommitStagedDeletes(stagedDeletes);
+            UntrackTask(task);
+            _allTasks.Remove(task);
+            FocusedTask = null;
+            SelectedTask = null;
+            IsTaskSpotlightEditing = false;
+            ClearTaskDraft();
+            await LoadArchiveSectionsAsync();
+            Refresh();
+            _notifications.Notify("已删除任务");
+        }
+        catch (Exception ex)
+        {
+            var filesRestored = TryRollbackStagedDeletes(stagedDeletes);
+            var restored = await RestoreDeletedTaskRecordsAsync(task, attachmentsDeleted, taskDeleted);
+            _notifications.Notify(filesRestored && restored
+                ? $"删除任务失败：{ex.Message}"
+                : $"删除任务失败，且恢复附件文件或数据库记录失败：{ex.Message}");
+        }
+    }
+
+    private async Task DeleteSelectedNoteAsync()
+    {
+        if (ActiveNote is null)
+        {
+            return;
+        }
+
+        var note = ActiveNote;
+
+        if (!DialogHelper.Confirm(
+                "删除备忘",
+                "删除后会同时删除这张备忘的本地附件，是否继续？",
+                "删除"))
+        {
+            return;
+        }
+
+        IReadOnlyList<StagedAttachmentDelete> stagedDeletes = [];
+        var attachmentsDeleted = false;
+        var noteDeleted = false;
+
+        try
+        {
+            stagedDeletes = StageAttachmentDeletes(note.Attachments);
+            await _attachmentRepository.DeleteByOwnerAsync(AttachmentOwnerType.Note, note.Id);
+            attachmentsDeleted = true;
+            await _noteRepository.DeleteAsync(note.Id);
+            noteDeleted = true;
+            CommitStagedDeletes(stagedDeletes);
+            UntrackNote(note);
+            _allNotes.Remove(note);
+            FocusedNote = null;
+            SelectedNote = null;
+            IsNoteSpotlightEditing = false;
+            ClearNoteDraft();
+            await LoadArchiveSectionsAsync();
+            Refresh();
+            _notifications.Notify("已删除备忘");
+        }
+        catch (Exception ex)
+        {
+            var filesRestored = TryRollbackStagedDeletes(stagedDeletes);
+            var restored = await RestoreDeletedNoteRecordsAsync(note, attachmentsDeleted, noteDeleted);
+            _notifications.Notify(filesRestored && restored
+                ? $"删除备忘失败：{ex.Message}"
+                : $"删除备忘失败，且恢复附件文件或数据库记录失败：{ex.Message}");
+        }
+    }
+
+    private async Task ArchiveTaskAsync()
+    {
+        if (ActiveTask is null)
+        {
+            return;
+        }
+
+        var task = ActiveTask;
+        var shouldArchive = !task.IsArchived;
+        var oldArchived = task.IsArchived;
+        var oldUpdatedAt = task.UpdatedAt;
+        var oldArchiveSectionId = task.ArchiveSectionId;
+        var oldArchivedAt = task.ArchivedAt;
+        ArchiveSection? archiveSection = null;
+
+        if (shouldArchive)
+        {
+            archiveSection = await ChooseArchiveTargetSectionAsync();
+
+            if (archiveSection is null)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            _isLoading = true;
+            task.IsArchived = shouldArchive;
+            task.ArchiveSectionId = shouldArchive ? archiveSection!.Id : null;
+            task.ArchivedAt = shouldArchive ? DateTime.Now : null;
+            await _taskRepository.UpsertAsync(task);
+            _isLoading = false;
+
+            FocusedTask = null;
+            SelectedTask = null;
+            IsTaskSpotlightEditing = false;
+            ClearTaskDraft();
+            if (shouldArchive || _filter.IsArchiveFilter)
+            {
+                UntrackTask(task);
+                _allTasks.Remove(task);
+            }
+
+            await LoadArchiveSectionsAsync();
+            Refresh();
+            _notifications.Notify(shouldArchive ? "已归档任务" : "已恢复任务");
+        }
+        catch (Exception ex)
+        {
+            task.IsArchived = oldArchived;
+            task.ArchiveSectionId = oldArchiveSectionId;
+            task.ArchivedAt = oldArchivedAt;
+            task.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            Refresh();
+            _notifications.Notify($"{(shouldArchive ? "归档" : "恢复")}任务失败：{ex.Message}");
+        }
+    }
+
+    private async Task ArchiveNoteAsync()
+    {
+        if (ActiveNote is null)
+        {
+            return;
+        }
+
+        var note = ActiveNote;
+        var shouldArchive = !note.IsArchived;
+        var oldArchived = note.IsArchived;
+        var oldUpdatedAt = note.UpdatedAt;
+        var oldArchiveSectionId = note.ArchiveSectionId;
+        var oldArchivedAt = note.ArchivedAt;
+        ArchiveSection? archiveSection = null;
+
+        if (shouldArchive)
+        {
+            archiveSection = await ChooseArchiveTargetSectionAsync();
+
+            if (archiveSection is null)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            _isLoading = true;
+            note.IsArchived = shouldArchive;
+            note.ArchiveSectionId = shouldArchive ? archiveSection!.Id : null;
+            note.ArchivedAt = shouldArchive ? DateTime.Now : null;
+            await _noteRepository.UpsertAsync(note);
+            _isLoading = false;
+
+            FocusedNote = null;
+            SelectedNote = null;
+            IsNoteSpotlightEditing = false;
+            ClearNoteDraft();
+            if (shouldArchive || _filter.IsArchiveFilter)
+            {
+                UntrackNote(note);
+                _allNotes.Remove(note);
+            }
+
+            await LoadArchiveSectionsAsync();
+            Refresh(refreshCalendar: false);
+            _notifications.Notify(shouldArchive ? "已归档备忘" : "已恢复备忘");
+        }
+        catch (Exception ex)
+        {
+            note.IsArchived = oldArchived;
+            note.ArchiveSectionId = oldArchiveSectionId;
+            note.ArchivedAt = oldArchivedAt;
+            note.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            Refresh();
+            _notifications.Notify($"{(shouldArchive ? "归档" : "恢复")}备忘失败：{ex.Message}");
+        }
+    }
+
+    private async Task MoveCardAsync(object? parameter)
+    {
+        if (parameter is not CardDropPayload payload)
+        {
+            return;
+        }
+
+        if (payload.Item is TaskItem task && payload.TargetColumn != KanbanColumnKind.Notes)
+        {
+            if (task.IsArchived)
+            {
+                _notifications.Notify("归档任务不能拖拽排序，先恢复后再移动");
+                return;
+            }
+
+            await MoveTaskToColumnAsync(task, payload.TargetColumn, payload.TargetIndex);
+            return;
+        }
+
+        if (payload.Item is NoteItem note && payload.TargetColumn == KanbanColumnKind.Notes)
+        {
+            if (note.IsArchived)
+            {
+                _notifications.Notify("归档备忘不能拖拽排序，先恢复后再移动");
+                return;
+            }
+
+            await MoveNoteAsync(note, payload.TargetIndex);
+        }
+    }
+
+    private async Task MoveTaskToColumnAsync(TaskItem task, KanbanColumnKind targetColumn, int targetIndex)
+    {
+        var sourceStatus = task.Status;
+        var targetStatus = targetColumn switch
+        {
+            KanbanColumnKind.Todo => TaskStatus.Todo,
+            KanbanColumnKind.Doing => TaskStatus.Doing,
+            KanbanColumnKind.Blocked => TaskStatus.Blocked,
+            KanbanColumnKind.Done => TaskStatus.Done,
+            _ => task.Status
+        };
+        var oldTaskState = TaskPersistenceState.From(task);
+
+        var currentList = _allTasks
+            .Where(item => !item.IsArchived && item.Status == targetStatus)
+            .OrderBy(item => item.SortOrder)
+            .ToList();
+        var originalIndex = currentList.FindIndex(item => item.Id == task.Id);
+        var insertIndex = targetIndex;
+
+        if (task.Status == targetStatus && originalIndex >= 0 && insertIndex > originalIndex)
+        {
+            insertIndex--;
+        }
+
+        currentList.RemoveAll(item => item.Id == task.Id);
+        insertIndex = Math.Clamp(insertIndex, 0, currentList.Count);
+
+        _isLoading = true;
+        task.Status = targetStatus;
+        currentList.Insert(insertIndex, task);
+
+        var sourceList = sourceStatus == targetStatus
+            ? new List<TaskItem>()
+            : _allTasks
+                .Where(item => !item.IsArchived && item.Status == sourceStatus && item.Id != task.Id)
+                .OrderBy(item => item.SortOrder)
+                .ToList();
+        var affectedItems = currentList.Concat(sourceList).DistinctBy(item => item.Id).ToArray();
+        var oldSortOrders = affectedItems.ToDictionary(item => item.Id, item => item.SortOrder);
+
+        for (var index = 0; index < currentList.Count; index++)
+        {
+            currentList[index].SortOrder = index;
+        }
+
+        for (var index = 0; index < sourceList.Count; index++)
+        {
+            sourceList[index].SortOrder = index;
+        }
+
+        _isLoading = false;
+        Refresh();
+
+        try
+        {
+            await _taskRepository.UpsertRangeAsync(affectedItems);
+            _notifications.Notify("任务顺序已更新");
+        }
+        catch (Exception ex)
+        {
+            _isLoading = true;
+            oldTaskState.Restore(task);
+
+            foreach (var item in affectedItems)
+            {
+                if (oldSortOrders.TryGetValue(item.Id, out var sortOrder))
+                {
+                    item.SortOrder = sortOrder;
+                }
+            }
+
+            _isLoading = false;
+            Refresh();
+            _notifications.Notify($"更新任务顺序失败：{ex.Message}");
+        }
+    }
+
+    private async Task MoveNoteAsync(NoteItem note, int targetIndex)
+    {
+        var oldNoteState = NotePersistenceState.From(note);
+        var currentList = _allNotes
+            .Where(item => !item.IsArchived)
+            .OrderBy(item => item.SortOrder)
+            .ToList();
+        var originalIndex = currentList.FindIndex(item => item.Id == note.Id);
+        var insertIndex = targetIndex;
+
+        if (originalIndex >= 0 && insertIndex > originalIndex)
+        {
+            insertIndex--;
+        }
+
+        currentList.RemoveAll(item => item.Id == note.Id);
+        insertIndex = Math.Clamp(insertIndex, 0, currentList.Count);
+        var affectedItems = currentList.Append(note).DistinctBy(item => item.Id).ToArray();
+        var oldSortOrders = affectedItems.ToDictionary(item => item.Id, item => item.SortOrder);
+
+        _isLoading = true;
+        currentList.Insert(insertIndex, note);
+
+        for (var index = 0; index < currentList.Count; index++)
+        {
+            currentList[index].SortOrder = index;
+        }
+
+        _isLoading = false;
+        Refresh();
+
+        try
+        {
+            await _noteRepository.UpsertRangeAsync(currentList);
+            _notifications.Notify("备忘顺序已更新");
+        }
+        catch (Exception ex)
+        {
+            _isLoading = true;
+            oldNoteState.Restore(note);
+
+            foreach (var item in affectedItems)
+            {
+                if (oldSortOrders.TryGetValue(item.Id, out var sortOrder))
+                {
+                    item.SortOrder = sortOrder;
+                }
+            }
+
+            _isLoading = false;
+            Refresh();
+            _notifications.Notify($"更新备忘顺序失败：{ex.Message}");
+        }
+    }
+
+    private async Task AttachFilesAsync(object? parameter)
+    {
+        if (parameter is not FileDropPayload payload)
+        {
+            return;
+        }
+
+        IReadOnlyList<AttachmentItem> copiedAttachments = [];
+
+        try
+        {
+            if (payload.Owner is TaskItem task)
+            {
+                copiedAttachments = await _attachmentStorage.CopyFilesAsync(AttachmentOwnerType.Task, task.Id, payload.FilePaths);
+                await _attachmentRepository.AddRangeAsync(copiedAttachments);
+
+                foreach (var attachment in copiedAttachments)
+                {
+                    task.Attachments.Add(attachment);
+                }
+
+                Refresh();
+                _notifications.Notify($"已保存 {copiedAttachments.Count} 个附件");
+                return;
+            }
+
+            if (payload.Owner is NoteItem note)
+            {
+                copiedAttachments = await _attachmentStorage.CopyFilesAsync(AttachmentOwnerType.Note, note.Id, payload.FilePaths);
+                await _attachmentRepository.AddRangeAsync(copiedAttachments);
+
+                foreach (var attachment in copiedAttachments)
+                {
+                    note.Attachments.Add(attachment);
+                }
+
+                Refresh();
+                _notifications.Notify($"已保存 {copiedAttachments.Count} 个附件");
+            }
+        }
+        catch (Exception ex)
+        {
+            foreach (var attachment in copiedAttachments)
+            {
+                try
+                {
+                    await _attachmentStorage.DeleteAttachmentFileAsync(attachment);
+                }
+                catch
+                {
+                    // Best-effort cleanup after a failed database write.
+                }
+            }
+
+            _notifications.Notify(ex.Message);
+        }
+    }
+
+    private async Task PickFilesAsync(object? owner)
+    {
+        if (owner is not TaskItem and not NoteItem)
+        {
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Multiselect = true,
+            CheckFileExists = true,
+            Title = "选择附件"
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            await AttachFilesAsync(new FileDropPayload(owner, dialog.FileNames));
+        }
+    }
+
+    private async Task PasteClipboardImageAsync(object? _)
+    {
+        if (!IsSpotlightEditing)
+        {
+            return;
+        }
+
+        object? owner = IsTaskSpotlightEditing
+            ? FocusedTask
+            : IsNoteSpotlightEditing
+                ? FocusedNote
+                : null;
+
+        if (owner is null)
+        {
+            return;
+        }
+
+        BitmapSource? image;
+
+        try
+        {
+            if (!Clipboard.ContainsImage())
+            {
+                return;
+            }
+
+            image = Clipboard.GetImage();
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify($"读取剪贴板失败：{ex.Message}");
+            return;
+        }
+
+        if (image is null)
+        {
+            return;
+        }
+
+        AttachmentItem? attachment = null;
+
+        try
+        {
+            using var stream = new MemoryStream();
+            var encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            encoder.Save(stream);
+            stream.Position = 0;
+
+            var fileName = $"clipboard-image-{DateTime.Now:yyyyMMdd-HHmmss}.png";
+
+            if (owner is TaskItem task)
+            {
+                attachment = await _attachmentStorage.SaveStreamAsync(AttachmentOwnerType.Task, task.Id, fileName, stream);
+                attachment.SortOrder = task.Attachments.Count;
+                await _attachmentRepository.AddRangeAsync([attachment]);
+                task.Attachments.Add(attachment);
+                Refresh();
+                _notifications.Notify("已保存剪贴板图片为附件");
+                return;
+            }
+
+            if (owner is NoteItem note)
+            {
+                attachment = await _attachmentStorage.SaveStreamAsync(AttachmentOwnerType.Note, note.Id, fileName, stream);
+                attachment.SortOrder = note.Attachments.Count;
+                await _attachmentRepository.AddRangeAsync([attachment]);
+                note.Attachments.Add(attachment);
+                Refresh();
+                _notifications.Notify("已保存剪贴板图片为附件");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (attachment is not null)
+            {
+                try
+                {
+                    await _attachmentStorage.DeleteAttachmentFileAsync(attachment);
+                }
+                catch
+                {
+                    // Best-effort cleanup after a failed clipboard image attachment.
+                }
+            }
+
+            _notifications.Notify($"保存剪贴板图片失败：{ex.Message}");
+        }
+    }
+
+    private void OpenAttachment(object? parameter)
+    {
+        if (parameter is not AttachmentItem attachment)
+        {
+            return;
+        }
+
+        try
+        {
+            _attachmentStorage.OpenAttachment(attachment);
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify(ex.Message);
+        }
+    }
+
+    private void RevealAttachment(object? parameter)
+    {
+        if (parameter is not AttachmentItem attachment)
+        {
+            return;
+        }
+
+        try
+        {
+            _attachmentStorage.RevealAttachment(attachment);
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify(ex.Message);
+        }
+    }
+
+    private async Task DeleteAttachmentAsync(object? parameter)
+    {
+        if (parameter is not AttachmentItem attachment)
+        {
+            return;
+        }
+
+        StagedAttachmentDelete? stagedDelete = null;
+        var databaseDeleted = false;
+
+        try
+        {
+            stagedDelete = _attachmentStorage.StageAttachmentFileForDelete(attachment);
+            await _attachmentRepository.DeleteAsync(attachment.Id);
+            databaseDeleted = true;
+            _attachmentStorage.CommitStagedDelete(stagedDelete);
+            var owner = attachment.OwnerType == AttachmentOwnerType.Task
+                ? _allTasks.FirstOrDefault(task => task.Id == attachment.OwnerId)?.Attachments
+                : _allNotes.FirstOrDefault(note => note.Id == attachment.OwnerId)?.Attachments;
+
+            owner?.Remove(attachment);
+            Refresh();
+            _notifications.Notify("已删除附件");
+        }
+        catch (Exception ex)
+        {
+            var fileRestored = true;
+
+            if (stagedDelete is not null)
+            {
+                fileRestored = TryRollbackStagedDelete(stagedDelete);
+            }
+
+            if (databaseDeleted)
+            {
+                var restored = await RestoreAttachmentRecordAsync(attachment);
+                _notifications.Notify(fileRestored && restored
+                    ? $"删除附件失败：{ex.Message}"
+                    : $"删除附件失败，且恢复附件文件或数据库记录失败：{ex.Message}");
+                return;
+            }
+
+            _notifications.Notify(fileRestored
+                ? $"删除附件失败：{ex.Message}"
+                : $"删除附件失败，且恢复附件文件失败：{ex.Message}");
+        }
+    }
+
+    private async Task<bool> RestoreDeletedTaskRecordsAsync(TaskItem task, bool attachmentsDeleted, bool taskDeleted)
+    {
+        try
+        {
+            if (taskDeleted)
+            {
+                await _taskRepository.UpsertAsync(task);
+            }
+
+            if (attachmentsDeleted)
+            {
+                await _attachmentRepository.AddRangeAsync(task.Attachments);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task<bool> RestoreDeletedNoteRecordsAsync(NoteItem note, bool attachmentsDeleted, bool noteDeleted)
+    {
+        try
+        {
+            if (noteDeleted)
+            {
+                await _noteRepository.UpsertAsync(note);
+            }
+
+            if (attachmentsDeleted)
+            {
+                await _attachmentRepository.AddRangeAsync(note.Attachments);
+            }
+
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task<bool> RestoreAttachmentRecordAsync(AttachmentItem attachment)
+    {
+        try
+        {
+            await _attachmentRepository.AddRangeAsync([attachment]);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private IReadOnlyList<StagedAttachmentDelete> StageAttachmentDeletes(IEnumerable<AttachmentItem> attachments)
+    {
+        var stagedDeletes = new List<StagedAttachmentDelete>();
+
+        try
+        {
+            foreach (var attachment in attachments.ToArray())
+            {
+                stagedDeletes.Add(_attachmentStorage.StageAttachmentFileForDelete(attachment));
+            }
+
+            return stagedDeletes;
+        }
+        catch
+        {
+            TryRollbackStagedDeletes(stagedDeletes);
+            throw;
+        }
+    }
+
+    private void CommitStagedDeletes(IEnumerable<StagedAttachmentDelete> stagedDeletes)
+    {
+        foreach (var stagedDelete in stagedDeletes)
+        {
+            _attachmentStorage.CommitStagedDelete(stagedDelete);
+        }
+    }
+
+    private bool TryRollbackStagedDeletes(IEnumerable<StagedAttachmentDelete> stagedDeletes)
+    {
+        var succeeded = true;
+
+        foreach (var stagedDelete in stagedDeletes.Reverse())
+        {
+            succeeded &= TryRollbackStagedDelete(stagedDelete);
+        }
+
+        return succeeded;
+    }
+
+    private bool TryRollbackStagedDelete(StagedAttachmentDelete stagedDelete)
+    {
+        try
+        {
+            _attachmentStorage.RollbackStagedDelete(stagedDelete);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>调整任务日期（由 CalendarViewModel 调用，拖拽任务到日历日期）。</summary>
+    public async Task MoveTaskToCalendarDateAsync(TaskItem task, DateTime date)
+    {
+        var oldStartDate = task.StartDate;
+        var oldEndDate = task.EndDate;
+        var oldUpdatedAt = task.UpdatedAt;
+
+        try
+        {
+            _isLoading = true;
+            var targetDate = date.Date;
+            var (newStartDate, newEndDate) = ShiftTaskDates(task, targetDate);
+            task.StartDate = newStartDate;
+            task.EndDate = newEndDate;
+            await _taskRepository.UpsertAsync(task);
+            _isLoading = false;
+
+            if (ReferenceEquals(SelectedTask, task))
+            {
+                LoadTaskDraft(task);
+            }
+
+            Refresh();
+            _notifications.Notify($"已调整任务日期：{task.Title}");
+        }
+        catch (Exception ex)
+        {
+            task.StartDate = oldStartDate;
+            task.EndDate = oldEndDate;
+            task.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            Refresh();
+            _notifications.Notify($"调整任务日期失败：{ex.Message}");
+        }
+    }
+
+    private static (DateTime? StartDate, DateTime? EndDate) ShiftTaskDates(TaskItem task, DateTime targetDate)
+    {
+        if (task.StartDate.HasValue && task.EndDate.HasValue)
+        {
+            var range = TaskDateHelper.DateRange(task);
+            var duration = (range.End - range.Start).Days;
+            return (targetDate, targetDate.AddDays(duration));
+        }
+
+        if (task.StartDate.HasValue)
+        {
+            return (targetDate, null);
+        }
+
+        if (task.EndDate.HasValue)
+        {
+            return (null, targetDate);
+        }
+
+        return (targetDate, targetDate);
+    }
+
+    private bool PassesTaskFilter(TaskItem task)
+    {
+        return _filter.CurrentFilter switch
+        {
+            "Today" => IsTodayWithinTaskDateRange(task),
+            "High" => task.Priority == TaskPriority.High,
+            "Overdue" => task.IsOverdue,
+            "WithAttachments" => task.AttachmentCount > 0,
+            _ => true
+        };
+    }
+
+    private static bool IsTodayWithinTaskDateRange(TaskItem task)
+    {
+        if (task.StartDate is null || task.EndDate is null)
+        {
+            return false;
+        }
+
+        var today = DateTime.Today;
+        var startDate = task.StartDate.Value.Date;
+        var endDate = task.EndDate.Value.Date;
+
+        if (startDate > endDate)
+        {
+            (startDate, endDate) = (endDate, startDate);
+        }
+
+        return startDate <= today && today <= endDate;
+    }
+
+    private bool PassesNoteFilter(NoteItem note)
+    {
+        return _filter.CurrentFilter switch
+        {
+            "WithAttachments" => note.AttachmentCount > 0,
+            _ => true
+        };
+    }
+
+    private bool PassesTaskDateFilter(TaskItem task)
+    {
+        if (!_filter.HasDateFilter)
+        {
+            return true;
+        }
+
+        var itemStart = task.StartDate?.Date ?? task.EndDate?.Date;
+        var itemEnd = task.EndDate?.Date ?? task.StartDate?.Date;
+
+        if (itemStart is null || itemEnd is null)
+        {
+            return false;
+        }
+
+        return DateRangesOverlap(itemStart.Value, itemEnd.Value);
+    }
+
+    private bool PassesNoteDateFilter(NoteItem note)
+    {
+        return !_filter.HasDateFilter || DateRangesOverlap(note.UpdatedAt.Date, note.UpdatedAt.Date);
+    }
+
+    private bool DateRangesOverlap(DateTime itemStart, DateTime itemEnd)
+    {
+        var (filterStart, filterEnd) = NormalizedDateFilter();
+
+        if (itemStart > itemEnd)
+        {
+            (itemStart, itemEnd) = (itemEnd, itemStart);
+        }
+
+        if (filterStart.HasValue && itemEnd < filterStart.Value)
+        {
+            return false;
+        }
+
+        if (filterEnd.HasValue && itemStart > filterEnd.Value)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private (DateTime? Start, DateTime? End) NormalizedDateFilter()
+    {
+        var start = _filter.DateFilterStart?.Date;
+        var end = _filter.DateFilterEnd?.Date;
+
+        if (start.HasValue && end.HasValue && start.Value > end.Value)
+        {
+            return (end, start);
+        }
+
+        return (start, end);
+    }
+
+    private bool PassesTaskSearch(TaskItem task)
+    {
+        if (string.IsNullOrWhiteSpace(_filter.NormalizedSearchText))
+        {
+            return true;
+        }
+
+        var query = _filter.NormalizedSearchText;
+        return task.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || task.Description.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || task.Tags.Any(tag => tag.Contains(query, StringComparison.OrdinalIgnoreCase))
+            || task.Attachments.Any(attachment => attachment.OriginalFileName.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool PassesNoteSearch(NoteItem note)
+    {
+        if (string.IsNullOrWhiteSpace(_filter.NormalizedSearchText))
+        {
+            return true;
+        }
+
+        var query = _filter.NormalizedSearchText;
+        return note.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || note.Content.Contains(query, StringComparison.OrdinalIgnoreCase)
+            || note.Tags.Any(tag => tag.Contains(query, StringComparison.OrdinalIgnoreCase))
+            || note.Attachments.Any(attachment => attachment.OriginalFileName.Contains(query, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private int NextTaskSortOrder(TaskStatus status)
+    {
+        return _allTasks.Where(task => task.Status == status).Select(task => task.SortOrder).DefaultIfEmpty().Max() + 1;
+    }
+
+    private int NextNoteSortOrder()
+    {
+        return _allNotes.Select(note => note.SortOrder).DefaultIfEmpty().Max() + 1;
+    }
+
+    private void AddTaskToMemory(TaskItem task)
+    {
+        TrackTask(task);
+        _allTasks.Add(task);
+    }
+
+    private void AddNoteToMemory(NoteItem note)
+    {
+        TrackNote(note);
+        _allNotes.Add(note);
+    }
+
+    private void TrackTask(TaskItem task)
+    {
+        task.PropertyChanged -= OnTaskPropertyChanged;
+        task.PropertyChanged += OnTaskPropertyChanged;
+    }
+
+    private void UntrackTask(TaskItem task)
+    {
+        task.PropertyChanged -= OnTaskPropertyChanged;
+    }
+
+    private void TrackNote(NoteItem note)
+    {
+        note.PropertyChanged -= OnNotePropertyChanged;
+        note.PropertyChanged += OnNotePropertyChanged;
+    }
+
+    private void UntrackNote(NoteItem note)
+    {
+        note.PropertyChanged -= OnNotePropertyChanged;
+    }
+
+    private async void OnTaskPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!_isInitialized || _isLoading || sender is not TaskItem task)
+        {
+            return;
+        }
+
+        if (e.PropertyName is nameof(TaskItem.AttachmentCount)
+            or nameof(TaskItem.UpdatedAt)
+            or nameof(TaskItem.CompletedAt)
+            or nameof(TaskItem.DateRangeDisplay)
+            or nameof(TaskItem.IsOverdue)
+            or nameof(TaskItem.IsExpanded))
+        {
+            return;
+        }
+
+        Refresh(ShouldRefreshCalendarForTaskChange(e.PropertyName));
+        await SaveTaskSafelyAsync(task);
+    }
+
+    private bool ShouldRefreshCalendarForTaskChange(string? propertyName)
+    {
+        if (string.IsNullOrWhiteSpace(propertyName) || !string.IsNullOrWhiteSpace(_filter.NormalizedSearchText))
+        {
+            return true;
+        }
+
+        return propertyName is nameof(TaskItem.StartDate)
+            or nameof(TaskItem.EndDate)
+            or nameof(TaskItem.IsArchived)
+            or nameof(TaskItem.ArchiveSectionId)
+            or nameof(TaskItem.ArchivedAt)
+            or nameof(TaskItem.SortOrder);
+    }
+
+    private async void OnNotePropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (!_isInitialized || _isLoading || sender is not NoteItem note)
+        {
+            return;
+        }
+
+        if (e.PropertyName is nameof(NoteItem.AttachmentCount)
+            or nameof(NoteItem.UpdatedAt)
+            or nameof(NoteItem.IsExpanded))
+        {
+            return;
+        }
+
+        Refresh(refreshCalendar: false);
+        await SaveNoteSafelyAsync(note);
+    }
+
+    private async Task SaveSelectedTaskAsync()
+    {
+        if (ActiveTask is null)
+        {
+            return;
+        }
+
+        var task = ActiveTask;
+        var oldTitle = task.Title;
+        var oldDescription = task.Description;
+        var oldTags = task.TagsDisplay;
+        var oldStatus = task.Status;
+        var oldPriority = task.Priority;
+        var oldStartDate = task.StartDate;
+        var oldEndDate = task.EndDate;
+        var oldCompletedAt = task.CompletedAt;
+        var oldUpdatedAt = task.UpdatedAt;
+
+        try
+        {
+            _isLoading = true;
+            var startDate = TaskStartDateDraft?.Date;
+            var endDate = TaskEndDateDraft?.Date;
+
+            if (startDate.HasValue && endDate.HasValue && startDate.Value > endDate.Value)
+            {
+                (startDate, endDate) = (endDate, startDate);
+            }
+
+            task.Title = string.IsNullOrWhiteSpace(TaskTitleDraft) ? "未命名任务" : TaskTitleDraft.Trim();
+            task.Description = TaskDescriptionDraft;
+            task.TagsDisplay = TaskTagsDraft;
+            task.Status = TaskStatusDraft;
+            task.Priority = TaskPriorityDraft;
+            task.StartDate = startDate;
+            task.EndDate = endDate;
+            await _taskRepository.UpsertAsync(task);
+            _isLoading = false;
+
+            LoadTaskDraft(task);
+            IsTaskSpotlightEditing = false;
+            Refresh();
+            _notifications.Notify("已保存");
+        }
+        catch (Exception ex)
+        {
+            task.Title = oldTitle;
+            task.Description = oldDescription;
+            task.TagsDisplay = oldTags;
+            task.Status = oldStatus;
+            task.Priority = oldPriority;
+            task.StartDate = oldStartDate;
+            task.EndDate = oldEndDate;
+            task.CompletedAt = oldCompletedAt;
+            task.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            Refresh();
+            OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+            SaveTaskCommand.RaiseCanExecuteChanged();
+            _notifications.Notify($"保存任务失败：{ex.Message}");
+        }
+    }
+
+    private async Task SaveSelectedNoteAsync()
+    {
+        if (ActiveNote is null)
+        {
+            return;
+        }
+
+        var note = ActiveNote;
+        var oldTitle = note.Title;
+        var oldContent = note.Content;
+        var oldTags = note.TagsDisplay;
+        var oldUpdatedAt = note.UpdatedAt;
+
+        try
+        {
+            _isLoading = true;
+            note.Title = string.IsNullOrWhiteSpace(NoteTitleDraft) ? "未命名备忘" : NoteTitleDraft.Trim();
+            note.Content = NoteContentDraft;
+            note.TagsDisplay = NoteTagsDraft;
+            await _noteRepository.UpsertAsync(note);
+            _isLoading = false;
+
+            LoadNoteDraft(note);
+            IsNoteSpotlightEditing = false;
+            Refresh(refreshCalendar: false);
+            _notifications.Notify("已保存");
+        }
+        catch (Exception ex)
+        {
+            note.Title = oldTitle;
+            note.Content = oldContent;
+            note.TagsDisplay = oldTags;
+            note.UpdatedAt = oldUpdatedAt;
+            _isLoading = false;
+            Refresh(refreshCalendar: false);
+            OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+            SaveNoteCommand.RaiseCanExecuteChanged();
+            _notifications.Notify($"保存备忘失败：{ex.Message}");
+        }
+    }
+
+    private async Task<bool> SaveTaskSafelyAsync(TaskItem task, string? successMessage = null)
+    {
+        if (!_isInitialized)
+        {
+            return false;
+        }
+
+        try
+        {
+            await _taskRepository.UpsertAsync(task);
+
+            if (!string.IsNullOrWhiteSpace(successMessage))
+            {
+                _notifications.Notify(successMessage);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify($"保存任务失败：{ex.Message}");
+            return false;
+        }
+    }
+
+    private async Task<bool> SaveNoteSafelyAsync(NoteItem note, string? successMessage = null)
+    {
+        if (!_isInitialized)
+        {
+            return false;
+        }
+
+        try
+        {
+            await _noteRepository.UpsertAsync(note);
+
+            if (!string.IsNullOrWhiteSpace(successMessage))
+            {
+                _notifications.Notify(successMessage);
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _notifications.Notify($"保存备忘失败：{ex.Message}");
+            return false;
+        }
+    }
+
+    private void LoadTaskDraft(TaskItem task)
+    {
+        _taskTitleDraft = task.Title;
+        _taskDescriptionDraft = task.Description;
+        _taskTagsDraft = task.TagsDisplay;
+        _taskStatusDraft = task.Status;
+        _taskPriorityDraft = task.Priority;
+        _taskStartDateDraft = task.StartDate;
+        _taskEndDateDraft = task.EndDate;
+        OnPropertyChanged(nameof(TaskTitleDraft));
+        OnPropertyChanged(nameof(TaskDescriptionDraft));
+        OnPropertyChanged(nameof(TaskTagsDraft));
+        OnPropertyChanged(nameof(TaskStatusDraft));
+        OnPropertyChanged(nameof(TaskPriorityDraft));
+        OnPropertyChanged(nameof(TaskStartDateDraft));
+        OnPropertyChanged(nameof(TaskEndDateDraft));
+        OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+        RaiseTaskActionCanExecuteChanged();
+    }
+
+    private void ClearTaskDraft()
+    {
+        _taskTitleDraft = string.Empty;
+        _taskDescriptionDraft = string.Empty;
+        _taskTagsDraft = string.Empty;
+        _taskStatusDraft = TaskStatus.Todo;
+        _taskPriorityDraft = TaskPriority.Medium;
+        _taskStartDateDraft = null;
+        _taskEndDateDraft = null;
+        OnPropertyChanged(nameof(TaskTitleDraft));
+        OnPropertyChanged(nameof(TaskDescriptionDraft));
+        OnPropertyChanged(nameof(TaskTagsDraft));
+        OnPropertyChanged(nameof(TaskStatusDraft));
+        OnPropertyChanged(nameof(TaskPriorityDraft));
+        OnPropertyChanged(nameof(TaskStartDateDraft));
+        OnPropertyChanged(nameof(TaskEndDateDraft));
+        OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+        RaiseTaskActionCanExecuteChanged();
+    }
+
+    private void OnTaskDraftChanged()
+    {
+        OnPropertyChanged(nameof(HasUnsavedTaskChanges));
+        RaiseTaskActionCanExecuteChanged();
+    }
+
+    private void LoadNoteDraft(NoteItem note)
+    {
+        _noteTitleDraft = note.Title;
+        _noteContentDraft = note.Content;
+        _noteTagsDraft = note.TagsDisplay;
+        OnPropertyChanged(nameof(NoteTitleDraft));
+        OnPropertyChanged(nameof(NoteContentDraft));
+        OnPropertyChanged(nameof(NoteTagsDraft));
+        OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+        RaiseNoteActionCanExecuteChanged();
+    }
+
+    private void ClearNoteDraft()
+    {
+        _noteTitleDraft = string.Empty;
+        _noteContentDraft = string.Empty;
+        _noteTagsDraft = string.Empty;
+        OnPropertyChanged(nameof(NoteTitleDraft));
+        OnPropertyChanged(nameof(NoteContentDraft));
+        OnPropertyChanged(nameof(NoteTagsDraft));
+        OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+        RaiseNoteActionCanExecuteChanged();
+    }
+
+    private void OnNoteDraftChanged()
+    {
+        OnPropertyChanged(nameof(HasUnsavedNoteChanges));
+        RaiseNoteActionCanExecuteChanged();
+    }
+
+    private void RaiseTaskActionCanExecuteChanged()
+    {
+        DeleteTaskCommand.RaiseCanExecuteChanged();
+        SaveTaskCommand.RaiseCanExecuteChanged();
+        ArchiveTaskCommand.RaiseCanExecuteChanged();
+        EditSpotlightCommand.RaiseCanExecuteChanged();
+        CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+    }
+
+    private void RaiseNoteActionCanExecuteChanged()
+    {
+        DeleteNoteCommand.RaiseCanExecuteChanged();
+        SaveNoteCommand.RaiseCanExecuteChanged();
+        ArchiveNoteCommand.RaiseCanExecuteChanged();
+        EditSpotlightCommand.RaiseCanExecuteChanged();
+        CancelSpotlightEditCommand.RaiseCanExecuteChanged();
+    }
+
+    private bool ConfirmDiscardNoteChanges()
+    {
+        return true;
+    }
+
+    private bool ConfirmDiscardTaskChanges()
+    {
+        return true;
+    }
+
+    private readonly record struct TaskPersistenceState(
+        TaskStatus Status,
+        int SortOrder,
+        DateTime UpdatedAt,
+        DateTime? CompletedAt)
+    {
+        public static TaskPersistenceState From(TaskItem task)
+        {
+            return new TaskPersistenceState(task.Status, task.SortOrder, task.UpdatedAt, task.CompletedAt);
+        }
+
+        public void Restore(TaskItem task)
+        {
+            task.Status = Status;
+            task.SortOrder = SortOrder;
+            task.UpdatedAt = UpdatedAt;
+            task.CompletedAt = CompletedAt;
+        }
+    }
+
+    private readonly record struct NotePersistenceState(int SortOrder, DateTime UpdatedAt)
+    {
+        public static NotePersistenceState From(NoteItem note)
+        {
+            return new NotePersistenceState(note.SortOrder, note.UpdatedAt);
+        }
+
+        public void Restore(NoteItem note)
+        {
+            note.SortOrder = SortOrder;
+            note.UpdatedAt = UpdatedAt;
+        }
+    }
+}

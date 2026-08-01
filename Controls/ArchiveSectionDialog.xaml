@@ -52,13 +52,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#F6F7F8" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#CBD5E1" />
+                                <Setter TargetName="Chrome" Property="Background" Value="#F1F3F5" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter Property="Foreground" Value="#FFFFFF" />
-                                <Setter TargetName="Chrome" Property="Background" Value="#212529" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#212529" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource SelectedBackgroundBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -120,10 +118,19 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="选择归档分区"
-                                       FontSize="15"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7B8;"
+                                           FontFamily="{StaticResource AppIconFontFamily}"
+                                           FontSize="15"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="选择归档分区"
+                                           Margin="8,0,0,0"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
                             <TextBlock Text="归档到默认或自定义区域"
                                        Margin="0,3,0,0"
                                        FontSize="11"
@@ -155,18 +162,34 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <TextBlock Text="{Binding Name}"
                                                FontSize="13"
                                                FontWeight="SemiBold"
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"
-                                               TextTrimming="CharacterEllipsis" />
+                                               TextTrimming="CharacterEllipsis"
+                                               VerticalAlignment="Center" />
 
                                     <Border Grid.Column="1"
+                                            Margin="10,0,0,0"
+                                            Padding="6,2"
+                                            CornerRadius="6"
+                                            Background="{StaticResource AppBackgroundBrush}"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                                        <TextBlock Text="默认"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                    </Border>
+
+                                    <Border Grid.Column="2"
                                             MinWidth="40"
                                             Height="22"
-                                            Margin="12,0,0,0"
+                                            Margin="10,0,0,0"
                                             Padding="8,0"
                                             CornerRadius="8"
                                             Background="#F0F1F3"
@@ -178,6 +201,15 @@
                                                    FontWeight="SemiBold"
                                                    Foreground="{StaticResource TextSecondaryBrush}" />
                                     </Border>
+
+                                    <TextBlock Grid.Column="3"
+                                               Text="&#xE73E;"
+                                               FontFamily="{StaticResource AppIconFontFamily}"
+                                               Margin="10,0,0,0"
+                                               FontSize="12"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>

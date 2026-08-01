@@ -198,6 +198,31 @@ public sealed class DatabaseService
         return new SqliteConnection(builder.ToString());
     }
 
+    /// <summary>将 WAL 中的未落盘数据合并回主数据库文件，保证主文件自包含（备份/复制前调用）。</summary>
+    public async Task CheckpointAsync()
+    {
+        await using var connection = CreateConnection();
+        await connection.OpenAsync();
+
+        // wal_checkpoint 返回的首列是 busy 计数（其他连接持有读事务时非 0），
+        // 重试数次直到成功；仍失败时抛出，避免产出不含 WAL 数据的残缺备份。
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA wal_checkpoint(TRUNCATE)";
+            var busy = Convert.ToInt64(await command.ExecuteScalarAsync());
+
+            if (busy == 0)
+            {
+                return;
+            }
+
+            await Task.Delay(50);
+        }
+
+        throw new InvalidOperationException("数据库 checkpoint 失败：有其他连接占用，备份已中止。");
+    }
+
     public async Task InitializeAsync()
     {
         EnsureStorageDirectories();
@@ -206,6 +231,19 @@ public sealed class DatabaseService
         await connection.OpenAsync();
 
         await InitializeSchemaAsync(connection);
+        await EnableWalModeAsync(connection);
+    }
+
+    /// <summary>
+    /// 启用 WAL 日志模式（数据库持久属性，所有连接自动生效）。
+    /// WAL 下读不阻塞写、写不阻塞读，且大幅减少事务提交的 fsync 次数；
+    /// 注意 WAL 数据暂存于 -wal 边车文件，备份前必须先 CheckpointAsync。
+    /// </summary>
+    private static async Task EnableWalModeAsync(SqliteConnection connection)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA journal_mode = WAL";
+        await command.ExecuteNonQueryAsync();
     }
 
     private void EnsureStorageDirectories()

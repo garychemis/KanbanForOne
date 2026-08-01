@@ -32,6 +32,12 @@
     <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#40F8FAFC" />
     <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#FFF8B7" />
     <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#F1F3F5" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#212529" />
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#343A40" />
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#111315" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#ADB5BD" />
 
     <FontFamily x:Key="AppFontFamily">Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei</FontFamily>
     <FontFamily x:Key="AppNumericFontFamily">Cascadia Mono, Consolas, Segoe UI</FontFamily>
