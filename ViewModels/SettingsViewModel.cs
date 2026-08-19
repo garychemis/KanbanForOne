@@ -1,20 +1,20 @@
-using System.Reflection;
 using KanbanForOne.Services;
+using KanbanForOne.Modules.DesignConditions.Data;
 
 namespace KanbanForOne.ViewModels;
 
 /// <summary>
-/// 设置页：数据位置、版本信息、更新日志，以及人工时选项管理（转发自 WorkHourOptionsViewModel）。
+/// 设置页：数据位置与人工时选项管理（转发自 WorkHourOptionsViewModel）。
 /// </summary>
 public sealed class SettingsViewModel : ObservableObject
 {
-    private static readonly Assembly AppAssembly = typeof(SettingsViewModel).Assembly;
-
     private readonly WorkHourOptionsViewModel _workHourOptions;
+    private readonly DesignConditionStorageOptions _designConditionPaths;
 
-    public SettingsViewModel(WorkHourOptionsViewModel workHourOptions)
+    public SettingsViewModel(WorkHourOptionsViewModel workHourOptions, DesignConditionStorageOptions designConditionPaths)
     {
         _workHourOptions = workHourOptions;
+        _designConditionPaths = designConditionPaths;
     }
 
     public string DataDirectory => AppPaths.DataRoot;
@@ -27,18 +27,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     public string BackupDirectory => AppPaths.BackupRoot;
 
-    public string AppVersion => AppAssembly
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-        .InformationalVersion
-        ?? AppAssembly.GetName().Version?.ToString()
-        ?? string.Empty;
+    public string DesignConditionDatabasePath => _designConditionPaths.DatabasePath;
 
-    public string CopyrightText => AppAssembly
-        .GetCustomAttribute<AssemblyCopyrightAttribute>()?
-        .Copyright
-        ?? string.Empty;
-
-    public IReadOnlyList<ReleaseNoteEntry> ReleaseNotes => ReleaseNotesService.FromAssembly(AppAssembly);
+    public string DesignConditionAttachmentDirectory => _designConditionPaths.AttachmentRoot;
 
     public System.Collections.ObjectModel.ObservableCollection<string> WorkDisciplines => _workHourOptions.WorkDisciplines;
 

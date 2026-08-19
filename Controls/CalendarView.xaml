@@ -42,6 +42,15 @@
             </Setter>
         </Style>
 
+        <Style x:Key="CalendarSectionActionStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
         <Style x:Key="CalendarDayBorderStyle" TargetType="{x:Type Border}">
             <Setter Property="MinHeight" Value="118" />
             <Setter Property="Padding" Value="9" />
@@ -139,6 +148,19 @@
                                        FontSize="10"
                                        Foreground="{StaticResource TextSecondaryBrush}" />
                         </Border>
+                        <Border Margin="0,5,0,0"
+                                Padding="7,3"
+                                CornerRadius="6"
+                                Background="{StaticResource TopNavBackgroundBrush}"
+                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                BorderThickness="1"
+                                HorizontalAlignment="Left"
+                                Visibility="{Binding HasDesignConditions, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                            <TextBlock Text="{Binding DesignConditionSummaryText}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                        </Border>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -196,13 +218,13 @@
                         BorderThickness="1">
                     <Border.Style>
                         <Style TargetType="{x:Type Border}">
-                            <Setter Property="Background" Value="#F5F6F4" />
-                            <Setter Property="BorderBrush" Value="#D5DBD8" />
+                            <Setter Property="Background" Value="{StaticResource WorkHourModuleTintBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}"
                                              Value="True">
-                                    <Setter Property="Background" Value="#F0F3F1" />
-                                    <Setter Property="BorderBrush" Value="#B9C3BF" />
+                                    <Setter Property="Background" Value="{StaticResource WorkHourModuleHoverBrush}" />
+                                    <Setter Property="BorderBrush" Value="#D7C8B1" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -236,14 +258,51 @@
                                 Margin="8,0,0,0"
                                 Padding="7,3"
                                 CornerRadius="5"
-                                Background="#FBFCFB"
-                                BorderBrush="#D5DBD8"
+                                Background="#F2EBDD"
+                                BorderBrush="{StaticResource WorkHourModuleBorderBrush}"
                                 BorderThickness="1"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{Binding HoursDisplay}"
                                        FontSize="10"
                                        FontWeight="SemiBold"
-                                       Foreground="#4F605A" />
+                                       Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                        </Border>
+                    </Grid>
+                </Border>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CalendarDesignConditionListTemplate">
+            <Button Command="{Binding DataContext.DesignConditions.OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    Style="{StaticResource ListCardButtonStyle}"
+                    Margin="0,0,0,8">
+                <Border Padding="10" CornerRadius="7" BorderThickness="1">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Background" Value="{StaticResource DesignConditionModuleTintBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
+                                    <Setter Property="Background" Value="{StaticResource DesignConditionModuleHoverBrush}" />
+                                    <Setter Property="BorderBrush" Value="#BBD4CE" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding ConditionName}" FontSize="13" FontWeight="SemiBold" Foreground="#2F3A36" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="#68736F">
+                                <Run Text="{Binding ProjectNumber, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding DisciplineRouteDisplay, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                        <Border Grid.Column="1" Margin="8,0,0,0" Padding="7,3" VerticalAlignment="Center" CornerRadius="5"
+                                Background="#E2EFEC" BorderBrush="{StaticResource DesignConditionModuleBorderBrush}" BorderThickness="1">
+                            <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource DesignConditionModuleTextBrush}">
+                                <Run Text="{Binding DrawingCount, Mode=OneWay}"/><Run Text=" 张"/>
+                            </TextBlock>
                         </Border>
                     </Grid>
                 </Border>
@@ -430,10 +489,11 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="4*" />
+                            <RowDefinition Height="3*" />
                             <RowDefinition Height="1" />
-                            <RowDefinition Height="5*" />
-                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="3*" />
+                            <RowDefinition Height="1" />
+                            <RowDefinition Height="3*" />
                         </Grid.RowDefinitions>
 
                         <StackPanel>
@@ -452,11 +512,16 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <TextBlock Text="任务"
-                                       Margin="0,0,0,7"
-                                       FontSize="12"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Text="任务" />
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                               Text="{Binding SelectedCalendarTaskCount, StringFormat={}{0} 条}" />
+                                </StackPanel>
+                                <Button AutomationProperties.Name="在所选日期新建任务" Content="+ 新建任务"
+                                        Command="{Binding CreateTaskForCalendarDateCommand}" CommandParameter="{Binding SelectedCalendarDate}"
+                                        Style="{StaticResource CalendarSectionActionStyle}" />
+                            </Grid>
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                 <Grid>
                                     <ItemsControl ItemsSource="{Binding SelectedCalendarTasks}"
@@ -476,18 +541,23 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
-                            <Grid Margin="0,0,0,7">
-                                <TextBlock Text="人工时"
-                                           FontSize="12"
-                                           FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextSecondaryBrush}" />
-                                <TextBlock HorizontalAlignment="Right"
-                                           FontSize="11"
-                                           Foreground="{StaticResource TextSecondaryBrush}">
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <Border Padding="8,3"
+                                            Background="{StaticResource WorkHourModuleTintBrush}"
+                                            BorderBrush="{StaticResource WorkHourModuleBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                        <TextBlock Text="人工时" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                                    </Border>
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
                                     <Run Text="{Binding SelectedCalendarWorkHourCount, Mode=OneWay}" />
                                     <Run Text=" 条 · " />
                                     <Run Text="{Binding SelectedCalendarWorkHourTotalDisplay, Mode=OneWay}" />
-                                </TextBlock>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button AutomationProperties.Name="在所选日期添加人工时" Content="+ 添加人工时"
+                                        Command="{Binding AddWorkHourCommand}" Style="{StaticResource CalendarSectionActionStyle}" />
                             </Grid>
                             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                                 <Grid>
@@ -495,28 +565,40 @@
                                                   ItemTemplate="{StaticResource CalendarWorkHourListTemplate}"
                                                   Visibility="{Binding HasSelectedCalendarWorkHours, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                                     <controls:EmptyStateControl Title="当天暂无人工时"
-                                                                Message="点击下方按钮添加记录。"
+                                                                Message="可从本区右上角添加记录。"
                                                                 Visibility="{Binding HasSelectedCalendarWorkHours, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}" />
                                 </Grid>
                             </ScrollViewer>
                         </Grid>
 
-                        <Grid Grid.Row="4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="8" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Button Content="+ 新建任务"
-                                    Command="{Binding CreateTaskForCalendarDateCommand}"
-                                    CommandParameter="{Binding SelectedCalendarDate}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    HorizontalAlignment="Stretch" />
-                            <Button Grid.Column="2"
-                                    Content="+ 添加人工时"
-                                    Command="{Binding AddWorkHourCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    HorizontalAlignment="Stretch" />
+                        <Border Grid.Row="4" Background="#E2E8F0" />
+
+                        <Grid Grid.Row="5" Margin="0,10,0,12">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                            <Grid Margin="0,0,0,8">
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <Border Padding="8,3"
+                                            Background="{StaticResource DesignConditionModuleTintBrush}"
+                                            BorderBrush="{StaticResource DesignConditionModuleBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                        <TextBlock Text="设计条件" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource DesignConditionModuleTextBrush}"/>
+                                    </Border>
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                        <Run Text="{Binding DesignConditions.SelectedRecordCount, Mode=OneWay}"/><Run Text=" 条 · "/><Run Text="{Binding DesignConditions.SelectedDrawingCount, Mode=OneWay}"/><Run Text=" 张"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button AutomationProperties.Name="在所选日期添加设计条件" Content="+ 添加设计条件"
+                                        Command="{Binding DesignConditions.AddCommand}" Style="{StaticResource CalendarSectionActionStyle}" />
+                            </Grid>
+                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                                <Grid>
+                                    <ItemsControl ItemsSource="{Binding DesignConditions.SelectedEntries}" ItemTemplate="{StaticResource CalendarDesignConditionListTemplate}"
+                                                  Visibility="{Binding DesignConditions.HasSelectedEntries, Converter={StaticResource BooleanToVisibilityConverterEx}}"/>
+                                    <controls:EmptyStateControl Title="当天暂无设计条件" Message="可从本区右上角添加记录。"
+                                                                Visibility="{Binding DesignConditions.HasSelectedEntries, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"/>
+                                </Grid>
+                            </ScrollViewer>
                         </Grid>
                     </Grid>
                 </Border>

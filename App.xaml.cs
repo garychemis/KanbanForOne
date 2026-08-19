@@ -2,6 +2,10 @@
 using KanbanForOne.Services;
 using KanbanForOne.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using KanbanForOne.Modules.DesignConditions.Data;
+using KanbanForOne.Modules.DesignConditions.Repositories;
+using KanbanForOne.Modules.DesignConditions.Services;
+using KanbanForOne.Modules.DesignConditions.ViewModels;
 
 namespace KanbanForOne
 {
@@ -20,8 +24,17 @@ namespace KanbanForOne
             services.AddSingleton<DatabaseService>();
             services.AddSingleton<AttachmentStorageService>();
             services.AddSingleton<BackupService>();
+            services.AddSingleton<UnifiedBackupService>();
             services.AddSingleton<WorkHourOptionsService>();
             services.AddSingleton<WorkHourExportService>();
+
+            // 独立设计条件模块
+            services.AddSingleton<DesignConditionStorageOptions>();
+            services.AddSingleton<DesignConditionOperationCoordinator>();
+            services.AddSingleton<DesignConditionDatabaseService>();
+            services.AddSingleton<DesignConditionAttachmentStorageService>();
+            services.AddSingleton<DesignConditionExportService>();
+            services.AddSingleton<DesignConditionBackupService>();
 
             // 仓储
             services.AddSingleton<TaskRepository>();
@@ -29,6 +42,9 @@ namespace KanbanForOne
             services.AddSingleton<AttachmentRepository>();
             services.AddSingleton<ArchiveSectionRepository>();
             services.AddSingleton<WorkHourRepository>();
+            services.AddSingleton<DesignConditionAttachmentRepository>();
+            services.AddSingleton<DesignConditionRepository>();
+            services.AddSingleton<DesignConditionOptionRepository>();
 
             // 共享状态
             services.AddSingleton<NotificationService>();
@@ -36,10 +52,13 @@ namespace KanbanForOne
 
             // 页面 ViewModel
             services.AddSingleton<WorkHourOptionsViewModel>();
+            services.AddSingleton<DesignConditionViewModel>();
+            services.AddSingleton<DesignConditionCalendarSectionViewModel>();
             services.AddSingleton<BoardViewModel>();
             services.AddSingleton<CalendarViewModel>();
             services.AddSingleton<BackupViewModel>();
             services.AddSingleton<SettingsViewModel>();
+            services.AddSingleton<AboutViewModel>();
             services.AddSingleton(sp => new WorkHourSummaryViewModel(
                 sp.GetRequiredService<WorkHourRepository>(),
                 sp.GetRequiredService<WorkHourExportService>(),

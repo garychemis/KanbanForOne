@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:KanbanForOne.Controls"
+        xmlns:designConditions="clr-namespace:KanbanForOne.Modules.DesignConditions.Views"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Kanban41"
@@ -56,10 +57,14 @@
                         <controls:CalendarView DataContext="{Binding Calendar}"
                                                Visibility="{Binding DataContext.IsCalendarViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:WorkHourSummaryView Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <designConditions:DesignConditionView DataContext="{Binding DesignConditions}"
+                                                              Visibility="{Binding DataContext.IsDesignConditionViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:BackupView DataContext="{Binding Backup}"
                                              Visibility="{Binding DataContext.IsBackupViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <controls:SettingsView DataContext="{Binding Settings}"
                                                Visibility="{Binding DataContext.IsSettingsViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                        <controls:AboutView DataContext="{Binding About}"
+                                            Visibility="{Binding DataContext.IsAboutViewVisible, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                     </Grid>
                 </Grid>
             </Grid>

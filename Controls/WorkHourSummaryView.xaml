@@ -263,8 +263,8 @@
 
         <Style x:Key="SummaryProgressStyle" TargetType="{x:Type ProgressBar}">
             <Setter Property="Height" Value="8" />
-            <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+            <Setter Property="Background" Value="#F2EBDD" />
+            <Setter Property="Foreground" Value="#9A7650" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ProgressBar}">

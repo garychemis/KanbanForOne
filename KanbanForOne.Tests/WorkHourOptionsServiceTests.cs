@@ -20,7 +20,8 @@ public sealed class WorkHourOptionsServiceTests
             Assert.Equal(["工艺", "管道", "外管", "管材", "管机"], options.Disciplines);
             Assert.Equal(["设计", "校核", "审核", "审定", "设计管理", "会议"], options.WorkActivities);
             Assert.True(File.Exists(path));
-            using var document = JsonDocument.Parse(await File.ReadAllTextAsync(path));
+            using var document = JsonDocument.Parse(
+                await File.ReadAllTextAsync(path, TestContext.Current.CancellationToken));
             Assert.Equal(JsonValueKind.Array, document.RootElement.GetProperty("Disciplines").ValueKind);
         }
         finally

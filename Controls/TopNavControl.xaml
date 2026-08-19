@@ -21,7 +21,7 @@
                                 Background="Transparent">
                             <Border.BorderBrush>
                                 <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}"
-                                              ConverterParameter="#111827|#00FFFFFF">
+                                              ConverterParameter="#5C9187|#00FFFFFF">
                                     <Binding Path="DataContext.CurrentFilter"
                                              RelativeSource="{RelativeSource TemplatedParent}" />
                                     <Binding Path="CommandParameter"
@@ -33,8 +33,56 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Foreground" Value="#111827" />
+                                <Setter Property="Foreground" Value="{StaticResource BrandNavyBrush}" />
                             </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WorkHourTopTabButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource TopTabButtonStyle}">
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome" Margin="0,5" Padding="12,0" CornerRadius="9">
+                            <Border.Background>
+                                <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}" ConverterParameter="#EEEAE1|#00FFFFFF">
+                                    <Binding Path="DataContext.CurrentFilter" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    <Binding Path="CommandParameter" RelativeSource="{RelativeSource TemplatedParent}" />
+                                </MultiBinding>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#E8E3D8" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#DDD6C8" /></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="#8C7B62" /><Setter TargetName="Chrome" Property="BorderThickness" Value="1" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DesignConditionTopTabButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource TopTabButtonStyle}">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome" Margin="0,5" Padding="12,0" CornerRadius="9">
+                            <Border.Background>
+                                <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}" ConverterParameter="#DDEAE7|#00FFFFFF">
+                                    <Binding Path="DataContext.CurrentFilter" RelativeSource="{RelativeSource TemplatedParent}" />
+                                    <Binding Path="CommandParameter" RelativeSource="{RelativeSource TemplatedParent}" />
+                                </MultiBinding>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#D3E4E0" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#C6DAD5" /></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BrandTealBrush}" /><Setter TargetName="Chrome" Property="BorderThickness" Value="1" /></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -100,15 +148,19 @@
                 <Button Content="人工时汇总"
                         Command="{Binding ChangeFilterCommand}"
                         CommandParameter="WorkHourSummary"
-                        Style="{StaticResource TopTabButtonStyle}" />
+                        Style="{StaticResource WorkHourTopTabButtonStyle}" />
+                <Button Content="设计条件归档"
+                        Command="{Binding ChangeFilterCommand}"
+                        CommandParameter="DesignConditions"
+                        Style="{StaticResource DesignConditionTopTabButtonStyle}" />
             </StackPanel>
 
             <controls:SearchBoxControl Grid.Column="2"
-                                       Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"
+                                       Visibility="{Binding IsWorkspaceFilterVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}"
                                        Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
             <controls:DateRangeFilterControl Grid.Column="4"
-                                             Visibility="{Binding IsWorkHourSummaryViewVisible, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}"
+                                             Visibility="{Binding IsWorkspaceFilterVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}"
                                              StartDate="{Binding DateFilterStart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              EndDate="{Binding DateFilterEnd, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              HasFilter="{Binding HasDateFilter}"

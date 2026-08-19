@@ -9,6 +9,8 @@ public sealed class CalendarDayItem : ObservableObject
     private bool _isSelected;
     private int _totalTaskCount;
     private int _overflowCount;
+    private int _designConditionCount;
+    private int _designConditionDrawingCount;
 
     public DateTime Date { get; init; }
 
@@ -56,6 +58,35 @@ public sealed class CalendarDayItem : ObservableObject
     public bool HasOverflow => OverflowCount > 0;
 
     public string OverflowText => $"+{OverflowCount}";
+
+    public int DesignConditionCount
+    {
+        get => _designConditionCount;
+        set
+        {
+            if (SetProperty(ref _designConditionCount, value))
+            {
+                OnPropertyChanged(nameof(HasDesignConditions));
+                OnPropertyChanged(nameof(DesignConditionSummaryText));
+            }
+        }
+    }
+
+    public int DesignConditionDrawingCount
+    {
+        get => _designConditionDrawingCount;
+        set
+        {
+            if (SetProperty(ref _designConditionDrawingCount, value))
+            {
+                OnPropertyChanged(nameof(DesignConditionSummaryText));
+            }
+        }
+    }
+
+    public bool HasDesignConditions => DesignConditionCount > 0;
+
+    public string DesignConditionSummaryText => $"条件 {DesignConditionCount} · {DesignConditionDrawingCount}张";
 }
 
 public sealed class CalendarTaskChip

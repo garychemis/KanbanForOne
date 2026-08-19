@@ -6,7 +6,7 @@ namespace KanbanForOne.Services;
 
 public sealed class DatabaseService
 {
-    private const int CurrentSchemaVersion = 4;
+    internal const int CurrentSchemaVersion = 4;
 
     private static readonly string[] RequiredTables = ["Tasks", "Notes", "Attachments", "ArchiveSections", "AppSettings", "WorkHourEntries"];
 
@@ -106,7 +106,7 @@ public sealed class DatabaseService
         "CREATE INDEX IF NOT EXISTS IX_WorkHourEntries_ActivityDate ON WorkHourEntries(WorkActivity, WorkDate)"
     ];
 
-    private static readonly IReadOnlyDictionary<string, string[]> RequiredColumns = new Dictionary<string, string[]>
+    internal static readonly IReadOnlyDictionary<string, string[]> RequiredColumns = new Dictionary<string, string[]>
     {
         ["Tasks"] =
         [

@@ -244,6 +244,7 @@ public sealed class AttachmentStorageService
             throw new FileNotFoundException("附件文件不存在。", path);
         }
 
+        AttachmentOpenSafety.EnsureSafeToOpen(path);
         Process.Start(new ProcessStartInfo(path)
         {
             UseShellExecute = true

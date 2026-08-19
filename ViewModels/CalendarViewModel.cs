@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using KanbanForOne.Controls;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
+using KanbanForOne.Modules.DesignConditions.ViewModels;
 using TaskStatus = KanbanForOne.Models.TaskStatus;
 
 namespace KanbanForOne.ViewModels;
@@ -17,6 +18,7 @@ public sealed class CalendarViewModel : ObservableObject
     private readonly WorkHourSummaryViewModel _workHourSummary;
     private readonly NotificationService _notifications;
     private readonly WorkspaceFilterState _filter;
+    private readonly DesignConditionCalendarSectionViewModel _designConditions;
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private DateTime _selectedCalendarDate = DateTime.Today;
     private string _calendarViewMode = "Month";
@@ -28,7 +30,8 @@ public sealed class CalendarViewModel : ObservableObject
         WorkHourOptionsViewModel workHourOptions,
         WorkHourSummaryViewModel workHourSummary,
         NotificationService notifications,
-        WorkspaceFilterState filter)
+        WorkspaceFilterState filter,
+        DesignConditionCalendarSectionViewModel designConditions)
     {
         _board = board;
         _workHourRepository = workHourRepository;
@@ -36,6 +39,8 @@ public sealed class CalendarViewModel : ObservableObject
         _workHourSummary = workHourSummary;
         _notifications = notifications;
         _filter = filter;
+        _designConditions = designConditions;
+        _designConditions.SummariesChanged += (_, _) => ApplyDesignConditionSummaries();
 
         _board.DataChanged += refreshCalendar =>
         {
@@ -63,6 +68,8 @@ public sealed class CalendarViewModel : ObservableObject
     public ObservableCollection<TaskItem> SelectedCalendarTasks { get; } = new();
 
     public ObservableCollection<WorkHourEntry> SelectedCalendarWorkHours { get; } = new();
+
+    public DesignConditionCalendarSectionViewModel DesignConditions => _designConditions;
 
     public IReadOnlyList<string> CalendarWeekdayHeaders { get; } = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"];
 
@@ -106,6 +113,7 @@ public sealed class CalendarViewModel : ObservableObject
                 OnPropertyChanged(nameof(CalendarMonthTitle));
                 _board.Refresh();
                 _ = LoadSelectedWorkHoursAsync();
+                ObserveDesignConditionLoad(LoadDesignConditionCalendarAsync());
             }
         }
     }
@@ -122,6 +130,7 @@ public sealed class CalendarViewModel : ObservableObject
                 OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
                 RefreshCalendarSelection();
                 _ = LoadSelectedWorkHoursAsync();
+                ObserveDesignConditionLoad(_designConditions.LoadSelectedDateAsync(value.Date));
             }
         }
     }
@@ -171,6 +180,7 @@ public sealed class CalendarViewModel : ObservableObject
     {
         await LoadSelectedWorkHoursAsync();
         RefreshTasks();
+        await LoadDesignConditionCalendarAsync();
     }
 
     /// <summary>看板任务变化后刷新日历任务列表与网格（由 Board.DataChanged 触发）。</summary>
@@ -252,6 +262,7 @@ public sealed class CalendarViewModel : ObservableObject
         }
 
         CollectionHelper.Replace(CalendarDays, days);
+        ApplyDesignConditionSummaries();
         RefreshCalendarSelection();
     }
 
@@ -436,6 +447,7 @@ public sealed class CalendarViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedCalendarDateDisplay));
         _board.Refresh();
         _ = LoadSelectedWorkHoursAsync();
+        ObserveDesignConditionLoad(LoadDesignConditionCalendarAsync());
     }
 
     private void SelectCalendarDate(object? parameter)
@@ -467,11 +479,13 @@ public sealed class CalendarViewModel : ObservableObject
             OnPropertyChanged(nameof(CalendarMonthTitle));
             _board.Refresh();
             _ = LoadSelectedWorkHoursAsync();
+            ObserveDesignConditionLoad(LoadDesignConditionCalendarAsync());
             return;
         }
 
         RefreshCalendarSelection();
         _ = LoadSelectedWorkHoursAsync();
+        ObserveDesignConditionLoad(_designConditions.LoadSelectedDateAsync(targetDate));
     }
 
     private void SetCalendarViewMode(object? parameter)
@@ -510,5 +524,29 @@ public sealed class CalendarViewModel : ObservableObject
             CalendarDayItem day => day.Date,
             _ => null
         };
+    }
+
+    private async Task LoadDesignConditionCalendarAsync()
+    {
+        var gridStart = CalendarMonth.AddDays(-(((int)CalendarMonth.DayOfWeek + 6) % 7));
+        await _designConditions.InitializeAsync(gridStart, gridStart.AddDays(41), SelectedCalendarDate);
+    }
+
+    private void ObserveDesignConditionLoad(Task operation) => _ = ObserveDesignConditionLoadCoreAsync(operation);
+
+    private async Task ObserveDesignConditionLoadCoreAsync(Task operation)
+    {
+        try { await operation; }
+        catch (Exception ex) { _notifications.Notify($"加载日历设计条件失败：{ex.Message}"); }
+    }
+
+    private void ApplyDesignConditionSummaries()
+    {
+        foreach (var day in CalendarDays)
+        {
+            var summary = _designConditions.GetSummary(day.Date);
+            day.DesignConditionCount = summary?.RecordCount ?? 0;
+            day.DesignConditionDrawingCount = summary?.DrawingCount ?? 0;
+        }
     }
 }

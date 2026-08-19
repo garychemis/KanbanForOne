@@ -1,5 +1,6 @@
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
 using Microsoft.Data.Sqlite;
 
 namespace KanbanForOne.Services;
@@ -18,6 +19,10 @@ public sealed record RestoreBackupResult(
 
 public sealed class BackupService
 {
+    private const int MaxArchiveEntries = 20_000;
+    private const long MaxArchiveEntryBytes = 2L * 1024 * 1024 * 1024;
+    private const long MaxArchiveExpandedBytes = 10L * 1024 * 1024 * 1024;
+    private const long MaxOptionsFileBytes = 1024L * 1024;
     private readonly DatabaseService _database;
 
     public BackupService(DatabaseService database)
@@ -134,6 +139,7 @@ public sealed class BackupService
         Directory.CreateDirectory(extractRoot);
         Directory.CreateDirectory(oldRoot);
 
+        var cleanupStaging = true;
         try
         {
             var attachmentCount = ExtractBackupArchive(sourceBackupPath, extractRoot);
@@ -142,17 +148,19 @@ public sealed class BackupService
             var restoredWorkHourOptionsPath = Path.Combine(extractRoot, "workhour-options.json");
 
             ValidateDatabaseFile(restoredDatabasePath);
+            ValidateWorkHourOptionsFile(restoredWorkHourOptionsPath);
 
             var protectiveBackupPath = CreateUniquePreRestoreBackupPath();
             CreateBackupArchive(protectiveBackupPath);
 
             SqliteConnection.ClearAllPools();
-            var movedCurrentData = false;
+            var moveState = new CoreMoveState();
+            var replacementInstalled = false;
 
             try
             {
-                MoveCurrentDataAside(oldDatabasePath, oldAttachmentRoot, oldWorkHourOptionsPath);
-                movedCurrentData = true;
+                MoveCurrentDataAside(oldDatabasePath, oldAttachmentRoot, oldWorkHourOptionsPath, moveState);
+                replacementInstalled = true;
                 File.Copy(restoredDatabasePath, AppPaths.DatabasePath, overwrite: true);
 
                 if (File.Exists(restoredWorkHourOptionsPath))
@@ -172,11 +180,21 @@ public sealed class BackupService
                 DeleteDirectoryIfExists(oldRoot);
                 return new RestoreBackupResult(sourceBackupPath, protectiveBackupPath, attachmentCount, DateTime.Now);
             }
-            catch
+            catch (Exception original)
             {
-                if (movedCurrentData)
+                var rollbackErrors = RestoreMovedCurrentData(
+                    oldDatabasePath,
+                    oldAttachmentRoot,
+                    oldWorkHourOptionsPath,
+                    moveState,
+                    replacementInstalled);
+
+                if (rollbackErrors.Count > 0)
                 {
-                    RestoreMovedCurrentData(oldDatabasePath, oldAttachmentRoot, oldWorkHourOptionsPath);
+                    cleanupStaging = false;
+                    throw new AggregateException(
+                        $"核心数据恢复失败，且自动回滚未全部完成。恢复现场：{stagingRoot}",
+                        new[] { original }.Concat(rollbackErrors));
                 }
 
                 throw;
@@ -184,7 +202,10 @@ public sealed class BackupService
         }
         finally
         {
-            DeleteDirectoryIfExists(stagingRoot);
+            if (cleanupStaging)
+            {
+                DeleteDirectoryIfExists(stagingRoot);
+            }
         }
     }
 
@@ -211,22 +232,22 @@ public sealed class BackupService
         throw new IOException("无法创建恢复前保护备份文件名。");
     }
 
+    internal static int ValidateBackupPackage(string backupPath)
+    {
+        return InspectBackupArchive(backupPath).AttachmentCount;
+    }
+
     private static int ExtractBackupArchive(string backupPath, string destinationRoot)
     {
+        var inspection = InspectBackupArchive(backupPath);
+        EnsureFreeSpace(destinationRoot, checked(inspection.ExpandedBytes * 2));
         var destinationFullPath = EnsureTrailingSeparator(Path.GetFullPath(destinationRoot));
-        var attachmentCount = 0;
-        var hasDatabase = false;
 
         using var archive = ZipFile.OpenRead(backupPath);
 
         foreach (var entry in archive.Entries)
         {
-            var normalizedEntryName = entry.FullName.Replace('\\', '/');
-
-            if (string.IsNullOrWhiteSpace(normalizedEntryName))
-            {
-                continue;
-            }
+            var normalizedEntryName = NormalizeArchiveEntry(entry.FullName);
 
             var targetPath = Path.GetFullPath(Path.Combine(
                 destinationRoot,
@@ -244,24 +265,89 @@ public sealed class BackupService
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
-            entry.ExtractToFile(targetPath, overwrite: true);
+            entry.ExtractToFile(targetPath, overwrite: false);
+        }
 
-            if (string.Equals(normalizedEntryName, "Kanban41.db", StringComparison.OrdinalIgnoreCase))
+        return inspection.AttachmentCount;
+    }
+
+    private static CoreArchiveInspection InspectBackupArchive(string backupPath)
+    {
+        using var archive = ZipFile.OpenRead(backupPath);
+        if (archive.Entries.Count > MaxArchiveEntries)
+        {
+            throw new InvalidDataException($"核心备份包条目超过 {MaxArchiveEntries} 个。");
+        }
+
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var hasDatabase = false;
+        var attachmentCount = 0;
+        long expandedBytes = 0;
+
+        foreach (var entry in archive.Entries)
+        {
+            var normalized = NormalizeArchiveEntry(entry.FullName);
+            if (!paths.Add(normalized))
+            {
+                throw new InvalidDataException($"核心备份包包含重复路径：{normalized}");
+            }
+
+            if (entry.Length > MaxArchiveEntryBytes)
+            {
+                throw new InvalidDataException($"核心备份条目过大：{normalized}");
+            }
+
+            checked { expandedBytes += entry.Length; }
+            if (expandedBytes > MaxArchiveExpandedBytes)
+            {
+                throw new InvalidDataException("核心备份包解压后总大小超过 10GB。");
+            }
+
+            if (normalized.Equals("Kanban41.db", StringComparison.OrdinalIgnoreCase))
             {
                 hasDatabase = true;
             }
-            else if (normalizedEntryName.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase))
+            else if (normalized.Equals("workhour-options.json", StringComparison.OrdinalIgnoreCase)
+                     || normalized.Equals("attachments/", StringComparison.OrdinalIgnoreCase))
             {
-                attachmentCount++;
+                // 已知的可选配置或附件根目录。
+                if (normalized.Equals("workhour-options.json", StringComparison.OrdinalIgnoreCase)
+                    && entry.Length > MaxOptionsFileBytes)
+                {
+                    throw new InvalidDataException("核心备份中的人工时选项配置超过 1MB。");
+                }
+            }
+            else if (normalized.StartsWith("attachments/", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!normalized.EndsWith('/')) attachmentCount++;
+            }
+            else
+            {
+                throw new InvalidDataException($"核心备份包包含未知路径：{normalized}");
             }
         }
 
         if (!hasDatabase)
         {
-            throw new InvalidDataException("备份包中未找到 Kanban41.db。");
+            throw new InvalidDataException("核心备份包中未找到 Kanban41.db。");
         }
 
-        return attachmentCount;
+        return new CoreArchiveInspection(attachmentCount, expandedBytes);
+    }
+
+    private static string NormalizeArchiveEntry(string value)
+    {
+        var normalized = value.Replace('\\', '/');
+        var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (string.IsNullOrWhiteSpace(normalized)
+            || normalized.StartsWith('/')
+            || Path.IsPathRooted(normalized)
+            || segments.Any(segment => segment is "." or ".."))
+        {
+            throw new InvalidDataException("核心备份包包含不安全的文件路径。");
+        }
+
+        return normalized;
     }
 
     private static void ValidateDatabaseFile(string databasePath)
@@ -275,102 +361,161 @@ public sealed class BackupService
         using var connection = new SqliteConnection(builder.ToString());
         connection.Open();
 
+        using (var integrity = connection.CreateCommand())
+        {
+            integrity.CommandText = "PRAGMA quick_check";
+            if (!string.Equals(Convert.ToString(integrity.ExecuteScalar()), "ok", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("核心备份数据库完整性检查失败。");
+            }
+        }
+
         using var command = connection.CreateCommand();
         command.CommandText =
             """
             SELECT COUNT(*)
             FROM sqlite_master
             WHERE type = 'table'
-              AND name IN ('Tasks', 'Notes', 'Attachments');
+              AND name IN ('Tasks', 'Notes', 'Attachments', 'ArchiveSections', 'AppSettings', 'WorkHourEntries');
             """;
 
         var tableCount = Convert.ToInt32(command.ExecuteScalar());
 
-        if (tableCount < 3)
+        if (tableCount != 6)
         {
             throw new InvalidDataException("备份数据库结构不完整。");
         }
+
+        using (var version = connection.CreateCommand())
+        {
+            version.CommandText = "PRAGMA user_version";
+            if (Convert.ToInt32(version.ExecuteScalar()) != DatabaseService.CurrentSchemaVersion)
+            {
+                throw new InvalidDataException("核心备份数据库版本与当前应用不匹配。");
+            }
+        }
+
+        foreach (var (table, requiredColumns) in DatabaseService.RequiredColumns)
+        {
+            using var columns = connection.CreateCommand();
+            columns.CommandText = $"PRAGMA table_info(\"{table}\")";
+            using var reader = columns.ExecuteReader();
+            var actual = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            while (reader.Read()) actual.Add(reader.GetString(1));
+            if (requiredColumns.Any(column => !actual.Contains(column)))
+            {
+                throw new InvalidDataException($"核心备份数据库的 {table} 表字段不完整。");
+            }
+        }
+    }
+
+    private static void ValidateWorkHourOptionsFile(string path)
+    {
+        if (!File.Exists(path)) return;
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            if (document.RootElement.ValueKind != JsonValueKind.Object
+                || !IsOptionalStringArray(document.RootElement, "Disciplines")
+                || !IsOptionalStringArray(document.RootElement, "WorkActivities"))
+            {
+                throw new InvalidDataException("核心备份中的人工时选项配置无效。");
+            }
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidDataException("核心备份中的人工时选项配置无效。", ex);
+        }
+    }
+
+    private static bool IsOptionalStringArray(JsonElement root, string propertyName)
+    {
+        if (!root.TryGetProperty(propertyName, out var value)) return true;
+        return value.ValueKind == JsonValueKind.Array
+               && value.EnumerateArray().All(item => item.ValueKind == JsonValueKind.String);
     }
 
     private static void MoveCurrentDataAside(
         string oldDatabasePath,
         string oldAttachmentRoot,
-        string oldWorkHourOptionsPath)
+        string oldWorkHourOptionsPath,
+        CoreMoveState state)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(oldDatabasePath)!);
         DeleteDatabaseSidecarFiles();
-        var databaseMoved = false;
-        var attachmentsMoved = false;
-        var workHourOptionsMoved = false;
 
-        try
+        if (File.Exists(AppPaths.DatabasePath))
         {
-            if (File.Exists(AppPaths.DatabasePath))
-            {
-                File.Move(AppPaths.DatabasePath, oldDatabasePath);
-                databaseMoved = true;
-            }
-
-            if (Directory.Exists(AppPaths.AttachmentRoot))
-            {
-                Directory.Move(AppPaths.AttachmentRoot, oldAttachmentRoot);
-                attachmentsMoved = true;
-            }
-
-            if (File.Exists(AppPaths.WorkHourOptionsPath))
-            {
-                File.Move(AppPaths.WorkHourOptionsPath, oldWorkHourOptionsPath);
-                workHourOptionsMoved = true;
-            }
+            File.Move(AppPaths.DatabasePath, oldDatabasePath);
+            state.DatabaseMoved = true;
         }
-        catch
+
+        if (Directory.Exists(AppPaths.AttachmentRoot))
         {
-            if (databaseMoved && File.Exists(oldDatabasePath) && !File.Exists(AppPaths.DatabasePath))
-            {
-                File.Move(oldDatabasePath, AppPaths.DatabasePath);
-            }
+            Directory.Move(AppPaths.AttachmentRoot, oldAttachmentRoot);
+            state.AttachmentsMoved = true;
+        }
 
-            if (attachmentsMoved && Directory.Exists(oldAttachmentRoot) && !Directory.Exists(AppPaths.AttachmentRoot))
-            {
-                Directory.Move(oldAttachmentRoot, AppPaths.AttachmentRoot);
-            }
-
-            if (workHourOptionsMoved && File.Exists(oldWorkHourOptionsPath) && !File.Exists(AppPaths.WorkHourOptionsPath))
-            {
-                File.Move(oldWorkHourOptionsPath, AppPaths.WorkHourOptionsPath);
-            }
-
-            throw;
+        if (File.Exists(AppPaths.WorkHourOptionsPath))
+        {
+            File.Move(AppPaths.WorkHourOptionsPath, oldWorkHourOptionsPath);
+            state.WorkHourOptionsMoved = true;
         }
     }
 
-    private static void RestoreMovedCurrentData(
+    private static List<Exception> RestoreMovedCurrentData(
         string oldDatabasePath,
         string oldAttachmentRoot,
-        string oldWorkHourOptionsPath)
+        string oldWorkHourOptionsPath,
+        CoreMoveState state,
+        bool replacementInstalled)
     {
-        DeleteFileIfExists(AppPaths.DatabasePath);
-        DeleteDatabaseSidecarFiles();
-        DeleteDirectoryIfExists(AppPaths.AttachmentRoot);
-        DeleteFileIfExists(AppPaths.WorkHourOptionsPath);
+        var errors = new List<Exception>();
+        SqliteConnection.ClearAllPools();
 
-        if (File.Exists(oldDatabasePath))
+        if (replacementInstalled)
         {
-            File.Move(oldDatabasePath, AppPaths.DatabasePath);
+            TryRollback(() => DeleteFileIfExists(AppPaths.DatabasePath), errors);
+            TryRollback(DeleteDatabaseSidecarFiles, errors);
+            TryRollback(() => DeleteDirectoryIfExists(AppPaths.AttachmentRoot), errors);
+            TryRollback(() => DeleteFileIfExists(AppPaths.WorkHourOptionsPath), errors);
         }
 
-        if (Directory.Exists(oldAttachmentRoot))
+        if (state.DatabaseMoved)
         {
-            Directory.Move(oldAttachmentRoot, AppPaths.AttachmentRoot);
-        }
-        else
-        {
-            Directory.CreateDirectory(AppPaths.AttachmentRoot);
+            TryRollback(() => File.Move(oldDatabasePath, AppPaths.DatabasePath), errors);
         }
 
-        if (File.Exists(oldWorkHourOptionsPath))
+        if (state.AttachmentsMoved)
         {
-            File.Move(oldWorkHourOptionsPath, AppPaths.WorkHourOptionsPath);
+            TryRollback(() => Directory.Move(oldAttachmentRoot, AppPaths.AttachmentRoot), errors);
+        }
+        else if (replacementInstalled)
+        {
+            TryRollback(() => Directory.CreateDirectory(AppPaths.AttachmentRoot), errors);
+        }
+
+        if (state.WorkHourOptionsMoved)
+        {
+            TryRollback(() => File.Move(oldWorkHourOptionsPath, AppPaths.WorkHourOptionsPath), errors);
+        }
+
+        return errors;
+    }
+
+    private static void TryRollback(Action action, ICollection<Exception> errors)
+    {
+        try { action(); }
+        catch (Exception ex) { errors.Add(ex); }
+    }
+
+    private static void EnsureFreeSpace(string path, long requiredBytes)
+    {
+        var root = Path.GetPathRoot(Path.GetFullPath(path));
+        if (root is not null && new DriveInfo(root).AvailableFreeSpace < requiredBytes + 128L * 1024 * 1024)
+        {
+            throw new IOException("磁盘剩余空间不足，无法安全恢复核心数据备份。");
         }
     }
 
@@ -422,4 +567,13 @@ public sealed class BackupService
             ? path
             : path + Path.DirectorySeparatorChar;
     }
+
+    private sealed class CoreMoveState
+    {
+        public bool DatabaseMoved { get; set; }
+        public bool AttachmentsMoved { get; set; }
+        public bool WorkHourOptionsMoved { get; set; }
+    }
+
+    private sealed record CoreArchiveInspection(int AttachmentCount, long ExpandedBytes);
 }

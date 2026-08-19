@@ -18,6 +18,11 @@
                        TextWrapping="Wrap"
                        TextAlignment="Center"
                        Foreground="{StaticResource TextSecondaryBrush}" />
+            <Button Margin="0,14,0,0"
+                    Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Visibility="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource NullToVisibilityConverter}}" />
         </StackPanel>
     </Border>
 </UserControl>

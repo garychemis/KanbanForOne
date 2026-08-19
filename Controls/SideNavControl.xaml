@@ -16,21 +16,40 @@
             BorderThickness="0,0,1,0">
         <DockPanel Margin="16,22">
             <StackPanel DockPanel.Dock="Top">
-                <TextBlock Text="Kanban41"
-                           Style="{StaticResource AppBrandTextStyle}"
-                           Foreground="{StaticResource TextPrimaryBrush}" />
-                <TextBlock Text="{Binding AppVersion}"
-                           Margin="0,8,0,0"
-                           FontWeight="SemiBold"
-                           Style="{StaticResource AppMetaTextStyle}"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <Grid Height="48">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Image Width="44"
+                           Height="44"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Source="/icon/icon-transparent.ico"
+                           Stretch="Uniform" />
+
+                    <StackPanel Grid.Column="1"
+                                Margin="10,1,0,0"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="Kanban41"
+                                   Style="{StaticResource AppBrandTextStyle}"
+                                   Foreground="{StaticResource BrandNavyBrush}" />
+                        <TextBlock Text="{Binding AppVersion}"
+                                   Margin="0,3,0,0"
+                                   FontWeight="SemiBold"
+                                   Style="{StaticResource AppMetaTextStyle}"
+                                   Foreground="{StaticResource BrandTealBrush}" />
+                    </StackPanel>
+                </Grid>
                 <TextBlock Text="{Binding CopyrightText}"
-                           Margin="0,3,0,0"
+                           Margin="0,6,0,0"
                            LineHeight="16"
                            Style="{StaticResource AppMetaTextStyle}"
                            TextWrapping="Wrap"
                            Foreground="{StaticResource TextSecondaryBrush}" />
-                <StackPanel Margin="0,22,0,0">
+                <StackPanel Margin="0,20,0,0">
                     <Button Command="{Binding ChangeFilterCommand}"
                             CommandParameter="Board"
                             Style="{StaticResource NavButtonStyle}">
@@ -97,6 +116,15 @@
                         <TextBlock Text="&#xE713;"
                                    Style="{StaticResource SideNavIconStyle}" />
                         <TextBlock Text="设置" />
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ChangeFilterCommand}"
+                        CommandParameter="About"
+                        Style="{StaticResource NavButtonStyle}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE946;"
+                                   Style="{StaticResource SideNavIconStyle}" />
+                        <TextBlock Text="关于" />
                     </StackPanel>
                 </Button>
             </StackPanel>

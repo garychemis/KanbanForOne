@@ -55,11 +55,11 @@ public sealed class BackupServiceTests
             SqliteConnection.ClearAllPools();
 
             await using var copyConnection = new SqliteConnection($"Data Source={copyPath};Mode=ReadOnly");
-            await copyConnection.OpenAsync();
+            await copyConnection.OpenAsync(TestContext.Current.CancellationToken);
             await using var command = copyConnection.CreateCommand();
             command.CommandText = "SELECT COUNT(*) FROM Tasks WHERE Title = $title";
             command.Parameters.AddWithValue("$title", "WAL任务");
-            Assert.Equal(1L, Convert.ToInt64(await command.ExecuteScalarAsync()));
+            Assert.Equal(1L, Convert.ToInt64(await command.ExecuteScalarAsync(TestContext.Current.CancellationToken)));
         }
         finally
         {
@@ -84,14 +84,14 @@ public sealed class BackupServiceTests
             };
             await using (var legacy = new SqliteConnection(legacyBuilder.ToString()))
             {
-                await legacy.OpenAsync();
+                await legacy.OpenAsync(TestContext.Current.CancellationToken);
                 await using var createCommand = legacy.CreateCommand();
                 createCommand.CommandText = "CREATE TABLE LegacyTest (Id INTEGER PRIMARY KEY, Value TEXT)";
-                await createCommand.ExecuteNonQueryAsync();
+                await createCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
 
                 await using var insertCommand = legacy.CreateCommand();
                 insertCommand.CommandText = "INSERT INTO LegacyTest (Value) VALUES ('legacy-data')";
-                await insertCommand.ExecuteNonQueryAsync();
+                await insertCommand.ExecuteNonQueryAsync(TestContext.Current.CancellationToken);
             }
 
             // 新版 DatabaseService 打开旧库：应自动切为 WAL 且数据保留
@@ -100,10 +100,10 @@ public sealed class BackupServiceTests
             Assert.Equal("wal", await GetJournalModeAsync(database));
 
             await using var connection = database.CreateConnection();
-            await connection.OpenAsync();
+            await connection.OpenAsync(TestContext.Current.CancellationToken);
             await using var command = connection.CreateCommand();
             command.CommandText = "SELECT COUNT(*) FROM LegacyTest WHERE Value = 'legacy-data'";
-            Assert.Equal(1L, Convert.ToInt64(await command.ExecuteScalarAsync()));
+            Assert.Equal(1L, Convert.ToInt64(await command.ExecuteScalarAsync(TestContext.Current.CancellationToken)));
         }
         finally
         {

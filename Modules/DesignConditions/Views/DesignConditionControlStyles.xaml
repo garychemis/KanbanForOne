@@ -1,0 +1,126 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="ConditionDialogSurfaceBrush" Color="#EAF3F0" />
+    <SolidColorBrush x:Key="ConditionFieldBackgroundBrush" Color="#F9FCFB" />
+    <SolidColorBrush x:Key="ConditionFieldBorderBrush" Color="#C9DAD5" />
+    <SolidColorBrush x:Key="ConditionFieldHoverBrush" Color="#E2EFEC" />
+    <SolidColorBrush x:Key="ConditionFieldSelectedBrush" Color="#D5E7E2" />
+    <SolidColorBrush x:Key="ConditionFieldFocusBrush" Color="#5D8C82" />
+    <SolidColorBrush x:Key="ConditionPrimaryTextBrush" Color="#29443F" />
+    <SolidColorBrush x:Key="ConditionSecondaryTextBrush" Color="#60756F" />
+    <Style x:Key="ConditionCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+        <Setter Property="Width" Value="30" /><Setter Property="MinWidth" Value="30" /><Setter Property="Height" Value="30" />
+        <Setter Property="Padding" Value="0" /><Setter Property="FontSize" Value="18" /><Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" />
+    </Style>
+    <Style x:Key="ConditionGhostButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+        <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
+        <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
+    </Style>
+    <Style x:Key="ConditionDialogPrimaryButtonStyle" TargetType="Button">
+        <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
+        <Setter Property="Background" Value="#3F746B" /><Setter Property="BorderBrush" Value="#3F746B" /><Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="#F9FCFB" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#35665F" /></Trigger>
+                <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#2D5751" /></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="#93B7AF" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+
+    <Style x:Key="ConditionFieldLabelStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="0,0,0,6" /><Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" />
+    </Style>
+    <Style x:Key="ConditionSurfaceCardStyle" TargetType="Border">
+        <Setter Property="Padding" Value="2,10" /><Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style x:Key="ConditionDateFieldBorderStyle" TargetType="Border">
+        <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="11,0,8,0" />
+        <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" /><Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="9" />
+        <Style.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger></Style.Triggers>
+    </Style>
+    <Style x:Key="ConditionTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="11,0" />
+        <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="{StaticResource ConditionPrimaryTextBrush}" />
+        <Setter Property="CaretBrush" Value="{StaticResource ConditionPrimaryTextBrush}" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="TextBox">
+            <Border x:Name="InputBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Stretch" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="#B9C3BF" /></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter TargetName="InputBorder" Property="Background" Value="{StaticResource ConditionFieldHoverBrush}" /><Setter Property="Foreground" Value="#98A19D" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="ConditionComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="Padding" Value="0" /><Setter Property="Margin" Value="0,1" /><Setter Property="Foreground" Value="{StaticResource ConditionPrimaryTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBoxItem">
+            <Border x:Name="ItemBackground" Padding="11,7" CornerRadius="7" Background="Transparent"><ContentPresenter VerticalAlignment="Center" /></Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ItemBackground" Property="Background" Value="{StaticResource ConditionFieldHoverBrush}" /></Trigger>
+                <Trigger Property="IsSelected" Value="True"><Setter TargetName="ItemBackground" Property="Background" Value="{StaticResource ConditionFieldSelectedBrush}" /><Setter Property="FontWeight" Value="SemiBold" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="ConditionComboBoxToggleStyle" TargetType="ToggleButton">
+        <Setter Property="Focusable" Value="False" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ToggleButton">
+            <Border x:Name="ToggleBackground" Width="35" Margin="0,1,1,1" Background="Transparent" CornerRadius="0,8,8,0">
+                <Grid><Border Width="1" Height="18" HorizontalAlignment="Left" Background="{StaticResource ConditionFieldBorderBrush}" />
+                    <Path x:Name="Arrow" Width="9" Height="5" HorizontalAlignment="Center" VerticalAlignment="Center" Data="M 0 0 L 4.5 4.5 L 9 0"
+                          Stroke="{StaticResource ConditionSecondaryTextBrush}" StrokeThickness="1.6" StrokeStartLineCap="Round" StrokeEndLineCap="Round" /></Grid>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ToggleBackground" Property="Background" Value="{StaticResource ConditionFieldHoverBrush}" /></Trigger>
+                <Trigger Property="IsChecked" Value="True"><Setter TargetName="ToggleBackground" Property="Background" Value="{StaticResource ConditionFieldSelectedBrush}" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="ConditionComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Height" Value="42" /><Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource ConditionPrimaryTextBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" /><Setter Property="IsTextSearchEnabled" Value="True" /><Setter Property="StaysOpenOnEdit" Value="True" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ConditionComboBoxItemStyle}" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="ComboBox">
+            <Grid SnapsToDevicePixels="True">
+                <Border x:Name="InputBackground" Background="{TemplateBinding Background}" CornerRadius="9" />
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="36" /></Grid.ColumnDefinitions>
+                    <ContentPresenter x:Name="ContentSite" Margin="11,0,4,0" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" IsHitTestVisible="False" />
+                    <TextBox x:Name="PART_EditableTextBox" Margin="11,0,4,0" Padding="0" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0"
+                             Foreground="{TemplateBinding Foreground}" CaretBrush="{StaticResource ConditionPrimaryTextBrush}" Style="{x:Null}" Visibility="Hidden" />
+                    <ToggleButton Grid.Column="1" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" Style="{StaticResource ConditionComboBoxToggleStyle}" />
+                </Grid>
+                <Border x:Name="InputBorder" Background="Transparent" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9" IsHitTestVisible="False" />
+                <Popup x:Name="PART_Popup" Margin="0,4,0,0" AllowsTransparency="True" Focusable="False" IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" PopupAnimation="Fade">
+                    <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}" MaxHeight="230" Padding="5" Background="{StaticResource ConditionFieldBackgroundBrush}"
+                            BorderBrush="{StaticResource ConditionFieldBorderBrush}" BorderThickness="1" CornerRadius="10">
+                        <Border.Effect><DropShadowEffect BlurRadius="18" ShadowDepth="6" Direction="270" Opacity="0.16" /></Border.Effect>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" CanContentScroll="True"><ItemsPresenter /></ScrollViewer>
+                    </Border>
+                </Popup>
+            </Grid>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsEditable" Value="True"><Setter TargetName="ContentSite" Property="Visibility" Value="Hidden" /><Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" /></Trigger>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="#B9C3BF" /></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsDropDownOpen" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="ConditionFilterComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource ConditionComboBoxStyle}">
+        <Setter Property="Height" Value="34" />
+    </Style>
+</ResourceDictionary>

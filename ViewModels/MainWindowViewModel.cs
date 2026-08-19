@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Reflection;
 using KanbanForOne.Services;
+using KanbanForOne.Modules.DesignConditions.ViewModels;
 
 namespace KanbanForOne.ViewModels;
 
@@ -29,8 +30,10 @@ public sealed class MainWindowViewModel : ObservableObject
         CalendarViewModel calendar,
         BackupViewModel backup,
         SettingsViewModel settings,
+        AboutViewModel about,
         WorkHourOptionsViewModel workHourOptions,
-        WorkHourSummaryViewModel workHourSummary)
+        WorkHourSummaryViewModel workHourSummary,
+        DesignConditionViewModel designConditions)
     {
         _databaseService = databaseService;
         _notifications = notifications;
@@ -39,8 +42,10 @@ public sealed class MainWindowViewModel : ObservableObject
         _calendar = calendar;
         _backup = backup;
         Settings = settings;
+        About = about;
         WorkHourSummary = workHourSummary;
         _workHourOptions = workHourOptions;
+        DesignConditions = designConditions;
 
         RelayCommand.UnhandledException -= OnCommandUnhandledException;
         RelayCommand.UnhandledException += OnCommandUnhandledException;
@@ -62,7 +67,11 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public SettingsViewModel Settings { get; }
 
+    public AboutViewModel About { get; }
+
     public WorkHourSummaryViewModel WorkHourSummary { get; }
+
+    public DesignConditionViewModel DesignConditions { get; }
 
     public RelayCommand ChangeFilterCommand { get; }
 
@@ -100,15 +109,21 @@ public sealed class MainWindowViewModel : ObservableObject
 
     public bool IsArchiveFilter => _filter.IsArchiveFilter;
 
-    public bool IsBoardViewVisible => _filter.CurrentFilter is not "Calendar" and not "WorkHourSummary" and not "Backup" and not "Settings";
+    public bool IsBoardViewVisible => _filter.CurrentFilter is not "Calendar" and not "WorkHourSummary" and not "DesignConditions" and not "Backup" and not "Settings" and not "About";
 
     public bool IsCalendarViewVisible => _filter.CurrentFilter == "Calendar";
 
     public bool IsWorkHourSummaryViewVisible => _filter.CurrentFilter == "WorkHourSummary";
 
+    public bool IsDesignConditionViewVisible => _filter.CurrentFilter == "DesignConditions";
+
+    public bool IsWorkspaceFilterVisible => _filter.CurrentFilter is not "WorkHourSummary" and not "DesignConditions" and not "Backup" and not "Settings" and not "About";
+
     public bool IsBackupViewVisible => _filter.CurrentFilter == "Backup";
 
     public bool IsSettingsViewVisible => _filter.CurrentFilter == "Settings";
+
+    public bool IsAboutViewVisible => _filter.CurrentFilter == "About";
 
     public string NotificationText => _notifications.NotificationText;
 
@@ -138,6 +153,7 @@ public sealed class MainWindowViewModel : ObservableObject
             WorkHourSummary.Invalidate();
             await _workHourOptions.LoadAsync();
             await _board.InitializeWorkspaceAsync();
+            await DesignConditions.EnsureLoadedAsync();
             await _calendar.InitializeAsync();
         }
         catch (Exception ex)
@@ -204,20 +220,25 @@ public sealed class MainWindowViewModel : ObservableObject
             "Today" => "今日任务",
             "Calendar" => "日历",
             "WorkHourSummary" => "人工时汇总",
+            "DesignConditions" => "设计条件归档",
             "High" => "高优先级",
             "Overdue" => "超期未完成",
             "WithAttachments" => "有附件",
             "Archived" => "归档",
             "Backup" => "数据备份",
             "Settings" => "设置",
+            "About" => "关于",
             _ => "看板"
         };
 
         OnPropertyChanged(nameof(IsBoardViewVisible));
         OnPropertyChanged(nameof(IsCalendarViewVisible));
         OnPropertyChanged(nameof(IsWorkHourSummaryViewVisible));
+        OnPropertyChanged(nameof(IsDesignConditionViewVisible));
+        OnPropertyChanged(nameof(IsWorkspaceFilterVisible));
         OnPropertyChanged(nameof(IsBackupViewVisible));
         OnPropertyChanged(nameof(IsSettingsViewVisible));
+        OnPropertyChanged(nameof(IsAboutViewVisible));
 
         try
         {
@@ -234,6 +255,10 @@ public sealed class MainWindowViewModel : ObservableObject
             if (filter == "WorkHourSummary")
             {
                 await WorkHourSummary.EnsureLoadedAsync();
+            }
+            else if (filter == "DesignConditions")
+            {
+                await DesignConditions.EnsureLoadedAsync();
             }
         }
         catch (Exception ex)

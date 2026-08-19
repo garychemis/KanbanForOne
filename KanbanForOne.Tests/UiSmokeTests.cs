@@ -6,6 +6,14 @@ using System.Windows.Media;
 using KanbanForOne.Controls;
 using KanbanForOne.Models;
 using KanbanForOne.ViewModels;
+using KanbanForOne.Modules.DesignConditions.Models;
+using KanbanForOne.Modules.DesignConditions.Data;
+using KanbanForOne.Modules.DesignConditions.Repositories;
+using KanbanForOne.Modules.DesignConditions.Services;
+using KanbanForOne.Modules.DesignConditions.Views;
+using KanbanForOne.Services;
+using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KanbanForOne.Tests;
 
@@ -37,13 +45,16 @@ public sealed class UiSmokeTests
 
     private static void Run()
     {
+        _threadException = null;
+        _result = string.Empty;
+        string? dataDir = null;
         try
         {
             PrepareTrayIcon();
             // 清理测试输出目录下的数据，保证每次测试从干净数据库启动
             // 防御：确认目标路径位于测试输出目录内，避免误删仓库数据
             var baseDir = Path.GetFullPath(AppContext.BaseDirectory);
-            var dataDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "data"));
+            dataDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "data"));
             Assert.True(
                 dataDir.StartsWith(baseDir, StringComparison.OrdinalIgnoreCase),
                 "测试数据目录必须位于测试输出目录内");
@@ -67,6 +78,8 @@ public sealed class UiSmokeTests
             Assert.NotNull(summaryView);
             var calendarView = FindVisualChild<CalendarView>(window);
             Assert.NotNull(calendarView);
+            var designConditionView = FindVisualChild<DesignConditionView>(window);
+            Assert.NotNull(designConditionView);
 
             // 0) 等待应用初始化完成（默认归档分区已加载）
             WaitUntil(() => vm.Board.ArchiveSections.Count >= 1, timeoutMilliseconds: 10000);
@@ -74,6 +87,8 @@ public sealed class UiSmokeTests
             VerifyArchivePage(vm, boardView);
             VerifySummaryPage(vm, summaryView);
             VerifyCalendarChipRefresh(vm, calendarView);
+            VerifyDesignConditionPageAndCalendar(vm, designConditionView, calendarView);
+            VerifyUnifiedBackupRoundTrip();
 
             window.Close();
             app.Shutdown();
@@ -82,6 +97,15 @@ public sealed class UiSmokeTests
         catch (Exception ex)
         {
             _threadException = ex;
+        }
+        finally
+        {
+            try { Application.Current?.Shutdown(); } catch { }
+            SqliteConnection.ClearAllPools();
+            if (dataDir is not null && Directory.Exists(dataDir))
+            {
+                try { Directory.Delete(dataDir, recursive: true); } catch { }
+            }
         }
     }
 
@@ -177,6 +201,111 @@ public sealed class UiSmokeTests
         task.Title = "日历冒烟-已改";
         WaitUntil(() => IsVisibleText(calendarView, "日历冒烟-已改"));
         Assert.False(IsVisibleText(calendarView, "新任务"), "旧标题不应继续显示");
+    }
+
+    private static void VerifyDesignConditionPageAndCalendar(MainWindowViewModel vm, DesignConditionView designConditionView, CalendarView calendarView)
+    {
+        vm.SearchText = string.Empty;
+        vm.ChangeFilterCommand.Execute("DesignConditions");
+        WaitUntil(() => IsVisibleText(designConditionView, "设计条件归档"));
+        Assert.True(IsVisibleText(designConditionView, "+ 新建设计条件"), "设计条件页面应提供创建入口");
+        Assert.True(IsVisibleText(designConditionView, "图纸量汇总"), "设计条件页面应提供汇总入口");
+
+        var repository = App.Services.GetRequiredService<DesignConditionRepository>();
+        WaitForTask(repository.UpsertAsync(new DesignConditionEntry
+        {
+            ProjectNumber = "UI100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "测试人员",
+            IssuedDate = DateTime.Today,
+            ConditionName = "日历设计条件",
+            Revision = "A",
+            DrawingSize = "A1",
+            DrawingCount = 2,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        }));
+        WaitForTask(vm.DesignConditions.ReloadAsync());
+
+        vm.ChangeFilterCommand.Execute("Calendar");
+        WaitForTask(vm.Calendar.DesignConditions.LoadRangeAsync(DateTime.Today.AddDays(-10), DateTime.Today.AddDays(31)));
+        WaitForTask(vm.Calendar.DesignConditions.LoadSelectedDateAsync(DateTime.Today));
+        WaitUntil(() => IsVisibleText(calendarView, "日历设计条件"));
+        Assert.True(IsVisibleText(calendarView, "设计条件"), "日历详情应显示设计条件区域");
+    }
+
+    private static void VerifyUnifiedBackupRoundTrip()
+    {
+        var sourceRoot = Path.Combine(Path.GetTempPath(), "KanbanForOne.UiSmoke", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(sourceRoot);
+        try
+        {
+            var taskRepository = App.Services.GetRequiredService<TaskRepository>();
+            var attachmentRepository = App.Services.GetRequiredService<AttachmentRepository>();
+            var attachmentStorage = App.Services.GetRequiredService<AttachmentStorageService>();
+            var designRepository = App.Services.GetRequiredService<DesignConditionRepository>();
+            var designAttachmentRepository = App.Services.GetRequiredService<DesignConditionAttachmentRepository>();
+            var designStorage = App.Services.GetRequiredService<DesignConditionAttachmentStorageService>();
+            var backup = App.Services.GetRequiredService<UnifiedBackupService>();
+
+            var task = new TaskItem
+            {
+                Title = "完整备份-核心数据",
+                Status = KanbanForOne.Models.TaskStatus.Todo,
+                Priority = TaskPriority.Medium
+            };
+            WaitForTask(taskRepository.UpsertAsync(task));
+            var coreSource = Path.Combine(sourceRoot, "core.txt");
+            File.WriteAllText(coreSource, "core attachment");
+            var coreAttachment = Assert.Single(WaitForTask(
+                attachmentStorage.CopyFilesAsync(AttachmentOwnerType.Task, task.Id, [coreSource])));
+            WaitForTask(attachmentRepository.AddRangeAsync([coreAttachment]));
+
+            var design = new DesignConditionEntry
+            {
+                ProjectNumber = "BACKUP100",
+                IssuingDiscipline = "工艺",
+                ReceivingDiscipline = "管道",
+                Receiver = "恢复测试",
+                IssuedDate = DateTime.Today,
+                ConditionName = "完整备份-设计条件",
+                Revision = "A",
+                DrawingSize = "A1",
+                DrawingCount = 1,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            };
+            WaitForTask(designRepository.UpsertAsync(design));
+            var designSource = Path.Combine(sourceRoot, "design.dwg");
+            File.WriteAllText(designSource, "design attachment");
+            var designAttachment = Assert.Single(WaitForTask(designStorage.CopyFilesAsync(design.Id, [designSource])));
+            WaitForTask(designAttachmentRepository.AddRangeAsync([designAttachment]));
+
+            var created = WaitForTask(backup.CreateBackupAsync());
+            Assert.True(File.Exists(created.BackupPath));
+
+            WaitForTask(attachmentRepository.DeleteByOwnerAsync(AttachmentOwnerType.Task, task.Id));
+            WaitForTask(taskRepository.DeleteAsync(task.Id));
+            File.Delete(attachmentStorage.GetAbsolutePath(coreAttachment));
+            var stagedDesignFiles = designStorage.StageConditionFolderDelete(design.Id);
+            WaitForTask(designRepository.DeleteAsync(design.Id));
+            DesignConditionAttachmentStorageService.CommitDelete(stagedDesignFiles);
+
+            var restored = WaitForTask(backup.RestoreBackupAsync(created.BackupPath));
+            Assert.True(File.Exists(restored.ProtectiveBackupPath));
+            Assert.Contains(WaitForTask(taskRepository.GetAllAsync()), item => item.Id == task.Id);
+            var restoredCoreAttachment = Assert.Single(
+                WaitForTask(attachmentRepository.GetByOwnerIdsAsync(AttachmentOwnerType.Task, [task.Id])));
+            Assert.True(File.Exists(attachmentStorage.GetAbsolutePath(restoredCoreAttachment)));
+            var restoredDesign = Assert.Single(
+                WaitForTask(designRepository.GetAllAsync()), item => item.Id == design.Id);
+            Assert.True(File.Exists(designStorage.GetAbsolutePath(Assert.Single(restoredDesign.Attachments))));
+        }
+        finally
+        {
+            if (Directory.Exists(sourceRoot)) Directory.Delete(sourceRoot, recursive: true);
+        }
     }
 
     private static bool ContainsText(Button button, string text)
@@ -293,6 +422,18 @@ public sealed class UiSmokeTests
                 throw new TimeoutException($"等待条件超时（{timeoutMilliseconds} ms）");
             }
         }
+    }
+
+    private static void WaitForTask(Task task, int timeoutMilliseconds = 10000)
+    {
+        WaitUntil(() => task.IsCompleted, timeoutMilliseconds);
+        task.GetAwaiter().GetResult();
+    }
+
+    private static T WaitForTask<T>(Task<T> task, int timeoutMilliseconds = 10000)
+    {
+        WaitUntil(() => task.IsCompleted, timeoutMilliseconds);
+        return task.GetAwaiter().GetResult();
     }
 
     private static void DoEvents()

@@ -15,14 +15,14 @@
         KeyDown="OnDialogKeyDown"
         Closing="OnDialogClosing">
     <Window.Resources>
-        <SolidColorBrush x:Key="WorkHourDialogSurfaceBrush" Color="#F5F6F4" />
-        <SolidColorBrush x:Key="WorkHourFieldBackgroundBrush" Color="#FBFCFB" />
-        <SolidColorBrush x:Key="WorkHourBorderBrush" Color="#D5DBD8" />
-        <SolidColorBrush x:Key="WorkHourHoverBrush" Color="#F0F3F1" />
-        <SolidColorBrush x:Key="WorkHourSelectedBrush" Color="#E7ECE9" />
-        <SolidColorBrush x:Key="WorkHourFocusBrush" Color="#8F9E98" />
-        <SolidColorBrush x:Key="WorkHourPrimaryTextBrush" Color="#2F3A36" />
-        <SolidColorBrush x:Key="WorkHourSecondaryTextBrush" Color="#68736F" />
+        <SolidColorBrush x:Key="WorkHourDialogSurfaceBrush" Color="#F6F0E6" />
+        <SolidColorBrush x:Key="WorkHourFieldBackgroundBrush" Color="#FCFAF6" />
+        <SolidColorBrush x:Key="WorkHourBorderBrush" Color="#DDD2C1" />
+        <SolidColorBrush x:Key="WorkHourHoverBrush" Color="#F0E7D9" />
+        <SolidColorBrush x:Key="WorkHourSelectedBrush" Color="#E9DDCB" />
+        <SolidColorBrush x:Key="WorkHourFocusBrush" Color="#A9895B" />
+        <SolidColorBrush x:Key="WorkHourPrimaryTextBrush" Color="#41382C" />
+        <SolidColorBrush x:Key="WorkHourSecondaryTextBrush" Color="#756956" />
         <Style x:Key="DialogCloseButtonStyle"
                TargetType="{x:Type Button}"
                BasedOn="{StaticResource IconButtonStyle}">
@@ -42,6 +42,22 @@
             <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
         </Style>
+        <Style x:Key="WorkHourDialogPrimaryButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="#80633E" /><Setter Property="BorderBrush" Value="#80633E" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFFDF9" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type Button}">
+                <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="9">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#6E5537" /></Trigger>
+                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="#5D482F" /></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="#B89A6D" /></Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate></Setter.Value></Setter>
+        </Style>
         <Style x:Key="FieldLabelStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="Margin" Value="0,0,0,6" />
             <Setter Property="FontSize" Value="11" />
@@ -49,11 +65,9 @@
             <Setter Property="Foreground" Value="{StaticResource WorkHourSecondaryTextBrush}" />
         </Style>
         <Style x:Key="PreviewCardStyle" TargetType="{x:Type Border}">
-            <Setter Property="Padding" Value="14,11" />
-            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="3,7" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
         </Style>
         <Style x:Key="DialogDateFieldBorderStyle" TargetType="{x:Type Border}">
             <Setter Property="Height" Value="42" />
@@ -484,16 +498,16 @@
                         BorderThickness="0"
                         CornerRadius="0,0,18,18">
                     <Grid>
-                        <StackPanel x:Name="PreviewActions" Orientation="Horizontal">
+                        <Grid x:Name="PreviewActions">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <Button Content="删除"
                                     Click="OnDeleteClick"
                                     Style="{StaticResource DialogGhostButtonStyle}"
                                     Foreground="#BE123C" />
-                            <Button Content="编辑"
+                            <Button Grid.Column="1" Content="编辑"
                                     Click="OnEditClick"
-                                    Margin="10,0,0,0"
-                                    Style="{StaticResource PrimaryButtonStyle}" />
-                        </StackPanel>
+                                    Style="{StaticResource WorkHourDialogPrimaryButtonStyle}" />
+                        </Grid>
                         <StackPanel x:Name="EditActions"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Right"
@@ -504,7 +518,7 @@
                             <Button Content="保存"
                                     Click="OnSaveClick"
                                     Margin="10,0,0,0"
-                                    Style="{StaticResource PrimaryButtonStyle}" />
+                                    Style="{StaticResource WorkHourDialogPrimaryButtonStyle}" />
                         </StackPanel>
                     </Grid>
                 </Border>

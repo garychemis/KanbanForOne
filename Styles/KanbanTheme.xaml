@@ -21,23 +21,43 @@
     <converters:TagListDisplayConverter x:Key="TagListDisplayConverter" />
     <converters:SizeMultiplierConverter x:Key="SizeMultiplierConverter" />
 
-    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#ECEEEF" />
-    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#ECEEEF" />
-    <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="#FAF7EF" />
-    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#F4F5F3" />
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#111827" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#6B7280" />
-    <SolidColorBrush x:Key="BorderBrushSoft" Color="#D8DADF" />
-    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E7E1D6" />
+    <!-- Primitive brand colors: shared with icon/kanban41.svg. -->
+    <Color x:Key="BrandNavyColor">#172730</Color>
+    <Color x:Key="BrandNavyHoverColor">#223B46</Color>
+    <Color x:Key="BrandNavyPressedColor">#0F1F27</Color>
+    <Color x:Key="BrandTealColor">#5C9187</Color>
+    <Color x:Key="BrandPaperColor">#F7F6F1</Color>
+
+    <!-- Semantic surfaces and states derived from the icon palette. -->
+    <SolidColorBrush x:Key="BrandNavyBrush" Color="{StaticResource BrandNavyColor}" />
+    <SolidColorBrush x:Key="BrandTealBrush" Color="{StaticResource BrandTealColor}" />
+    <SolidColorBrush x:Key="BrandPaperBrush" Color="{StaticResource BrandPaperColor}" />
+    <SolidColorBrush x:Key="BrandTealTintBrush" Color="#DDEAE7" />
+    <SolidColorBrush x:Key="WorkHourModuleTintBrush" Color="#F8F5EF" />
+    <SolidColorBrush x:Key="WorkHourModuleHoverBrush" Color="#F3EDE3" />
+    <SolidColorBrush x:Key="WorkHourModuleBorderBrush" Color="#E5DAC9" />
+    <SolidColorBrush x:Key="WorkHourModuleTextBrush" Color="#6D604C" />
+    <SolidColorBrush x:Key="DesignConditionModuleTintBrush" Color="#F1F7F5" />
+    <SolidColorBrush x:Key="DesignConditionModuleHoverBrush" Color="#EAF3F0" />
+    <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#D0E1DC" />
+    <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#4B7068" />
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#EDF1F0" />
+    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#EDF1F0" />
+    <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="{StaticResource BrandPaperColor}" />
+    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#F8F9F7" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource BrandNavyColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#647279" />
+    <SolidColorBrush x:Key="BorderBrushSoft" Color="#D7DEDC" />
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#DDEAE7" />
     <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#40F8FAFC" />
     <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#FFF8B7" />
     <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="HoverBrush" Color="#F1F3F5" />
-    <SolidColorBrush x:Key="AccentBrush" Color="#212529" />
-    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#343A40" />
-    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#111315" />
-    <SolidColorBrush x:Key="DisabledBrush" Color="#ADB5BD" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FCFCFA" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#E8EFED" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource BrandNavyColor}" />
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="{StaticResource BrandNavyHoverColor}" />
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="{StaticResource BrandNavyPressedColor}" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#AAB5B3" />
 
     <FontFamily x:Key="AppFontFamily">Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei</FontFamily>
     <FontFamily x:Key="AppNumericFontFamily">Cascadia Mono, Consolas, Segoe UI</FontFamily>
@@ -123,7 +143,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#F1F3F5" />
+                            <Setter Property="Background" Value="{StaticResource HoverBrush}" />
                             <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
@@ -143,9 +163,9 @@
         <Setter Property="MinWidth" Value="96" />
         <Setter Property="Height" Value="32" />
         <Setter Property="Padding" Value="12,0" />
-        <Setter Property="Background" Value="#212529" />
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
         <Setter Property="Foreground" Value="#FFFFFF" />
-        <Setter Property="BorderBrush" Value="#212529" />
+        <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -158,16 +178,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#343A40" />
-                            <Setter Property="BorderBrush" Value="#343A40" />
+                            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource ButtonHoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#111315" />
-                            <Setter Property="BorderBrush" Value="#111315" />
+                            <Setter Property="Background" Value="{StaticResource ButtonPressedBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource ButtonPressedBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Background" Value="#ADB5BD" />
-                            <Setter Property="BorderBrush" Value="#ADB5BD" />
+                            <Setter Property="Background" Value="{StaticResource DisabledBrush}" />
+                            <Setter Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
                             <Setter Property="Opacity" Value="0.72" />
                             <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
@@ -193,7 +213,8 @@
                     <Border x:Name="Chrome"
                             CornerRadius="7">
                         <Border.Background>
-                            <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}">
+                            <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}"
+                                          ConverterParameter="#DDEAE7|#00FFFFFF">
                                 <Binding Path="DataContext.CurrentFilter"
                                          RelativeSource="{RelativeSource TemplatedParent}" />
                                 <Binding Path="CommandParameter"
@@ -206,7 +227,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#EEF1F4" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
@@ -240,7 +261,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter Property="BorderBrush" Value="#AEB6C0" />
+                            <Setter Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -251,7 +272,7 @@
     <Style x:Key="CardBorderStyle" TargetType="{x:Type Border}">
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="#E6E8EB" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect BlurRadius="16"
