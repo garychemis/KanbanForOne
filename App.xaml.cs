@@ -14,6 +14,9 @@ namespace KanbanForOne
     /// </summary>
     public partial class App : Application
     {
+        private const string SingleInstanceName = "KanbanForOne.Application";
+        private SingleInstanceManager? _singleInstanceManager;
+
         public static IServiceProvider Services { get; private set; } = null!;
 
         public static IServiceProvider BuildServiceProvider()
@@ -71,8 +74,39 @@ namespace KanbanForOne
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            _singleInstanceManager = new SingleInstanceManager(
+                SingleInstanceName,
+                ActivateMainWindow);
+
+            if (!_singleInstanceManager.IsPrimaryInstance)
+            {
+                _singleInstanceManager.NotifyPrimaryInstance();
+                _singleInstanceManager.Dispose();
+                _singleInstanceManager = null;
+                Shutdown();
+                return;
+            }
+
             BuildServiceProvider();
             base.OnStartup(e);
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            _singleInstanceManager?.Dispose();
+            _singleInstanceManager = null;
+            base.OnExit(e);
+        }
+
+        private void ActivateMainWindow()
+        {
+            _ = Dispatcher.InvokeAsync(() =>
+            {
+                if (MainWindow is KanbanForOne.MainWindow mainWindow)
+                {
+                    mainWindow.RestoreAndActivate();
+                }
+            });
         }
     }
 }

@@ -222,6 +222,11 @@ namespace KanbanForOne
 
         private void RestoreFromTray()
         {
+            RestoreAndActivate();
+        }
+
+        internal void RestoreAndActivate()
+        {
             ShowInTaskbar = true;
             Show();
 
