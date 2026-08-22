@@ -90,8 +90,12 @@ public sealed class BoardViewModel : ObservableObject
         CloseSpotlightCommand = new RelayCommand(CloseSpotlight);
         EditSpotlightCommand = new RelayCommand(_ => EnterSpotlightEditMode(), _ => IsSpotlightOpen && !IsSpotlightEditing);
         CancelSpotlightEditCommand = new RelayCommand(_ => CancelSpotlightEdit(), _ => IsSpotlightEditing);
-        ArchiveTaskCommand = new RelayCommand(ArchiveTaskAsync, _ => ActiveTask is not null);
-        ArchiveNoteCommand = new RelayCommand(ArchiveNoteAsync, _ => ActiveNote is not null);
+        ArchiveTaskCommand = new RelayCommand(
+            p => ArchiveTaskAsync(p),
+            p => (ActiveTask is not null) || (p is TaskItem));
+        ArchiveNoteCommand = new RelayCommand(
+            p => ArchiveNoteAsync(p),
+            p => (ActiveNote is not null) || (p is NoteItem));
         DeleteTaskCommand = new RelayCommand(DeleteSelectedTaskAsync, _ => ActiveTask is not null);
         DeleteNoteCommand = new RelayCommand(DeleteSelectedNoteAsync, _ => ActiveNote is not null);
         SaveTaskCommand = new RelayCommand(SaveSelectedTaskAsync, _ => ActiveTask is not null && HasUnsavedTaskChanges);
@@ -1376,14 +1380,15 @@ public sealed class BoardViewModel : ObservableObject
         }
     }
 
-    private async Task ArchiveTaskAsync()
+    private async Task ArchiveTaskAsync(object? parameter = null)
     {
-        if (ActiveTask is null)
+        var task = parameter as TaskItem ?? ActiveTask;
+
+        if (task is null)
         {
             return;
         }
 
-        var task = ActiveTask;
         var shouldArchive = !task.IsArchived;
         var oldArchived = task.IsArchived;
         var oldUpdatedAt = task.UpdatedAt;
@@ -1436,14 +1441,15 @@ public sealed class BoardViewModel : ObservableObject
         }
     }
 
-    private async Task ArchiveNoteAsync()
+    private async Task ArchiveNoteAsync(object? parameter = null)
     {
-        if (ActiveNote is null)
+        var note = parameter as NoteItem ?? ActiveNote;
+
+        if (note is null)
         {
             return;
         }
 
-        var note = ActiveNote;
         var shouldArchive = !note.IsArchived;
         var oldArchived = note.IsArchived;
         var oldUpdatedAt = note.UpdatedAt;

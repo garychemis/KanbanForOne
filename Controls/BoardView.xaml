@@ -6,21 +6,25 @@
     <UserControl.Resources>
         <DataTemplate x:Key="TaskCardTemplate">
             <controls:TaskCardControl OpenCommand="{Binding DataContext.OpenTaskCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
-                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
+                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      RestoreCommand="{Binding DataContext.ArchiveTaskCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      IsCompact="{Binding DataContext.IsArchiveFilter, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
         </DataTemplate>
 
         <DataTemplate x:Key="NoteCardTemplate">
             <controls:NoteCardControl OpenCommand="{Binding DataContext.OpenNoteCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
-                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
+                                      AttachFilesCommand="{Binding DataContext.AttachFilesCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      RestoreCommand="{Binding DataContext.ArchiveNoteCommand, RelativeSource={RelativeSource AncestorType=controls:BoardView}}"
+                                      IsCompact="{Binding DataContext.IsArchiveFilter, RelativeSource={RelativeSource AncestorType=controls:BoardView}}" />
         </DataTemplate>
 
         <Style x:Key="ArchivePickerButtonStyle" TargetType="{x:Type Button}">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="MinWidth" Value="200" />
-            <Setter Property="Padding" Value="13,0" />
-            <Setter Property="Background" Value="#FFFFFF" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="MinWidth" Value="220" />
+            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -31,14 +35,20 @@
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="9">
+                                CornerRadius="12">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16"
+                                                  ShadowDepth="5"
+                                                  Direction="270"
+                                                  Opacity="0.07" />
+                            </Border.Effect>
                             <ContentPresenter Margin="{TemplateBinding Padding}"
                                               HorizontalAlignment="Stretch"
                                               VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#F1F3F5" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
@@ -58,8 +68,8 @@
 
         <Border Grid.Row="0"
                 Visibility="{Binding IsArchiveFilter, Converter={StaticResource BooleanToVisibilityConverterEx}}"
-                Background="{StaticResource TopNavBackgroundBrush}"
-                BorderBrush="{StaticResource BorderBrushSoft}"
+                Background="{StaticResource ArchiveModuleTintBrush}"
+                BorderBrush="{StaticResource ArchiveModuleBorderBrush}"
                 BorderThickness="0,0,0,1"
                 Padding="16,10">
             <Grid>
@@ -75,13 +85,13 @@
                     <TextBlock Text="&#xE7B8;"
                                FontFamily="{StaticResource AppIconFontFamily}"
                                FontSize="15"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{StaticResource ArchiveModuleTextBrush}"
                                VerticalAlignment="Center" />
                     <TextBlock Text="归档"
                                Margin="8,0,0,0"
                                FontSize="14"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Foreground="{StaticResource ArchiveModuleTextBrush}"
                                VerticalAlignment="Center" />
                 </StackPanel>
 
@@ -107,7 +117,7 @@
                                    Margin="10,0,0,1"
                                    VerticalAlignment="Center"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{StaticResource TextPrimaryBrush}" />
                     </Grid>
                 </Button>
 
@@ -117,7 +127,7 @@
                            Margin="12,0,0,0"
                            VerticalAlignment="Center"
                            FontSize="11"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                           Foreground="{StaticResource ArchiveModuleTextBrush}" />
             </Grid>
         </Border>
 
@@ -131,6 +141,7 @@
                                               MinHeight="{Binding ActualHeight, ElementName=BoardScrollViewer}"
                                               Title="待办"
                                               Subtitle="计划中但尚未开始"
+                                              IsArchiveFilter="{Binding IsArchiveFilter}"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Todo}"
                                               ItemsSource="{Binding TodoTasks}"
                                               ItemTemplate="{StaticResource TaskCardTemplate}"
@@ -143,6 +154,7 @@
                                               MinHeight="{Binding ActualHeight, ElementName=BoardScrollViewer}"
                                               Title="进行中"
                                               Subtitle="当前正在处理"
+                                              IsArchiveFilter="{Binding IsArchiveFilter}"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Doing}"
                                               ItemsSource="{Binding DoingTasks}"
                                               ItemTemplate="{StaticResource TaskCardTemplate}"
@@ -155,6 +167,7 @@
                                               MinHeight="{Binding ActualHeight, ElementName=BoardScrollViewer}"
                                               Title="卡住"
                                               Subtitle="遇到阻碍或等待"
+                                              IsArchiveFilter="{Binding IsArchiveFilter}"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Blocked}"
                                               ItemsSource="{Binding BlockedTasks}"
                                               ItemTemplate="{StaticResource TaskCardTemplate}"
@@ -167,6 +180,7 @@
                                               MinHeight="{Binding ActualHeight, ElementName=BoardScrollViewer}"
                                               Title="完成"
                                               Subtitle="已经处理完成"
+                                              IsArchiveFilter="{Binding IsArchiveFilter}"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Done}"
                                               ItemsSource="{Binding DoneTasks}"
                                               ItemTemplate="{StaticResource TaskCardTemplate}"
@@ -179,6 +193,7 @@
                                               MinHeight="{Binding ActualHeight, ElementName=BoardScrollViewer}"
                                               Title="备忘录"
                                               Subtitle="灵感、备忘和随手记"
+                                              IsArchiveFilter="{Binding IsArchiveFilter}"
                                               ColumnKind="{x:Static models:KanbanColumnKind.Notes}"
                                               ItemsSource="{Binding Notes}"
                                               ItemTemplate="{StaticResource NoteCardTemplate}"

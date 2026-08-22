@@ -18,18 +18,18 @@
         <SolidColorBrush x:Key="SpotlightPrimaryBrush" Color="#111827" />
 
         <Style x:Key="SpotlightShellStyle" TargetType="{x:Type Border}">
-            <Setter Property="CornerRadius" Value="20" />
+            <Setter Property="CornerRadius" Value="24" />
             <Setter Property="Background" Value="{StaticResource SpotlightSurfaceDialogBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
-            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ClipToBounds" Value="True" />
             <Setter Property="SnapsToDevicePixels" Value="True" />
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="30"
-                                      ShadowDepth="10"
+                    <DropShadowEffect BlurRadius="34"
+                                      ShadowDepth="12"
                                       Direction="270"
-                                      Opacity="0.13" />
+                                      Opacity="0.14" />
                 </Setter.Value>
             </Setter>
         </Style>
@@ -832,7 +832,7 @@
                         Background="{StaticResource SpotlightSurfaceDialogBrush}"
                         BorderBrush="#55E5E7EB"
                         BorderThickness="0,1,0,0"
-                        CornerRadius="0,0,20,20">
+                        CornerRadius="0,0,24,24">
                     <Grid>
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Left">
@@ -876,7 +876,6 @@
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
                 Background="{StaticResource SpotlightSurfaceDialogBrush}"
-                BorderBrush="{StaticResource NoteCardBorderBrush}"
                 Opacity="0"
                 Visibility="{Binding IsNoteSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="NoteDetailContent"
@@ -1088,7 +1087,7 @@
                         Background="{StaticResource SpotlightSurfaceDialogBrush}"
                         BorderBrush="#55E5E7EB"
                         BorderThickness="0,1,0,0"
-                        CornerRadius="0,0,20,20">
+                        CornerRadius="0,0,24,24">
                     <Grid>
                         <StackPanel Orientation="Horizontal"
                                     HorizontalAlignment="Left">

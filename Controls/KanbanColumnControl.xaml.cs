@@ -49,6 +49,12 @@ public partial class KanbanColumnControl : UserControl
         typeof(KanbanColumnControl),
         new PropertyMetadata(KanbanColumnKind.Todo));
 
+    public static readonly DependencyProperty IsArchiveFilterProperty = DependencyProperty.Register(
+        nameof(IsArchiveFilter),
+        typeof(bool),
+        typeof(KanbanColumnControl),
+        new PropertyMetadata(false));
+
     public static readonly DependencyProperty AddCommandProperty = DependencyProperty.Register(
         nameof(AddCommand),
         typeof(ICommand),
@@ -104,6 +110,12 @@ public partial class KanbanColumnControl : UserControl
     {
         get => (KanbanColumnKind)GetValue(ColumnKindProperty);
         set => SetValue(ColumnKindProperty, value);
+    }
+
+    public bool IsArchiveFilter
+    {
+        get => (bool)GetValue(IsArchiveFilterProperty);
+        set => SetValue(IsArchiveFilterProperty, value);
     }
 
     public ICommand? AddCommand
@@ -312,7 +324,9 @@ public partial class KanbanColumnControl : UserControl
     private void ResetDragState()
     {
         ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#55FFFFFF")!;
-        ColumnBorder.Background = (Brush)FindResource("ColumnBackgroundBrush");
+        ColumnBorder.Background = IsArchiveFilter
+            ? (Brush)FindResource("ArchiveColumnBackgroundBrush")
+            : (Brush)FindResource("ColumnBackgroundBrush");
         ColumnDropZone.Background = Brushes.Transparent;
         ColumnDropZone.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#66CBD5E1")!;
         ColumnDropZone.Opacity = IsMouseOver ? 0.48 : 0.18;

@@ -143,6 +143,50 @@ public sealed class ArchiveIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task Restore_explicit_archived_task_updates_section_count()
+    {
+        var testRoot = CreateTestRoot();
+        try
+        {
+            var database = new DatabaseService(Path.Combine(testRoot, "Kanban41.db"));
+            await database.InitializeAsync();
+            var taskRepository = new TaskRepository(database);
+            var sectionRepository = new ArchiveSectionRepository(database);
+            var section = await sectionRepository.GetOrCreateAsync("恢复分区");
+
+            var task = new TaskItem
+            {
+                Title = "待恢复任务",
+                IsArchived = true,
+                ArchiveSectionId = section.Id,
+                ArchivedAt = DateTime.Now,
+                Status = TaskStatus.Doing
+            };
+            await taskRepository.UpsertAsync(task);
+
+            // 模拟“以具体卡片为参数恢复”：直接对归档任务执行恢复落库
+            task.IsArchived = false;
+            task.ArchiveSectionId = null;
+            task.ArchivedAt = null;
+            await taskRepository.UpsertAsync(task);
+
+            // 恢复后归档分区不再包含该任务，且分区计数回零
+            Assert.DoesNotContain(
+                await taskRepository.GetArchivedBySectionAsync(section.Id),
+                item => item.Id == task.Id);
+            Assert.Equal(0, (await sectionRepository.GetAllAsync()).Single(s => s.Id == section.Id).TotalCount);
+
+            // 任务回到活动列表
+            Assert.Contains(await taskRepository.GetActiveAsync(), item => item.Id == task.Id);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
     private static string CreateTestRoot()
     {
         var path = Path.Combine(Path.GetTempPath(), "KanbanForOne.Tests", Guid.NewGuid().ToString("N"));

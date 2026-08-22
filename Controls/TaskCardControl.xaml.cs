@@ -24,6 +24,18 @@ public partial class TaskCardControl : UserControl
         typeof(TaskCardControl),
         new PropertyMetadata(null));
 
+    public static readonly DependencyProperty RestoreCommandProperty = DependencyProperty.Register(
+        nameof(RestoreCommand),
+        typeof(ICommand),
+        typeof(TaskCardControl),
+        new PropertyMetadata(null));
+
+    public static readonly DependencyProperty IsCompactProperty = DependencyProperty.Register(
+        nameof(IsCompact),
+        typeof(bool),
+        typeof(TaskCardControl),
+        new PropertyMetadata(false));
+
     private Point _dragStartPoint;
     private bool _isDraggingCard;
     private AdornerLayer? _dragGhostLayer;
@@ -44,6 +56,18 @@ public partial class TaskCardControl : UserControl
     {
         get => (ICommand?)GetValue(AttachFilesCommandProperty);
         set => SetValue(AttachFilesCommandProperty, value);
+    }
+
+    public ICommand? RestoreCommand
+    {
+        get => (ICommand?)GetValue(RestoreCommandProperty);
+        set => SetValue(RestoreCommandProperty, value);
+    }
+
+    public bool IsCompact
+    {
+        get => (bool)GetValue(IsCompactProperty);
+        set => SetValue(IsCompactProperty, value);
     }
 
     private void OnPreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -111,6 +135,20 @@ public partial class TaskCardControl : UserControl
         }
     }
 
+    private void OnInlineRestoreClick(object sender, RoutedEventArgs e)
+    {
+        if (_isDraggingCard || DataContext is not TaskItem task)
+        {
+            return;
+        }
+
+        e.Handled = true;
+        if (RestoreCommand?.CanExecute(task) == true)
+        {
+            RestoreCommand.Execute(task);
+        }
+    }
+
     private Rect GetAnchorBounds()
     {
         var host = Window.GetWindow(this)?.Content as Visual;
@@ -148,6 +186,7 @@ public partial class TaskCardControl : UserControl
             Direction = 270,
             Opacity = 0.08
         };
+        InlineRestoreButton.Opacity = IsCompact ? 1 : 0;
     }
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
@@ -218,6 +257,7 @@ public partial class TaskCardControl : UserControl
         CardBorder.Opacity = 1;
         CardContent.Opacity = 1;
         CardContent.Effect = null;
+        InlineRestoreButton.Opacity = 0;
         CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#E6E8EB")!;
         CardBorder.Effect = new DropShadowEffect
         {

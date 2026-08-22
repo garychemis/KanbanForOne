@@ -14,11 +14,21 @@
             Drop="OnDrop"
             MouseEnter="OnColumnMouseEnter"
             MouseLeave="OnColumnMouseLeave"
-            Background="{StaticResource ColumnBackgroundBrush}"
             BorderBrush="#55FFFFFF"
             BorderThickness="1"
             CornerRadius="18"
             Padding="10,10,10,12">
+        <Border.Style>
+            <Style TargetType="{x:Type Border}">
+                <Setter Property="Background" Value="{StaticResource ColumnBackgroundBrush}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsArchiveFilter, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                 Value="True">
+                        <Setter Property="Background" Value="{StaticResource ArchiveColumnBackgroundBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
         <DockPanel>
             <Grid DockPanel.Dock="Top"
                   Margin="0,0,0,18">
@@ -45,14 +55,35 @@
                         Width="20"
                         Height="20"
                         CornerRadius="10"
-                        Background="#F0F1F3"
                         VerticalAlignment="Center">
+                    <Border.Style>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Background" Value="#F0F1F3" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsArchiveFilter, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                             Value="True">
+                                    <Setter Property="Background" Value="#F0E9DB" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
                     <TextBlock Text="{Binding ElementName=CardItems, Path=Items.Count, Mode=OneWay}"
                                FontSize="10"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextSecondaryBrush}"
                                HorizontalAlignment="Center"
-                               VerticalAlignment="Center" />
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsArchiveFilter, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                 Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </Border>
 
                 <Button Grid.Column="3"

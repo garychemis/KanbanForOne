@@ -41,6 +41,12 @@
     <SolidColorBrush x:Key="DesignConditionModuleHoverBrush" Color="#EAF3F0" />
     <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#D0E1DC" />
     <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#4B7068" />
+    <SolidColorBrush x:Key="ArchiveModuleTintBrush" Color="#F4EFE6" />
+    <SolidColorBrush x:Key="ArchiveModuleHoverBrush" Color="#EFE7D9" />
+    <SolidColorBrush x:Key="ArchiveModuleBorderBrush" Color="#E0D5C0" />
+    <SolidColorBrush x:Key="ArchiveModuleTextBrush" Color="#6E6250" />
+    <SolidColorBrush x:Key="ArchiveColumnBackgroundBrush" Color="#66FBF8F2" />
+    <SolidColorBrush x:Key="ArchiveCardTintBrush" Color="#F7F1E5" />
     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#EDF1F0" />
     <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#EDF1F0" />
     <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="{StaticResource BrandPaperColor}" />
