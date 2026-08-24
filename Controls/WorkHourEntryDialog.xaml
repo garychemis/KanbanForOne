@@ -42,6 +42,15 @@
             <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
         </Style>
+        <Style x:Key="DialogDangerButtonStyle"
+               TargetType="{x:Type Button}"
+               BasedOn="{StaticResource DialogGhostButtonStyle}">
+            <Setter Property="Width" Value="64" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="Padding" Value="10,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="Foreground" Value="#BE123C" />
+        </Style>
         <Style x:Key="WorkHourDialogPrimaryButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
             <Setter Property="Background" Value="#80633E" /><Setter Property="BorderBrush" Value="#80633E" /><Setter Property="BorderThickness" Value="1" />
@@ -65,9 +74,11 @@
             <Setter Property="Foreground" Value="{StaticResource WorkHourSecondaryTextBrush}" />
         </Style>
         <Style x:Key="PreviewCardStyle" TargetType="{x:Type Border}">
-            <Setter Property="Padding" Value="3,7" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="12,11" />
+            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
         </Style>
         <Style x:Key="DialogDateFieldBorderStyle" TargetType="{x:Type Border}">
             <Setter Property="Height" Value="42" />
@@ -316,7 +327,8 @@
                 <Border Grid.Row="0"
                         Padding="20,14,16,14"
                         Background="{StaticResource WorkHourDialogSurfaceBrush}"
-                        BorderThickness="0"
+                        BorderBrush="{StaticResource WorkHourBorderBrush}"
+                        BorderThickness="0,0,0,1"
                         CornerRadius="18,18,0,0"
                         MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
                     <Grid>
@@ -345,9 +357,16 @@
                 <Grid Grid.Row="1">
                     <ScrollViewer x:Name="PreviewPanel"
                                   Padding="22,20"
+                                  VerticalContentAlignment="Stretch"
                                   VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-                            <Grid>
+                        <Grid MinHeight="{Binding ViewportHeight, ElementName=PreviewPanel}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -369,13 +388,13 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                            <Border Margin="0,12,0,0" Style="{StaticResource PreviewCardStyle}">
+                            <Border Grid.Row="1" Margin="0,12,0,0" Style="{StaticResource PreviewCardStyle}">
                                 <StackPanel>
                                     <TextBlock Text="项目号" Style="{StaticResource FieldLabelStyle}" />
                                     <TextBlock x:Name="PreviewProjectNumberText" FontSize="16" FontWeight="SemiBold" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
-                            <Grid Margin="0,12,0,0">
+                            <Grid Grid.Row="2" Margin="0,12,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="12" />
@@ -394,13 +413,17 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                            <Border Margin="0,12,0,0" Style="{StaticResource PreviewCardStyle}">
+                            <Border Grid.Row="3"
+                                    MinHeight="82"
+                                    Margin="0,12,0,0"
+                                    VerticalAlignment="Stretch"
+                                    Style="{StaticResource PreviewCardStyle}">
                                 <StackPanel>
                                     <TextBlock Text="备注" Style="{StaticResource FieldLabelStyle}" />
                                     <TextBlock x:Name="PreviewRemarkText" FontSize="13" LineHeight="20" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
+                        </Grid>
                     </ScrollViewer>
 
                     <ScrollViewer x:Name="EditPanel"
@@ -495,15 +518,15 @@
                 <Border Grid.Row="2"
                         Padding="18,14"
                         Background="{StaticResource WorkHourDialogSurfaceBrush}"
-                        BorderThickness="0"
+                        BorderBrush="{StaticResource WorkHourBorderBrush}"
+                        BorderThickness="0,1,0,0"
                         CornerRadius="0,0,18,18">
                     <Grid>
                         <Grid x:Name="PreviewActions">
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                             <Button Content="删除"
                                     Click="OnDeleteClick"
-                                    Style="{StaticResource DialogGhostButtonStyle}"
-                                    Foreground="#BE123C" />
+                                    Style="{StaticResource DialogDangerButtonStyle}" />
                             <Button Grid.Column="1" Content="编辑"
                                     Click="OnEditClick"
                                     Style="{StaticResource WorkHourDialogPrimaryButtonStyle}" />
