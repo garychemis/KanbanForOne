@@ -1,55 +1,35 @@
-"""Generate the Kanban41 PNG and multi-resolution Windows icon.
+"""从 icon3.png 生成透明 PNG 与多分辨率 Windows 图标。
 
-The geometry mirrors kanban41.svg so the checked-in SVG remains the editable
-design source while the generated files stay compatible with WPF and Win32.
+icon3.png 是圆角卡片设计：卡片主体为亮色（白色卡片、蓝/黄绿元素），
+圆角四角为纯黑背景。处理方式：以 max(R,G,B) 作为 alpha —— 黑色背景
+变为全透明，圆角处抗锯齿的灰色过渡像素自动获得中间 alpha，
+从而保留平滑的圆角边缘。内部无暗色元素，不受亮度 alpha 影响。
 """
 
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops
 
-
+ICON_DIR = Path(__file__).resolve().parent
+SOURCE = ICON_DIR / "icon3.png"
 CANVAS_SIZE = 1024
-NAVY = "#172730"
-PAPER = "#F7F6F1"
-TEAL = "#5C9187"
 ICON_SIZES = (16, 20, 24, 32, 40, 48, 64, 128, 256)
 
 
-def create_master() -> Image.Image:
-    image = Image.new("RGBA", (CANVAS_SIZE, CANVAS_SIZE), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-
-    draw.rounded_rectangle((40, 40, 984, 984), radius=224, fill=NAVY)
-    draw.rounded_rectangle((152, 184, 336, 744), radius=48, fill=PAPER)
-    draw.rounded_rectangle((420, 184, 604, 452), radius=48, fill=PAPER)
-    draw.rounded_rectangle((420, 492, 604, 744), radius=48, fill=PAPER)
-    draw.rounded_rectangle((688, 184, 872, 364), radius=48, fill=PAPER)
-    draw.rounded_rectangle((688, 404, 872, 744), radius=48, fill=TEAL)
-    draw.line(
-        ((729, 574), (764, 610), (832, 533)),
-        fill=PAPER,
-        width=46,
-        joint="curve",
-    )
-
-    # Pillow's line joints do not round the two exposed endpoints, so cap them.
-    cap_radius = 23
-    for x, y in ((729, 574), (832, 533)):
-        draw.ellipse(
-            (x - cap_radius, y - cap_radius, x + cap_radius, y + cap_radius),
-            fill=PAPER,
-        )
-
-    return image
+def to_transparent(image: Image.Image) -> Image.Image:
+    image = image.convert("RGB")
+    r, g, b = image.split()
+    alpha = ImageChops.lighter(ImageChops.lighter(r, g), b)
+    return Image.merge("RGBA", (r, g, b, alpha))
 
 
 def main() -> None:
-    icon_dir = Path(__file__).resolve().parent
-    master = create_master()
-    master.save(icon_dir / "icon-transparent.png", optimize=True)
+    master = to_transparent(Image.open(SOURCE)).resize(
+        (CANVAS_SIZE, CANVAS_SIZE), Image.Resampling.LANCZOS
+    )
+    master.save(ICON_DIR / "icon-transparent.png", optimize=True)
     master.save(
-        icon_dir / "icon-transparent.ico",
+        ICON_DIR / "icon-transparent.ico",
         format="ICO",
         sizes=[(size, size) for size in ICON_SIZES],
         bitmap_format="png",

@@ -16,7 +16,7 @@
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"
                            RenderOptions.BitmapScalingMode="HighQuality"
-                           Source="/icon/icon-transparent.ico"
+                           Source="/icon/icon-transparent.png"
                            Stretch="Uniform" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="关于 Kanban41"
