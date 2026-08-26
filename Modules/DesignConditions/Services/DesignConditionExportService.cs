@@ -56,12 +56,13 @@ public sealed class DesignConditionExportService
     private static void AddDetails(XLWorkbook workbook, IReadOnlyList<DesignConditionEntry> entries)
     {
         var sheet = workbook.Worksheets.Add("设计条件明细");
-        string[] headers = ["提出日期", "项目", "提出专业", "接收专业", "接收人", "条件名称", "版次", "图幅", "图纸数量", "附件数", "附件文件名", "创建时间", "更新时间"];
+        string[] headers = ["提出日期", "项目", "提出专业", "接收专业", "接收人", "条件名称", "版次", "图幅", "图纸数量", "条件总张数", "附件数", "附件文件名", "创建时间", "更新时间"];
         WriteHeader(sheet, headers);
         var ordered = entries.OrderBy(item => item.IssuedDate).ThenBy(item => item.ProjectNumber).ThenBy(item => item.ConditionName).ToArray();
-        for (var index = 0; index < ordered.Length; index++)
+        var detailRows = ordered.SelectMany(item => GetDetailSpecifications(item).Select(specification => (Item: item, Specification: specification))).ToArray();
+        for (var index = 0; index < detailRows.Length; index++)
         {
-            var item = ordered[index];
+            var (item, specification) = detailRows[index];
             var row = index + 2;
             sheet.Cell(row, 1).Value = item.IssuedDate;
             sheet.Cell(row, 2).Value = item.ProjectNumber;
@@ -70,21 +71,31 @@ public sealed class DesignConditionExportService
             sheet.Cell(row, 5).Value = item.Receiver;
             sheet.Cell(row, 6).Value = item.ConditionName;
             sheet.Cell(row, 7).Value = item.Revision;
-            sheet.Cell(row, 8).Value = item.DrawingSize;
-            sheet.Cell(row, 9).Value = item.DrawingCount;
-            sheet.Cell(row, 10).Value = item.AttachmentCount;
-            sheet.Cell(row, 11).Value = string.Join(Environment.NewLine, item.Attachments.Select(file => file.OriginalFileName));
-            sheet.Cell(row, 12).Value = item.CreatedAt;
-            sheet.Cell(row, 13).Value = item.UpdatedAt;
+            sheet.Cell(row, 8).Value = specification.DrawingSize;
+            sheet.Cell(row, 9).Value = specification.DrawingCount;
+            sheet.Cell(row, 10).Value = item.DrawingCount;
+            sheet.Cell(row, 11).Value = item.AttachmentCount;
+            sheet.Cell(row, 12).Value = string.Join(Environment.NewLine, item.Attachments.Select(file => file.OriginalFileName));
+            sheet.Cell(row, 13).Value = item.CreatedAt;
+            sheet.Cell(row, 14).Value = item.UpdatedAt;
         }
         sheet.Column(1).Style.DateFormat.Format = "yyyy.MM.dd";
-        sheet.Columns(12, 13).Style.DateFormat.Format = "yyyy.MM.dd HH:mm";
-        sheet.Column(11).Style.Alignment.WrapText = true;
-        sheet.Range(1, 1, Math.Max(ordered.Length + 1, 1), headers.Length).SetAutoFilter();
+        sheet.Columns(13, 14).Style.DateFormat.Format = "yyyy.MM.dd HH:mm";
+        sheet.Column(12).Style.Alignment.WrapText = true;
+        sheet.Range(1, 1, Math.Max(detailRows.Length + 1, 1), headers.Length).SetAutoFilter();
         sheet.SheetView.FreezeRows(1);
         sheet.Columns().AdjustToContents();
         sheet.Column(6).Width = Math.Clamp(sheet.Column(6).Width, 18, 42);
-        sheet.Column(11).Width = Math.Clamp(sheet.Column(11).Width, 18, 48);
+        sheet.Column(12).Width = Math.Clamp(sheet.Column(12).Width, 18, 48);
+    }
+
+    private static IReadOnlyList<DesignConditionDrawingSpec> GetDetailSpecifications(DesignConditionEntry item)
+    {
+        if (item.DrawingSpecifications.Count > 0) return item.DrawingSpecifications;
+        // 无规格旧记录：图幅为空或数量为 0 时无意义，不导出明细行。
+        return string.IsNullOrWhiteSpace(item.DrawingSize) || item.DrawingCount <= 0
+            ? []
+            : [new DesignConditionDrawingSpec(item.DrawingSize, item.DrawingCount)];
     }
 
     private static void WriteHeader(IXLWorksheet sheet, IReadOnlyList<string> headers)

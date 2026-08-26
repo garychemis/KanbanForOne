@@ -4,7 +4,7 @@ namespace KanbanForOne.Modules.DesignConditions.Data;
 
 public sealed class DesignConditionDatabaseService
 {
-    private const int CurrentSchemaVersion = 2;
+    private const int CurrentSchemaVersion = 3;
     private readonly DesignConditionStorageOptions _paths;
 
     public DesignConditionDatabaseService(DesignConditionStorageOptions paths)
@@ -62,6 +62,7 @@ public sealed class DesignConditionDatabaseService
                 ConditionName TEXT NOT NULL,
                 Revision TEXT NOT NULL DEFAULT '',
                 DrawingSize TEXT NOT NULL DEFAULT '',
+                DrawingCounts TEXT NOT NULL DEFAULT '',
                 DrawingCount INTEGER NOT NULL DEFAULT 0 CHECK (DrawingCount >= 0),
                 CreatedAt TEXT NOT NULL,
                 UpdatedAt TEXT NOT NULL
@@ -105,6 +106,24 @@ public sealed class DesignConditionDatabaseService
         {
             await DropIndexesReferencingColumnAsync(connection, "DesignConditions", "RecordDate", transaction);
             await ExecuteAsync(connection, "ALTER TABLE DesignConditions DROP COLUMN RecordDate", transaction);
+        }
+        if (version < 3 && !await ColumnExistsAsync(connection, "DesignConditions", "DrawingCounts", transaction))
+        {
+            await ExecuteAsync(connection, "ALTER TABLE DesignConditions ADD COLUMN DrawingCounts TEXT NOT NULL DEFAULT ''", transaction);
+            // 旧库允许 DrawingCount=0，但 V3 分图幅数量要求大于 0 的整数：
+            // 有图幅的 0 数量记录迁移为默认 1 张，无图幅记录保持无规格状态（由编辑弹窗兜底引导补全）。
+            await ExecuteAsync(connection,
+                """
+                UPDATE DesignConditions SET
+                    DrawingCounts = CASE
+                        WHEN DrawingCount > 0 THEN CAST(DrawingCount AS TEXT)
+                        WHEN DrawingSize <> '' THEN '1'
+                        ELSE '' END,
+                    DrawingCount = CASE
+                        WHEN DrawingCount > 0 THEN DrawingCount
+                        WHEN DrawingSize <> '' THEN 1
+                        ELSE 0 END
+                """, transaction);
         }
 
         foreach (var index in indexes)
@@ -165,6 +184,10 @@ public sealed class DesignConditionDatabaseService
             {
                 throw new InvalidOperationException($"设计条件数据库初始化失败：缺少 {table} 表。");
             }
+        }
+        if (!await ColumnExistsAsync(connection, "DesignConditions", "DrawingCounts", transaction))
+        {
+            throw new InvalidOperationException("设计条件数据库初始化失败：缺少分图幅数量字段。");
         }
     }
 

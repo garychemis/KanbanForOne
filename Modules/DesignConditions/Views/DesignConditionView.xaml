@@ -302,7 +302,9 @@
                                                     <TextBlock FontSize="13" FontWeight="SemiBold" Style="{StaticResource AppNumericTextStyle}" Text="{Binding DrawingCount}" />
                                                     <TextBlock Margin="4,0,0,0" Style="{StaticResource AppMetaTextStyle}" Text="张" />
                                                 </StackPanel>
-                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="{Binding DrawingSize}" />
+                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Style="{StaticResource AppMetaTextStyle}" Text="{Binding DrawingSummary}"
+                                                           TextTrimming="CharacterEllipsis" ToolTip="{Binding DrawingSummary}" />
                                             </StackPanel>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>

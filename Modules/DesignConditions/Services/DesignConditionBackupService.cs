@@ -12,7 +12,7 @@ public sealed record DesignConditionRestoreResult(string SourcePath, string Prot
 public sealed class DesignConditionBackupService
 {
     private const int BackupFormatVersion = 1;
-    private const int CurrentDatabaseSchemaVersion = 2;
+    private const int CurrentDatabaseSchemaVersion = 3;
     private const int MaxArchiveEntries = 20_000;
     private const long MaxArchiveEntryBytes = 2L * 1024 * 1024 * 1024;
     private const long MaxArchiveExpandedBytes = 10L * 1024 * 1024 * 1024;
@@ -248,6 +248,12 @@ public sealed class DesignConditionBackupService
         using var issuedDate = connection.CreateCommand();
         issuedDate.CommandText = "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='IssuedDate'";
         if (Convert.ToInt32(issuedDate.ExecuteScalar()) != 1) throw new InvalidDataException("设计条件备份数据库缺少提出日期字段。");
+        if (expectedVersion >= 3)
+        {
+            using var drawingCounts = connection.CreateCommand();
+            drawingCounts.CommandText = "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='DrawingCounts' AND upper(type)='TEXT'";
+            if (Convert.ToInt32(drawingCounts.ExecuteScalar()) != 1) throw new InvalidDataException("设计条件备份数据库缺少分图幅数量字段。");
+        }
     }
 
     private List<Exception> RollbackRestore(string oldDatabase, string oldAttachments, bool databaseMoved, bool attachmentsMoved, bool replacementInstalled)

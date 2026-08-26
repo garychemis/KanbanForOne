@@ -66,6 +66,7 @@ public sealed class UiSmokeTests
             App.BuildServiceProvider();
             var app = new App();
             app.InitializeComponent();
+            VerifyDesignConditionDrawingGridStyles();
 
             var window = new MainWindow();
             window.Show();
@@ -107,6 +108,20 @@ public sealed class UiSmokeTests
                 try { Directory.Delete(dataDir, recursive: true); } catch { }
             }
         }
+    }
+
+    private static void VerifyDesignConditionDrawingGridStyles()
+    {
+        var resources = new ResourceDictionary
+        {
+            Source = new Uri(
+                "/KanbanForOne;component/Modules/DesignConditions/Views/DesignConditionControlStyles.xaml",
+                UriKind.RelativeOrAbsolute)
+        };
+
+        Assert.IsType<SolidColorBrush>(resources["ConditionDrawingAlternateRowBrush"]);
+        Assert.IsType<Style>(resources["ConditionDrawingGridChromeStyle"]);
+        Assert.IsType<Style>(resources["ConditionDrawingDeleteButtonStyle"]);
     }
 
     private static void VerifyArchivePage(MainWindowViewModel vm, BoardView boardView)
@@ -221,12 +236,14 @@ public sealed class UiSmokeTests
             IssuedDate = DateTime.Today,
             ConditionName = "日历设计条件",
             Revision = "A",
-            DrawingSize = "A1",
-            DrawingCount = 2,
+            DrawingSize = "A1|A4",
+            DrawingCounts = "1|2",
+            DrawingCount = 3,
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
         }));
         WaitForTask(vm.DesignConditions.ReloadAsync());
+        WaitUntil(() => IsVisibleText(designConditionView, "A1 × 1 · A4 × 2"));
 
         vm.ChangeFilterCommand.Execute("Calendar");
         WaitForTask(vm.Calendar.DesignConditions.LoadRangeAsync(DateTime.Today.AddDays(-10), DateTime.Today.AddDays(31)));

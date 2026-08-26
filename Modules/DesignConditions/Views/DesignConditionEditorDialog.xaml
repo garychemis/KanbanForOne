@@ -86,18 +86,71 @@
                             <TextBlock Text="版次" Style="{StaticResource ConditionFieldLabelStyle}" />
                             <TextBox Text="{Binding Revision, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConditionTextBoxStyle}" />
                         </StackPanel>
-                        <Grid Grid.Row="3" Grid.Column="2" Margin="0,13,0,0">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="10" /><ColumnDefinition Width="0.72*" /></Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="图幅" Style="{StaticResource ConditionFieldLabelStyle}" />
-                                <ComboBox IsEditable="True" ItemsSource="{Binding DrawingSizes}" Text="{Binding DrawingSize, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConditionComboBoxStyle}" />
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="图纸数量 *" Style="{StaticResource ConditionFieldLabelStyle}" />
-                                <TextBox Text="{Binding DrawingCountText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConditionTextBoxStyle}" />
-                            </StackPanel>
-                        </Grid>
                     </Grid>
+
+                    <Border Margin="0,18,0,0" Padding="14" Style="{StaticResource ConditionSurfaceCardStyle}">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,9">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="条件图纸 *" FontSize="13" FontWeight="SemiBold" />
+                                    <TextBlock Margin="8,0,0,0" FontSize="11" Foreground="{StaticResource ConditionSecondaryTextBrush}">
+                                        <Run Text="共 " /><Run Text="{Binding DrawingSpecificationCount, Mode=OneWay}" /><Run Text=" 种规格  ·  " />
+                                        <Run Text="{Binding TotalDrawingCount, Mode=OneWay}" /><Run Text=" 张" />
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="＋ 添加规格" Click="OnAddDrawingRowClick"
+                                        AutomationProperties.Name="添加条件图幅规格" Style="{StaticResource ConditionGhostButtonStyle}" />
+                            </Grid>
+                            <Border Style="{StaticResource ConditionDrawingGridChromeStyle}">
+                                <DataGrid x:Name="DrawingGrid" ItemsSource="{Binding DrawingRows}" AlternationCount="2"
+                                          Style="{StaticResource ConditionDrawingGridStyle}"
+                                          AutomationProperties.Name="条件图幅和数量明细">
+                                    <DataGrid.Columns>
+                                    <DataGridTemplateColumn Header="条件图幅" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate><TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" TextAlignment="Center" Text="{Binding DrawingSize}" /></DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <ComboBox IsEditable="True"
+                                                          ItemsSource="{Binding DataContext.DrawingSizes, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                          Text="{Binding DrawingSize, UpdateSourceTrigger=PropertyChanged}"
+                                                          HorizontalContentAlignment="Center" Loaded="OnDrawingComboBoxLoaded"
+                                                          AutomationProperties.Name="条件图幅"
+                                                          Style="{StaticResource ConditionComboBoxStyle}" Height="34" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="条件数量" Width="150">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate><TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding DrawingCountText}" /></DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                        <DataGridTemplateColumn.CellEditingTemplate>
+                                            <DataTemplate>
+                                                <TextBox Text="{Binding DrawingCountText, UpdateSourceTrigger=PropertyChanged}"
+                                                         HorizontalContentAlignment="Center" TextAlignment="Center" AutomationProperties.Name="条件数量"
+                                                         PreviewTextInput="OnDrawingCountPreviewTextInput"
+                                                         DataObject.Pasting="OnDrawingCountPasting"
+                                                         Style="{StaticResource ConditionTextBoxStyle}" Height="34" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellEditingTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Header="操作" Width="92" IsReadOnly="True">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <Button Content="删除" Margin="6,4" HorizontalAlignment="Center"
+                                                        AutomationProperties.Name="删除当前图幅规格"
+                                                        Command="{Binding DataContext.RemoveDrawingRowCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}" Style="{StaticResource ConditionDrawingDeleteButtonStyle}" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
 
                     <Border Margin="0,18,0,0" Padding="14" Style="{StaticResource ConditionSurfaceCardStyle}">
                         <StackPanel>

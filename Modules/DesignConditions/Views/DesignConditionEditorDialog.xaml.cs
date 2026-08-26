@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using KanbanForOne.Controls;
 using KanbanForOne.Modules.DesignConditions.Models;
 using KanbanForOne.Modules.DesignConditions.Services;
@@ -44,9 +46,65 @@ public partial class DesignConditionEditorDialog : Window
 
     private void OnSaveClick(object sender, RoutedEventArgs e)
     {
+        DrawingGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+        DrawingGrid.CommitEdit(DataGridEditingUnit.Row, true);
         if (!_viewModel.TryBuild(out _)) return;
         Action = DesignConditionEditorAction.Save;
         CloseAllowed();
+    }
+
+    private void OnAddDrawingRowClick(object sender, RoutedEventArgs e)
+    {
+        DrawingGrid.CommitEdit(DataGridEditingUnit.Cell, true);
+        DrawingGrid.CommitEdit(DataGridEditingUnit.Row, true);
+        var row = _viewModel.AddDrawingRow();
+        DrawingGrid.SelectedItem = row;
+        DrawingGrid.ScrollIntoView(row);
+        Dispatcher.BeginInvoke(() =>
+        {
+            if (DrawingGrid.Columns.Count == 0) return;
+            DrawingGrid.CurrentCell = new DataGridCellInfo(row, DrawingGrid.Columns[0]);
+            DrawingGrid.BeginEdit();
+        }, DispatcherPriority.Input);
+    }
+
+    private void OnDrawingComboBoxLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not ComboBox comboBox) return;
+        comboBox.ApplyTemplate();
+        if (comboBox.Template.FindName("PART_EditableTextBox", comboBox) is TextBox textBox)
+        {
+            textBox.TextAlignment = TextAlignment.Center;
+        }
+    }
+
+    private void OnDrawingCountPreviewTextInput(object sender, TextCompositionEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            e.Handled = !IsPositiveIntegerEdit(textBox, e.Text);
+        }
+    }
+
+    private void OnDrawingCountPasting(object sender, DataObjectPastingEventArgs e)
+    {
+        if (sender is not TextBox textBox ||
+            !e.DataObject.GetDataPresent(DataFormats.UnicodeText) ||
+            e.DataObject.GetData(DataFormats.UnicodeText) is not string pastedText ||
+            !IsPositiveIntegerEdit(textBox, pastedText))
+        {
+            e.CancelCommand();
+        }
+    }
+
+    private static bool IsPositiveIntegerEdit(TextBox textBox, string insertedText)
+    {
+        var currentText = textBox.Text ?? string.Empty;
+        var proposedText = currentText.Remove(textBox.SelectionStart, textBox.SelectionLength)
+            .Insert(textBox.SelectionStart, insertedText);
+        if (proposedText.Length == 0) return true;
+        if (proposedText.Any(character => character is < '0' or > '9')) return false;
+        return int.TryParse(proposedText, out var value) && value > 0;
     }
 
     private void OnDeleteClick(object sender, RoutedEventArgs e)

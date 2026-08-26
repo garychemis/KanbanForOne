@@ -8,6 +8,12 @@
     <SolidColorBrush x:Key="ConditionFieldFocusBrush" Color="#5D8C82" />
     <SolidColorBrush x:Key="ConditionPrimaryTextBrush" Color="#29443F" />
     <SolidColorBrush x:Key="ConditionSecondaryTextBrush" Color="#60756F" />
+    <SolidColorBrush x:Key="ConditionDrawingHeaderBrush" Color="#DDECE8" />
+    <SolidColorBrush x:Key="ConditionDrawingAlternateRowBrush" Color="#F1F8F6" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerBrush" Color="#9F1239" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerSoftBrush" Color="#FCEEF1" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerHoverBrush" Color="#F8DDE4" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerPressedBrush" Color="#F1C8D2" />
     <Style x:Key="ConditionCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
         <Setter Property="Width" Value="30" /><Setter Property="MinWidth" Value="30" /><Setter Property="Height" Value="30" />
         <Setter Property="Padding" Value="0" /><Setter Property="FontSize" Value="18" /><Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" />
@@ -122,5 +128,75 @@
     </Style>
     <Style x:Key="ConditionFilterComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource ConditionComboBoxStyle}">
         <Setter Property="Height" Value="34" />
+    </Style>
+    <Style x:Key="ConditionDrawingGridChromeStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style x:Key="ConditionDrawingDeleteButtonStyle" TargetType="Button">
+        <Setter Property="MinWidth" Value="56" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="Background" Value="{StaticResource ConditionDrawingDangerSoftBrush}" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{StaticResource ConditionDrawingDangerBrush}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+            <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource ConditionDrawingDangerHoverBrush}" /></Trigger>
+                <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource ConditionDrawingDangerPressedBrush}" /></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /><Setter Property="Cursor" Value="Arrow" /></Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
+    <Style x:Key="ConditionDrawingColumnHeaderStyle" TargetType="DataGridColumnHeader">
+        <Setter Property="Height" Value="38" /><Setter Property="Padding" Value="10,0" />
+        <Setter Property="Background" Value="{StaticResource ConditionDrawingHeaderBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" /><Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style x:Key="ConditionDrawingCellStyle" TargetType="DataGridCell">
+        <Setter Property="Padding" Value="10,0" /><Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Foreground" Value="{StaticResource ConditionPrimaryTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Style.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="ConditionDrawingRowStyle" TargetType="DataGridRow">
+        <Setter Property="Height" Value="42" /><Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Style.Triggers>
+            <Trigger Property="AlternationIndex" Value="1"><Setter Property="Background" Value="{StaticResource ConditionDrawingAlternateRowBrush}" /></Trigger>
+            <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource ConditionFieldHoverBrush}" /></Trigger>
+            <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource ConditionFieldSelectedBrush}" /></Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style x:Key="ConditionDrawingGridStyle" TargetType="DataGrid">
+        <Setter Property="Height" Value="164" /><Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="GridLinesVisibility" Value="None" /><Setter Property="HeadersVisibility" Value="Column" /><Setter Property="RowHeaderWidth" Value="0" />
+        <Setter Property="AutoGenerateColumns" Value="False" /><Setter Property="CanUserAddRows" Value="False" /><Setter Property="CanUserDeleteRows" Value="False" />
+        <Setter Property="CanUserResizeRows" Value="False" /><Setter Property="CanUserSortColumns" Value="False" />
+        <Setter Property="SelectionMode" Value="Single" /><Setter Property="SelectionUnit" Value="CellOrRowHeader" />
+        <Setter Property="ColumnHeaderStyle" Value="{StaticResource ConditionDrawingColumnHeaderStyle}" />
+        <Setter Property="CellStyle" Value="{StaticResource ConditionDrawingCellStyle}" /><Setter Property="RowStyle" Value="{StaticResource ConditionDrawingRowStyle}" />
     </Style>
 </ResourceDictionary>

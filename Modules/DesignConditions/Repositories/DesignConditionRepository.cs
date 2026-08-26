@@ -121,13 +121,15 @@ public sealed class DesignConditionRepository
             await insert.ExecuteNonQueryAsync();
         }
 
-        foreach (var option in new[]
-                 {
-                     (Type: "Discipline", Value: entry.IssuingDiscipline),
-                     (Type: "Discipline", Value: entry.ReceivingDiscipline),
-                     (Type: "Receiver", Value: entry.Receiver),
-                     (Type: "DrawingSize", Value: entry.DrawingSize)
-                 }.Where(item => !string.IsNullOrWhiteSpace(item.Value)))
+        var optionValues = new[]
+            {
+                (Type: "Discipline", Value: entry.IssuingDiscipline),
+                (Type: "Discipline", Value: entry.ReceivingDiscipline),
+                (Type: "Receiver", Value: entry.Receiver)
+            }
+            .Concat(entry.DrawingSpecifications.Select(item => (Type: "DrawingSize", Value: item.DrawingSize)))
+            .Where(item => !string.IsNullOrWhiteSpace(item.Value));
+        foreach (var option in optionValues)
         {
             await using var command = connection.CreateCommand();
             command.Transaction = sqliteTransaction;
@@ -150,11 +152,11 @@ public sealed class DesignConditionRepository
             """
             INSERT INTO DesignConditions (
                 Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver,
-                IssuedDate, ConditionName, Revision, DrawingSize, DrawingCount,
+                IssuedDate, ConditionName, Revision, DrawingSize, DrawingCounts, DrawingCount,
                 CreatedAt, UpdatedAt
             ) VALUES (
                 $id, $projectNumber, $issuingDiscipline, $receivingDiscipline, $receiver,
-                $issuedDate, $conditionName, $revision, $drawingSize, $drawingCount,
+                $issuedDate, $conditionName, $revision, $drawingSize, $drawingCounts, $drawingCount,
                 $createdAt, $updatedAt
             )
             ON CONFLICT(Id) DO UPDATE SET
@@ -166,6 +168,7 @@ public sealed class DesignConditionRepository
                 ConditionName = excluded.ConditionName,
                 Revision = excluded.Revision,
                 DrawingSize = excluded.DrawingSize,
+                DrawingCounts = excluded.DrawingCounts,
                 DrawingCount = excluded.DrawingCount,
                 UpdatedAt = excluded.UpdatedAt
             """;
@@ -202,6 +205,10 @@ public sealed class DesignConditionRepository
 
     private static void AddParameters(SqliteCommand command, DesignConditionEntry entry)
     {
+        var drawingCounts = entry.EffectiveDrawingCounts;
+        var drawingCount = DesignConditionDrawingCodec.TryParse(entry.DrawingSize, drawingCounts, out var specifications, out _)
+            ? specifications.Sum(item => item.DrawingCount)
+            : entry.DrawingCount;
         command.Parameters.AddWithValue("$id", entry.Id.ToString());
         command.Parameters.AddWithValue("$projectNumber", entry.ProjectNumber);
         command.Parameters.AddWithValue("$issuingDiscipline", entry.IssuingDiscipline);
@@ -211,13 +218,20 @@ public sealed class DesignConditionRepository
         command.Parameters.AddWithValue("$conditionName", entry.ConditionName);
         command.Parameters.AddWithValue("$revision", entry.Revision);
         command.Parameters.AddWithValue("$drawingSize", entry.DrawingSize);
-        command.Parameters.AddWithValue("$drawingCount", entry.DrawingCount);
+        command.Parameters.AddWithValue("$drawingCounts", drawingCounts);
+        command.Parameters.AddWithValue("$drawingCount", drawingCount);
         command.Parameters.AddWithValue("$createdAt", SqliteMapper.DbDate(entry.CreatedAt));
         command.Parameters.AddWithValue("$updatedAt", SqliteMapper.DbDate(entry.UpdatedAt));
     }
 
     private static DesignConditionEntry ReadEntry(SqliteDataReader reader)
     {
+        var drawingSizes = reader.GetString(8);
+        var drawingCounts = reader.GetString(9);
+        var storedDrawingCount = reader.GetInt32(10);
+        var drawingCount = DesignConditionDrawingCodec.TryParse(drawingSizes, drawingCounts, out var specifications, out _)
+            ? specifications.Sum(item => item.DrawingCount)
+            : storedDrawingCount;
         return new DesignConditionEntry
         {
             Id = Guid.Parse(reader.GetString(0)),
@@ -228,15 +242,16 @@ public sealed class DesignConditionRepository
             IssuedDate = DateTime.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
             ConditionName = reader.GetString(6),
             Revision = reader.GetString(7),
-            DrawingSize = reader.GetString(8),
-            DrawingCount = reader.GetInt32(9),
-            CreatedAt = SqliteMapper.ReadDate(reader, 10),
-            UpdatedAt = SqliteMapper.ReadDate(reader, 11)
+            DrawingSize = drawingSizes,
+            DrawingCounts = drawingCounts,
+            DrawingCount = drawingCount,
+            CreatedAt = SqliteMapper.ReadDate(reader, 11),
+            UpdatedAt = SqliteMapper.ReadDate(reader, 12)
         };
     }
 
     private static string DbDay(DateTime date) => date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private const string SelectSql =
-        "SELECT Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver, IssuedDate, ConditionName, Revision, DrawingSize, DrawingCount, CreatedAt, UpdatedAt FROM DesignConditions";
+        "SELECT Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver, IssuedDate, ConditionName, Revision, DrawingSize, DrawingCounts, DrawingCount, CreatedAt, UpdatedAt FROM DesignConditions";
 }

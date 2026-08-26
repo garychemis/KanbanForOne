@@ -8,16 +8,17 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon\icon-transparent.ico</ApplicationIcon>
-    <Version>0.5.0.2</Version>
-    <AssemblyVersion>0.5.0.2</AssemblyVersion>
-    <FileVersion>0.5.0.2</FileVersion>
-    <InformationalVersion>V0.5.0.2</InformationalVersion>
+    <Version>0.5.0.3</Version>
+    <AssemblyVersion>0.5.0.3</AssemblyVersion>
+    <FileVersion>0.5.0.3</FileVersion>
+    <InformationalVersion>V0.5.0.3</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>Kanban41</Product>
     <Authors>闫飞</Authors>
     <Copyright>Copyright © 2026 闫飞</Copyright>
     <ReleaseNotes>
-		<![CDATA[V0.5.0.2|2026-08-22|略微优化归档部分UI
+		<![CDATA[V0.5.0.3|2026-08-26|设计条件支持在同一记录中维护多种图幅及对应数量；设计条件数据库升级至 V3 并兼容迁移旧数据及备份
+V0.5.0.2|2026-08-22|略微优化归档部分UI
 V0.5.0.1|2026-08-21|修复可以启动多个进程的问题
 V0.5.0|2026-08-19|新增设计条件归档模块，用于管理不同专业之间提交和接收的设计条件；使用独立 DesignConditions.db 和独立附件目录，不修改主数据库；支持项目、提出专业、接收专业、接收人、提出日期、条件名称、版次、图幅和图纸数量录入；提出日期作为唯一日期口径并用于日历展示；支持条件文件上传、打开、定位和删除；新增按项目、提出专业、接收专业和条件名称的图纸量分级汇总，并导出设计条件汇总及明细 Excel；设计条件页面、编辑弹窗和日历详情区统一人工时汇总的控件样式；备份功能合并为完整备份与整体恢复，一次包含看板、任务、人工时、所有附件及设计条件数据，并提供恢复前完整保护备份和失败整体回滚；增强附件保存事务、备份包校验、解压限制和异步错误处理
 V0.4.3|2026-08-01|归档页 UI 重做：顶部简化为分区选择器，新建与管理分区统一通过弹窗完成，配色、圆角与整体主题对齐；人工时汇总页 UI 美化：自定义配色全部替换为全局主题色板，面板圆角与柔和投影质感统一；重构主窗口 ViewModel 为按页拆分并引入依赖注入容器，为后续功能扩展打好基础；性能优化：SQLite 启用 WAL 日志模式并优化备份与恢复一致性，修复列表虚拟化，优化看板与日历的刷新算法

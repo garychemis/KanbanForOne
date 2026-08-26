@@ -5,6 +5,7 @@ using KanbanForOne.Modules.DesignConditions.Data;
 using KanbanForOne.Modules.DesignConditions.Models;
 using KanbanForOne.Modules.DesignConditions.Repositories;
 using KanbanForOne.Modules.DesignConditions.Services;
+using KanbanForOne.Modules.DesignConditions.ViewModels;
 using Microsoft.Data.Sqlite;
 
 namespace KanbanForOne.Tests;
@@ -24,7 +25,9 @@ public sealed class DesignConditionModuleTests
             await using var connection = database.CreateConnection();
             await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
             Assert.Equal("wal", await ScalarAsync(connection, "PRAGMA journal_mode"));
+            Assert.Equal("3", await ScalarAsync(connection, "PRAGMA user_version"));
             Assert.Equal("1", await ScalarAsync(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='DesignConditions'"));
+            Assert.Equal("1", await ScalarAsync(connection, "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='DrawingCounts' AND upper(type)='TEXT'"));
             Assert.Equal("0", await ScalarAsync(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Tasks'"));
         }
         finally
@@ -78,10 +81,11 @@ public sealed class DesignConditionModuleTests
             await database.InitializeAsync();
             await using var migrated = database.CreateConnection();
             await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
-            Assert.Equal("2", await ScalarAsync(migrated, "PRAGMA user_version"));
+            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
             Assert.Equal("0", await ScalarAsync(migrated, "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='RecordDate'"));
             Assert.Equal("0", await ScalarAsync(migrated, "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_DesignConditions_RecordDate'"));
             Assert.Equal("2026-08-19T00:00:00.0000000", await ScalarAsync(migrated, "SELECT IssuedDate FROM DesignConditions WHERE Id='legacy'"));
+            Assert.Equal("3", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='legacy'"));
         }
         finally
         {
@@ -110,6 +114,252 @@ public sealed class DesignConditionModuleTests
             SqliteConnection.ClearAllPools();
             Directory.Delete(root, true);
         }
+    }
+
+    [Fact]
+    public async Task Version_two_database_adds_delimited_counts_without_changing_totals()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var options = new DesignConditionStorageOptions(root);
+            options.EnsureDirectories();
+            await using (var connection = new SqliteConnection($"Data Source={options.DatabasePath}"))
+            {
+                await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+                await using var command = connection.CreateCommand();
+                command.CommandText = """
+                    CREATE TABLE DesignConditions (
+                        Id TEXT PRIMARY KEY,
+                        ProjectNumber TEXT NOT NULL,
+                        IssuingDiscipline TEXT NOT NULL,
+                        ReceivingDiscipline TEXT NOT NULL,
+                        Receiver TEXT NOT NULL,
+                        IssuedDate TEXT NOT NULL,
+                        ConditionName TEXT NOT NULL,
+                        Revision TEXT NOT NULL DEFAULT '',
+                        DrawingSize TEXT NOT NULL DEFAULT '',
+                        DrawingCount INTEGER NOT NULL DEFAULT 0 CHECK (DrawingCount >= 0),
+                        CreatedAt TEXT NOT NULL,
+                        UpdatedAt TEXT NOT NULL
+                    );
+                    INSERT INTO DesignConditions VALUES (
+                        'v2', 'P200', '工艺', '设备', '李四', '2026-08-20', 'V2条件', 'A', 'A4', 5,
+                        '2026-08-20T08:00:00.0000000', '2026-08-20T08:00:00.0000000'
+                    );
+                    PRAGMA user_version = 2;
+                    """;
+                await command.ExecuteNonQueryAsync(Xunit.TestContext.Current.CancellationToken);
+            }
+
+            var database = new DesignConditionDatabaseService(options);
+            await database.InitializeAsync();
+            await using var migrated = database.CreateConnection();
+            await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
+            Assert.Equal("5", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='v2'"));
+            Assert.Equal("5", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='v2'"));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Version_two_database_with_zero_drawings_migrates_to_valid_counts()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var options = new DesignConditionStorageOptions(root);
+            options.EnsureDirectories();
+            await using (var connection = new SqliteConnection($"Data Source={options.DatabasePath}"))
+            {
+                await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+                await using var command = connection.CreateCommand();
+                command.CommandText = """
+                    CREATE TABLE DesignConditions (
+                        Id TEXT PRIMARY KEY,
+                        ProjectNumber TEXT NOT NULL,
+                        IssuingDiscipline TEXT NOT NULL,
+                        ReceivingDiscipline TEXT NOT NULL,
+                        Receiver TEXT NOT NULL,
+                        IssuedDate TEXT NOT NULL,
+                        ConditionName TEXT NOT NULL,
+                        Revision TEXT NOT NULL DEFAULT '',
+                        DrawingSize TEXT NOT NULL DEFAULT '',
+                        DrawingCount INTEGER NOT NULL DEFAULT 0 CHECK (DrawingCount >= 0),
+                        CreatedAt TEXT NOT NULL,
+                        UpdatedAt TEXT NOT NULL
+                    );
+                    INSERT INTO DesignConditions VALUES
+                        ('11111111-1111-1111-1111-111111111111', 'P200', '工艺', '设备', '李四', '2026-08-20', '零张条件', 'A', 'A0', 0,
+                         '2026-08-20T08:00:00.0000000', '2026-08-20T08:00:00.0000000'),
+                        ('22222222-2222-2222-2222-222222222222', 'P200', '工艺', '设备', '李四', '2026-08-20', '正常条件', 'A', 'A4', 3,
+                         '2026-08-20T08:00:00.0000000', '2026-08-20T08:00:00.0000000'),
+                        ('33333333-3333-3333-3333-333333333333', 'P200', '工艺', '设备', '李四', '2026-08-20', '无规格条件', 'A', '', 0,
+                         '2026-08-20T08:00:00.0000000', '2026-08-20T08:00:00.0000000');
+                    PRAGMA user_version = 2;
+                    """;
+                await command.ExecuteNonQueryAsync(Xunit.TestContext.Current.CancellationToken);
+            }
+
+            var database = new DesignConditionDatabaseService(options);
+            await database.InitializeAsync();
+            await using var migrated = database.CreateConnection();
+            await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
+            // 有图幅的 0 数量记录迁移为默认 1 张，避免 codec 拒绝 "0"
+            Assert.Equal("1", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='11111111-1111-1111-1111-111111111111'"));
+            Assert.Equal("1", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='11111111-1111-1111-1111-111111111111'"));
+            // 正常记录数量不变
+            Assert.Equal("3", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='22222222-2222-2222-2222-222222222222'"));
+            Assert.Equal("3", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='22222222-2222-2222-2222-222222222222'"));
+            // 无图幅记录保持无规格状态
+            Assert.Equal("", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='33333333-3333-3333-3333-333333333333'"));
+            Assert.Equal("0", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='33333333-3333-3333-3333-333333333333'"));
+
+            var attachments = new DesignConditionAttachmentRepository(database);
+            var repository = new DesignConditionRepository(database, attachments);
+            var loaded = (await repository.GetAllAsync()).ToDictionary(item => item.Id);
+            Assert.Equal([("A0", 1)],
+                loaded[Guid.Parse("11111111-1111-1111-1111-111111111111")].DrawingSpecifications.Select(s => (s.DrawingSize, s.DrawingCount)));
+            Assert.Empty(loaded[Guid.Parse("33333333-3333-3333-3333-333333333333")].DrawingSpecifications);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Drawing_codec_rejects_zero_duplicate_and_reserved_separator()
+    {
+        Assert.False(DesignConditionDrawingCodec.TryParse("A1", "0", out _, out var zeroError));
+        Assert.Contains("大于 0", zeroError);
+        Assert.True(DesignConditionDrawingCodec.TryParse("A1|A4", "1|5", out var items, out _));
+        Assert.Equal(6, items.Sum(item => item.DrawingCount));
+        Assert.False(DesignConditionDrawingCodec.TryParse("A1|a1", "1|2", out _, out var duplicateError));
+        Assert.Contains("重复", duplicateError);
+        Assert.False(DesignConditionDrawingCodec.TrySerialize(
+            [new DesignConditionDrawingSpec("A|1", 1)], out _, out var separatorError));
+        Assert.Contains("|", separatorError);
+    }
+
+    [Fact]
+    public async Task Repository_round_trips_multiple_sizes_and_calendar_uses_total_count()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var context = await CreateContextAsync(root);
+            var entry = CreateEntry(new DateTime(2026, 8, 20));
+            entry.DrawingSize = "A1|A4";
+            entry.DrawingCounts = "1|5";
+            entry.DrawingCount = 6;
+            await context.Repository.UpsertAsync(entry);
+
+            var loaded = Assert.Single(await context.Repository.GetAllAsync());
+            Assert.Equal(2, loaded.DrawingSpecifications.Count);
+            Assert.Equal("A1 × 1 · A4 × 5", loaded.DrawingSummary);
+            Assert.Equal(6, loaded.DrawingCount);
+            var calendar = Assert.Single(await context.Repository.GetCalendarSummariesAsync(new DateTime(2026, 8, 20), new DateTime(2026, 8, 20)));
+            Assert.Equal(1, calendar.RecordCount);
+            Assert.Equal(6, calendar.DrawingCount);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public void Editor_serializes_rows_and_blocks_duplicate_sizes()
+    {
+        var editor = new DesignConditionEditorViewModel(null, DateTime.Today, ["工艺", "设备"], ["张三"], ["A1", "A4"])
+        {
+            ProjectNumber = "P100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "张三",
+            ConditionName = "多图幅条件"
+        };
+        Assert.Equal("1", editor.DrawingRows[0].DrawingCountText);
+        Assert.Same(editor.DrawingRows[0], editor.AddDrawingRow());
+        editor.DrawingRows[0].DrawingSize = "A1";
+        var second = editor.AddDrawingRow();
+        second.DrawingSize = "A4";
+        second.DrawingCountText = "5";
+
+        Assert.True(editor.TryBuild(out var entry));
+        Assert.Equal("A1|A4", entry.DrawingSize);
+        Assert.Equal("1|5", entry.DrawingCounts);
+        Assert.Equal(6, entry.DrawingCount);
+
+        editor.DrawingRows[0].DrawingCountText = "0";
+        Assert.False(editor.TryBuild(out _));
+        Assert.Contains("大于 0", editor.ValidationMessage);
+
+        editor.DrawingRows[0].DrawingCountText = "1";
+        second.DrawingSize = "a1";
+        Assert.False(editor.TryBuild(out _));
+        Assert.Contains("重复", editor.ValidationMessage);
+    }
+
+    [Fact]
+    public void Editor_loads_legacy_single_value_rows_when_specifications_missing()
+    {
+        var legacy = new DesignConditionEntry
+        {
+            ProjectNumber = "P100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "张三",
+            IssuedDate = new DateTime(2026, 8, 20),
+            ConditionName = "旧数据条件",
+            Revision = "A",
+            DrawingSize = "A0|A1",
+            DrawingCount = 0,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        };
+        var editor = new DesignConditionEditorViewModel(legacy, DateTime.Today, ["工艺", "设备"], ["张三"], ["A0", "A1"]);
+        // 无有效分图幅数据时按旧单值字段逐项兜底加载
+        Assert.Equal(2, editor.DrawingRows.Count);
+        Assert.Equal("A0", editor.DrawingRows[0].DrawingSize);
+        Assert.Equal("0", editor.DrawingRows[0].DrawingCountText);
+        Assert.Equal("A1", editor.DrawingRows[1].DrawingSize);
+        Assert.Equal(string.Empty, editor.DrawingRows[1].DrawingCountText);
+    }
+
+    [Fact]
+    public void Editor_loads_parsed_specifications_when_available()
+    {
+        var modern = new DesignConditionEntry
+        {
+            ProjectNumber = "P100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "张三",
+            IssuedDate = new DateTime(2026, 8, 20),
+            ConditionName = "多图幅条件",
+            Revision = "A",
+            DrawingSize = "A0|A1",
+            DrawingCounts = "1|5",
+            DrawingCount = 6,
+            CreatedAt = DateTime.Now,
+            UpdatedAt = DateTime.Now
+        };
+        var editor = new DesignConditionEditorViewModel(modern, DateTime.Today, ["工艺", "设备"], ["张三"], ["A0", "A1"]);
+        Assert.Equal(2, editor.DrawingRows.Count);
+        Assert.Equal("A0", editor.DrawingRows[0].DrawingSize);
+        Assert.Equal("1", editor.DrawingRows[0].DrawingCountText);
+        Assert.Equal("A1", editor.DrawingRows[1].DrawingSize);
+        Assert.Equal("5", editor.DrawingRows[1].DrawingCountText);
     }
 
     [Fact]
@@ -145,6 +395,9 @@ public sealed class DesignConditionModuleTests
         try
         {
             var entry = CreateEntry(DateTime.Today);
+            entry.DrawingSize = "A1|A4";
+            entry.DrawingCounts = "1|5";
+            entry.DrawingCount = 6;
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "a.dwg" });
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "b.pdf" });
             var output = Path.Combine(root, "conditions.xlsx");
@@ -154,10 +407,14 @@ public sealed class DesignConditionModuleTests
             var summary = workbook.Worksheet("设计条件汇总");
             var detail = workbook.Worksheet("设计条件明细");
             Assert.Contains("项目", summary.Column(1).CellsUsed().Select(cell => cell.GetString()));
-            Assert.Equal(entry.DrawingCount, detail.Cell(2, 9).GetValue<int>());
-            Assert.Contains("a.dwg", detail.Cell(2, 11).GetString());
-            Assert.Contains("b.pdf", detail.Cell(2, 11).GetString());
-            Assert.Equal(2, detail.Cell(2, 10).GetValue<int>());
+            Assert.Equal("A1", detail.Cell(2, 8).GetString());
+            Assert.Equal(1, detail.Cell(2, 9).GetValue<int>());
+            Assert.Equal("A4", detail.Cell(3, 8).GetString());
+            Assert.Equal(5, detail.Cell(3, 9).GetValue<int>());
+            Assert.Equal(6, detail.Cell(2, 10).GetValue<int>());
+            Assert.Contains("a.dwg", detail.Cell(2, 12).GetString());
+            Assert.Contains("b.pdf", detail.Cell(2, 12).GetString());
+            Assert.Equal(2, detail.Cell(2, 11).GetValue<int>());
         }
         finally
         {
@@ -266,6 +523,83 @@ public sealed class DesignConditionModuleTests
                 var manifest = archive.CreateEntry("manifest.json");
                 await using var writer = new StreamWriter(manifest.Open());
                 await writer.WriteAsync("{\"module\":\"OtherModule\",\"version\":2}");
+            }
+            var backup = new DesignConditionBackupService(context.Database, context.Options, new DesignConditionOperationCoordinator());
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => backup.RestoreAsync(invalid));
+
+            Assert.Equal(entry.Id, Assert.Single(await context.Repository.GetAllAsync()).Id);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Restore_rejects_v3_backup_missing_drawing_counts_column()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var context = await CreateContextAsync(root);
+            var entry = CreateEntry(DateTime.Today);
+            await context.Repository.UpsertAsync(entry);
+            await context.Database.CheckpointAsync();
+            context.Database.ClearPool();
+
+            var fakeDatabase = Path.Combine(root, "fake-v3.db");
+            await using (var connection = new SqliteConnection($"Data Source={fakeDatabase}"))
+            {
+                await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+                await using var command = connection.CreateCommand();
+                command.CommandText = """
+                    CREATE TABLE DesignConditions (
+                        Id TEXT PRIMARY KEY,
+                        ProjectNumber TEXT NOT NULL,
+                        IssuingDiscipline TEXT NOT NULL,
+                        ReceivingDiscipline TEXT NOT NULL,
+                        Receiver TEXT NOT NULL,
+                        IssuedDate TEXT NOT NULL,
+                        ConditionName TEXT NOT NULL,
+                        Revision TEXT NOT NULL DEFAULT '',
+                        DrawingSize TEXT NOT NULL DEFAULT '',
+                        DrawingCount INTEGER NOT NULL DEFAULT 0 CHECK (DrawingCount >= 0),
+                        CreatedAt TEXT NOT NULL,
+                        UpdatedAt TEXT NOT NULL
+                    );
+                    CREATE TABLE DesignConditionAttachments (
+                        Id TEXT PRIMARY KEY,
+                        DesignConditionId TEXT NOT NULL,
+                        OriginalFileName TEXT NOT NULL,
+                        StoredFileName TEXT NOT NULL,
+                        RelativePath TEXT NOT NULL,
+                        FileExtension TEXT NOT NULL DEFAULT '',
+                        FileSizeBytes INTEGER NOT NULL,
+                        CreatedAt TEXT NOT NULL,
+                        SortOrder INTEGER NOT NULL DEFAULT 0,
+                        FOREIGN KEY (DesignConditionId) REFERENCES DesignConditions(Id) ON DELETE CASCADE
+                    );
+                    CREATE TABLE DesignConditionOptions (
+                        Id TEXT PRIMARY KEY,
+                        OptionType TEXT NOT NULL,
+                        Value TEXT NOT NULL,
+                        SortOrder INTEGER NOT NULL DEFAULT 0,
+                        CreatedAt TEXT NOT NULL
+                    );
+                    PRAGMA user_version = 3;
+                    """;
+                await command.ExecuteNonQueryAsync(Xunit.TestContext.Current.CancellationToken);
+            }
+            SqliteConnection.ClearAllPools();
+            var invalid = Path.Combine(root, "missing-column.zip");
+            using (var archive = System.IO.Compression.ZipFile.Open(invalid, System.IO.Compression.ZipArchiveMode.Create))
+            {
+                archive.CreateEntryFromFile(fakeDatabase, "DesignConditions.db");
+                var manifest = archive.CreateEntry("manifest.json");
+                await using var writer = new StreamWriter(manifest.Open());
+                await writer.WriteAsync("{\"module\":\"DesignConditions\",\"formatVersion\":1,\"databaseSchemaVersion\":3}");
             }
             var backup = new DesignConditionBackupService(context.Database, context.Options, new DesignConditionOperationCoordinator());
 
