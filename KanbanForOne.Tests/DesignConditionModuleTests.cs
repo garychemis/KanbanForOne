@@ -511,7 +511,7 @@ public sealed class DesignConditionModuleTests
             var output = Path.Combine(root, "conditions.xlsx");
             await new DesignConditionExportService().ExportAsync(
                 output,
-                [entry, sameGroup, otherDiscipline, otherProject]);
+                [otherProject, otherDiscipline, entry, sameGroup]);
 
             using var workbook = new XLWorkbook(output);
             var summary = workbook.Worksheet("设计条件汇总");
