@@ -25,28 +25,31 @@ public sealed class ReleaseNotesServiceTests
     {
         var entries = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        Assert.Equal(9, entries.Count);
-        Assert.Equal("V0.5.0.3", entries[0].Version);
-        Assert.Equal("2026-08-26", entries[0].Date);
-        Assert.Contains(entries[0].Items, item => item.Contains("多种图幅"));
-        Assert.Equal("V0.5.0.2", entries[1].Version);
-        Assert.Contains(entries[1].Items, item => item.Contains("略微优化归档部分UI"));
-        Assert.Equal("V0.5.0.1", entries[2].Version);
-        Assert.Contains(entries[2].Items, item => item.Contains("修复可以启动多个进程的问题"));
-        Assert.Equal("V0.5.0", entries[3].Version);
-        Assert.Equal("2026-08-19", entries[3].Date);
-        Assert.Contains(entries[3].Items, item => item.Contains("新增设计条件归档模块"));
-        Assert.Equal("V0.4.3", entries[4].Version);
-        Assert.Equal("2026-08-01", entries[4].Date);
-        Assert.Contains(entries[4].Items, item => item.Contains("归档页 UI 重做"));
-        Assert.Contains(entries[4].Items, item => item.Contains("人工时汇总页 UI 美化"));
-        Assert.Equal("V0.4.2", entries[5].Version);
-        Assert.Contains(entries[5].Items, item => item.Contains("新增按项目、专业、工作内容的组合筛选"));
-        Assert.Equal("V0.4.1", entries[6].Version);
-        Assert.Contains(entries[6].Items, item => item.Contains("设置页更新日志最高占窗体高度的 60%"));
-        Assert.Equal("V0.4", entries[7].Version);
-        Assert.Contains(entries[7].Items, item => item.Contains("新增人工时汇总页面"));
-        Assert.Equal("v0.3.3", entries[8].Version);
-        Assert.Contains(entries[8].Items, item => item.Contains("新增超期未完成筛选入口"));
+        Assert.Equal(10, entries.Count);
+        Assert.Equal("V0.5.0.4", entries[0].Version);
+        Assert.Equal("2026-08-27", entries[0].Date);
+        Assert.Contains(entries[0].Items, item => item.Contains("优化了输出excel表格中的数据内容及格式"));
+        Assert.Equal("V0.5.0.3", entries[1].Version);
+        Assert.Equal("2026-08-26", entries[1].Date);
+        Assert.Contains(entries[1].Items, item => item.Contains("多种图幅"));
+        Assert.Equal("V0.5.0.2", entries[2].Version);
+        Assert.Contains(entries[2].Items, item => item.Contains("略微优化归档部分UI"));
+        Assert.Equal("V0.5.0.1", entries[3].Version);
+        Assert.Contains(entries[3].Items, item => item.Contains("修复可以启动多个进程的问题"));
+        Assert.Equal("V0.5.0", entries[4].Version);
+        Assert.Equal("2026-08-19", entries[4].Date);
+        Assert.Contains(entries[4].Items, item => item.Contains("新增设计条件归档模块"));
+        Assert.Equal("V0.4.3", entries[5].Version);
+        Assert.Equal("2026-08-01", entries[5].Date);
+        Assert.Contains(entries[5].Items, item => item.Contains("归档页 UI 重做"));
+        Assert.Contains(entries[5].Items, item => item.Contains("人工时汇总页 UI 美化"));
+        Assert.Equal("V0.4.2", entries[6].Version);
+        Assert.Contains(entries[6].Items, item => item.Contains("新增按项目、专业、工作内容的组合筛选"));
+        Assert.Equal("V0.4.1", entries[7].Version);
+        Assert.Contains(entries[7].Items, item => item.Contains("设置页更新日志最高占窗体高度的 60%"));
+        Assert.Equal("V0.4", entries[8].Version);
+        Assert.Contains(entries[8].Items, item => item.Contains("新增人工时汇总页面"));
+        Assert.Equal("v0.3.3", entries[9].Version);
+        Assert.Contains(entries[9].Items, item => item.Contains("新增超期未完成筛选入口"));
     }
 }
