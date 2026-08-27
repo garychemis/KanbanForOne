@@ -250,6 +250,34 @@ public sealed class DesignConditionModuleTests
     }
 
     [Fact]
+    public void Drawing_size_catalog_has_required_order_and_factors()
+    {
+        Assert.Equal(
+            ["A4", "A3", "A2", "A1", "A1+0.25", "A1+0.5", "A0", "A0+0.25", "A0+0.5"],
+            DesignConditionDrawingSizeCatalog.Names);
+
+        decimal[] expected = [0.125m, 0.25m, 0.5m, 1m, 1.25m, 1.5m, 2m, 2.5m, 3m];
+        Assert.Equal(expected, DesignConditionDrawingSizeCatalog.Definitions.Select(item => item.FoldedA1Factor));
+    }
+
+    [Fact]
+    public void Drawing_size_catalog_calculates_folded_a1_and_rejects_unknown_size()
+    {
+        Assert.True(DesignConditionDrawingSizeCatalog.TryCalculate(
+            [new("A4", 5), new("A1+0.25", 2), new("A0", 1)],
+            out var total,
+            out var error));
+        Assert.Equal(5.125m, total);
+        Assert.Equal(string.Empty, error);
+
+        Assert.False(DesignConditionDrawingSizeCatalog.TryCalculate(
+            [new("自定义", 1)],
+            out _,
+            out error));
+        Assert.Contains("自定义", error);
+    }
+
+    [Fact]
     public async Task Repository_round_trips_multiple_sizes_and_calendar_uses_total_count()
     {
         var root = CreateRoot();
