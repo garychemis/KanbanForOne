@@ -506,9 +506,24 @@ public sealed class DesignConditionModuleTests
             Assert.Equal("折A1", summary.Cell(1, 8).GetString());
             Assert.Equal(7, summary.Cell(2, 7).GetValue<int>());
             Assert.Equal(2.875m, summary.Cell(2, 8).GetValue<decimal>());
+            Assert.Equal(2, summary.Cell(2, 9).GetValue<int>());
+            Assert.Equal("附件数", summary.Cell(1, 9).GetString());
+            var issuingRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "提出专业").Address.RowNumber;
+            var receivingRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "接收专业").Address.RowNumber;
+            Assert.Equal(2.875m, summary.Cell(issuingRow, 8).GetValue<decimal>());
+            Assert.Equal(2.875m, summary.Cell(receivingRow, 8).GetValue<decimal>());
+            var conditionRows = summary.Column(1).CellsUsed()
+                .Where(cell => cell.GetString() == "条件明细")
+                .Select(cell => cell.Address.RowNumber)
+                .ToDictionary(row => summary.Cell(row, 5).GetString());
+            Assert.Equal(1.625m, summary.Cell(conditionRows[entry.ConditionName], 8).GetValue<decimal>());
+            Assert.Equal(2, summary.Cell(conditionRows[entry.ConditionName], 9).GetValue<int>());
+            Assert.Equal(1.25m, summary.Cell(conditionRows[second.ConditionName], 8).GetValue<decimal>());
+            Assert.Equal(0, summary.Cell(conditionRows[second.ConditionName], 9).GetValue<int>());
             var totalRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "总计").Address.RowNumber;
             Assert.Equal(7, summary.Cell(totalRow, 7).GetValue<int>());
             Assert.Equal(2.875m, summary.Cell(totalRow, 8).GetValue<decimal>());
+            Assert.Equal(2, summary.Cell(totalRow, 9).GetValue<int>());
             Assert.Equal("0.###", summary.Column(8).Style.NumberFormat.Format);
             Assert.Equal("A1", detail.Cell(2, 8).GetString());
             Assert.Equal(1, detail.Cell(2, 9).GetValue<int>());
@@ -543,6 +558,40 @@ public sealed class DesignConditionModuleTests
 
             Assert.Contains(entry.ConditionName, error.Message);
             Assert.Contains("旧图幅", error.Message);
+            Assert.False(File.Exists(output));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Excel_export_reports_unknown_and_malformed_entries_together()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var unknown = CreateEntry(DateTime.Today);
+            unknown.ConditionName = "未知图幅条件";
+            unknown.DrawingSize = "旧图幅";
+            unknown.DrawingCounts = "2";
+            unknown.DrawingCount = 2;
+            var malformed = CreateEntry(DateTime.Today);
+            malformed.Id = Guid.NewGuid();
+            malformed.ConditionName = "数量异常条件";
+            malformed.DrawingSize = "A1|A4";
+            malformed.DrawingCounts = "1";
+            malformed.DrawingCount = 1;
+            var output = Path.Combine(root, "multiple-invalid.xlsx");
+
+            var error = await Assert.ThrowsAsync<InvalidDataException>(() =>
+                new DesignConditionExportService().ExportAsync(output, [unknown, malformed]));
+
+            Assert.Contains(unknown.ConditionName, error.Message);
+            Assert.Contains("旧图幅", error.Message);
+            Assert.Contains(malformed.ConditionName, error.Message);
+            Assert.Contains("项目数不一致", error.Message);
             Assert.False(File.Exists(output));
         }
         finally
