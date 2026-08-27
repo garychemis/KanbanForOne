@@ -6,6 +6,34 @@ namespace KanbanForOne.Modules.DesignConditions.Services;
 
 public sealed class DesignConditionExportService
 {
+    public static bool TryValidate(IReadOnlyList<DesignConditionEntry> entries, out string errorMessage)
+    {
+        var errors = new List<string>();
+        foreach (var item in entries)
+        {
+            if (!DesignConditionDrawingCodec.TryParse(
+                    item.DrawingSize,
+                    item.EffectiveDrawingCounts,
+                    out var specifications,
+                    out var parseError))
+            {
+                errors.Add($"{item.ProjectNumber} / {item.ConditionName}：{parseError}");
+                continue;
+            }
+
+            if (!DesignConditionDrawingSizeCatalog.TryCalculate(specifications, out _, out var conversionError))
+            {
+                errors.Add($"{item.ProjectNumber} / {item.ConditionName}：{conversionError}");
+            }
+        }
+
+        errorMessage = errors.Count == 0
+            ? string.Empty
+            : "无法导出设计条件，以下记录不能计算折 A1：" + Environment.NewLine +
+              string.Join(Environment.NewLine, errors);
+        return errors.Count == 0;
+    }
+
     public Task ExportAsync(string filePath, IReadOnlyList<DesignConditionEntry> entries)
     {
         return Task.Run(() => Export(filePath, entries));
@@ -13,6 +41,11 @@ public sealed class DesignConditionExportService
 
     private static void Export(string filePath, IReadOnlyList<DesignConditionEntry> entries)
     {
+        if (!TryValidate(entries, out var validationError))
+        {
+            throw new InvalidDataException(validationError);
+        }
+
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrWhiteSpace(directory))
         {
@@ -27,30 +60,41 @@ public sealed class DesignConditionExportService
     private static void AddSummary(XLWorkbook workbook, IReadOnlyList<DesignConditionEntry> entries)
     {
         var sheet = workbook.Worksheets.Add("设计条件汇总");
-        string[] headers = ["层级", "项目", "提出专业", "接收专业", "条件名称", "记录数", "图纸数量", "附件数"];
+        string[] headers = ["层级", "项目", "提出专业", "接收专业", "条件名称", "记录数", "图纸数量", "折A1", "附件数"];
         WriteHeader(sheet, headers);
         var row = 2;
         foreach (var projectGroup in entries.GroupBy(item => item.ProjectNumber).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
         {
-            WriteSummaryRow(sheet, row++, "项目", projectGroup.Key, "", "", "", projectGroup.Count(), projectGroup.Sum(item => item.DrawingCount), projectGroup.Sum(item => item.AttachmentCount), 0);
+            WriteSummaryRow(sheet, row++, "项目", projectGroup.Key, "", "", "", projectGroup.Count(),
+                projectGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(projectGroup),
+                projectGroup.Sum(item => item.AttachmentCount), 0);
             foreach (var issuingGroup in projectGroup.GroupBy(item => item.IssuingDiscipline).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
             {
-                WriteSummaryRow(sheet, row++, "提出专业", projectGroup.Key, issuingGroup.Key, "", "", issuingGroup.Count(), issuingGroup.Sum(item => item.DrawingCount), issuingGroup.Sum(item => item.AttachmentCount), 1);
+                WriteSummaryRow(sheet, row++, "提出专业", projectGroup.Key, issuingGroup.Key, "", "", issuingGroup.Count(),
+                    issuingGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(issuingGroup),
+                    issuingGroup.Sum(item => item.AttachmentCount), 1);
                 foreach (var receivingGroup in issuingGroup.GroupBy(item => item.ReceivingDiscipline).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
                 {
-                    WriteSummaryRow(sheet, row++, "接收专业", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, "", receivingGroup.Count(), receivingGroup.Sum(item => item.DrawingCount), receivingGroup.Sum(item => item.AttachmentCount), 2);
+                    WriteSummaryRow(sheet, row++, "接收专业", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, "", receivingGroup.Count(),
+                        receivingGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(receivingGroup),
+                        receivingGroup.Sum(item => item.AttachmentCount), 2);
                     foreach (var conditionGroup in receivingGroup.GroupBy(item => item.ConditionName).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
                     {
-                        WriteSummaryRow(sheet, row++, "条件明细", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, conditionGroup.Key, conditionGroup.Count(), conditionGroup.Sum(item => item.DrawingCount), conditionGroup.Sum(item => item.AttachmentCount), 3);
+                        WriteSummaryRow(sheet, row++, "条件明细", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, conditionGroup.Key, conditionGroup.Count(),
+                            conditionGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(conditionGroup),
+                            conditionGroup.Sum(item => item.AttachmentCount), 3);
                     }
                 }
             }
         }
-        WriteSummaryRow(sheet, row, "总计", "", "", "", "", entries.Count, entries.Sum(item => item.DrawingCount), entries.Sum(item => item.AttachmentCount), 0);
+        WriteSummaryRow(sheet, row, "总计", "", "", "", "", entries.Count,
+            entries.Sum(item => item.DrawingCount), GetFoldedA1Total(entries),
+            entries.Sum(item => item.AttachmentCount), 0);
         sheet.Range(1, 1, row, headers.Length).SetAutoFilter();
         sheet.SheetView.FreezeRows(1);
         sheet.Columns().AdjustToContents();
         sheet.Column(5).Width = Math.Clamp(sheet.Column(5).Width, 16, 40);
+        sheet.Column(8).Style.NumberFormat.Format = "0.###";
     }
 
     private static void AddDetails(XLWorkbook workbook, IReadOnlyList<DesignConditionEntry> entries)
@@ -98,6 +142,17 @@ public sealed class DesignConditionExportService
             : [new DesignConditionDrawingSpec(item.DrawingSize, item.DrawingCount)];
     }
 
+    private static decimal GetFoldedA1Total(IEnumerable<DesignConditionEntry> entries)
+    {
+        decimal total = 0m;
+        foreach (var entry in entries)
+        {
+            DesignConditionDrawingSizeCatalog.TryCalculate(entry.DrawingSpecifications, out var value, out _);
+            total += value;
+        }
+        return total;
+    }
+
     private static void WriteHeader(IXLWorksheet sheet, IReadOnlyList<string> headers)
     {
         for (var index = 0; index < headers.Count; index++)
@@ -111,7 +166,19 @@ public sealed class DesignConditionExportService
         sheet.Row(1).Height = 24;
     }
 
-    private static void WriteSummaryRow(IXLWorksheet sheet, int row, string level, string project, string issuing, string receiving, string condition, int records, int drawings, int attachments, int indent)
+    private static void WriteSummaryRow(
+        IXLWorksheet sheet,
+        int row,
+        string level,
+        string project,
+        string issuing,
+        string receiving,
+        string condition,
+        int records,
+        int drawings,
+        decimal foldedA1,
+        int attachments,
+        int indent)
     {
         sheet.Cell(row, 1).Value = level;
         sheet.Cell(row, 2).Value = project;
@@ -121,10 +188,11 @@ public sealed class DesignConditionExportService
         sheet.Cell(row, 5).Style.Alignment.Indent = indent;
         sheet.Cell(row, 6).Value = records;
         sheet.Cell(row, 7).Value = drawings;
-        sheet.Cell(row, 8).Value = attachments;
+        sheet.Cell(row, 8).Value = foldedA1;
+        sheet.Cell(row, 9).Value = attachments;
         if (level is not "条件明细")
         {
-            sheet.Range(row, 1, row, 8).Style.Font.Bold = true;
+            sheet.Range(row, 1, row, 9).Style.Font.Bold = true;
         }
     }
 }

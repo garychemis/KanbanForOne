@@ -490,13 +490,26 @@ public sealed class DesignConditionModuleTests
             entry.DrawingCount = 6;
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "a.dwg" });
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "b.pdf" });
+            var second = CreateEntry(DateTime.Today.AddDays(1));
+            second.Id = Guid.NewGuid();
+            second.ConditionName = "加长图幅条件";
+            second.DrawingSize = "A1+0.25";
+            second.DrawingCounts = "1";
+            second.DrawingCount = 1;
             var output = Path.Combine(root, "conditions.xlsx");
-            await new DesignConditionExportService().ExportAsync(output, [entry]);
+            await new DesignConditionExportService().ExportAsync(output, [entry, second]);
 
             using var workbook = new XLWorkbook(output);
             var summary = workbook.Worksheet("设计条件汇总");
             var detail = workbook.Worksheet("设计条件明细");
             Assert.Contains("项目", summary.Column(1).CellsUsed().Select(cell => cell.GetString()));
+            Assert.Equal("折A1", summary.Cell(1, 8).GetString());
+            Assert.Equal(7, summary.Cell(2, 7).GetValue<int>());
+            Assert.Equal(2.875m, summary.Cell(2, 8).GetValue<decimal>());
+            var totalRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "总计").Address.RowNumber;
+            Assert.Equal(7, summary.Cell(totalRow, 7).GetValue<int>());
+            Assert.Equal(2.875m, summary.Cell(totalRow, 8).GetValue<decimal>());
+            Assert.Equal("0.###", summary.Column(8).Style.NumberFormat.Format);
             Assert.Equal("A1", detail.Cell(2, 8).GetString());
             Assert.Equal(1, detail.Cell(2, 9).GetValue<int>());
             Assert.Equal("A4", detail.Cell(3, 8).GetString());
@@ -509,6 +522,31 @@ public sealed class DesignConditionModuleTests
         finally
         {
             SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Excel_export_rejects_unknown_size_without_creating_file()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var entry = CreateEntry(DateTime.Today);
+            entry.DrawingSize = "旧图幅";
+            entry.DrawingCounts = "2";
+            entry.DrawingCount = 2;
+            var output = Path.Combine(root, "invalid.xlsx");
+
+            var error = await Assert.ThrowsAsync<InvalidDataException>(() =>
+                new DesignConditionExportService().ExportAsync(output, [entry]));
+
+            Assert.Contains(entry.ConditionName, error.Message);
+            Assert.Contains("旧图幅", error.Message);
+            Assert.False(File.Exists(output));
+        }
+        finally
+        {
             Directory.Delete(root, true);
         }
     }

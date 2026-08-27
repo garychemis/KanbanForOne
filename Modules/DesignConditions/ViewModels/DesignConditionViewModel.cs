@@ -302,9 +302,16 @@ public sealed class DesignConditionViewModel : ObservableObject
 
     private async Task ExportAsync(object? _)
     {
+        var exportEntries = Entries.ToArray();
+        if (!DesignConditionExportService.TryValidate(exportEntries, out var validationError))
+        {
+            _notifications.Notify(validationError);
+            return;
+        }
+
         var dialog = new SaveFileDialog { DefaultExt = ".xlsx", Filter = "Excel 工作簿 (*.xlsx)|*.xlsx", FileName = $"设计条件汇总_{DateTime.Now:yyyyMMdd}.xlsx", Title = "导出设计条件汇总" };
         if (dialog.ShowDialog() != true) return;
-        await _export.ExportAsync(dialog.FileName, Entries.ToArray());
+        await _export.ExportAsync(dialog.FileName, exportEntries);
         _notifications.Notify($"设计条件汇总已导出：{dialog.FileName}");
     }
 
