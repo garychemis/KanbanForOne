@@ -479,7 +479,7 @@ public sealed class DesignConditionModuleTests
     }
 
     [Fact]
-    public async Task Excel_contains_hierarchical_summary_and_nonduplicated_detail()
+    public async Task Excel_contains_flat_summary_and_nonduplicated_detail()
     {
         var root = CreateRoot();
         try
@@ -490,41 +490,53 @@ public sealed class DesignConditionModuleTests
             entry.DrawingCount = 6;
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "a.dwg" });
             entry.Attachments.Add(new DesignConditionAttachment { DesignConditionId = entry.Id, OriginalFileName = "b.pdf" });
-            var second = CreateEntry(DateTime.Today.AddDays(1));
-            second.Id = Guid.NewGuid();
-            second.ConditionName = "加长图幅条件";
-            second.DrawingSize = "A1+0.25";
-            second.DrawingCounts = "1";
-            second.DrawingCount = 1;
+            var sameGroup = CreateEntry(DateTime.Today.AddDays(1));
+            sameGroup.Id = Guid.NewGuid();
+            sameGroup.ConditionName = "加长图幅条件";
+            sameGroup.DrawingSize = "A1+0.25";
+            sameGroup.DrawingCounts = "1";
+            sameGroup.DrawingCount = 1;
+            var otherDiscipline = CreateEntry(DateTime.Today.AddDays(2));
+            otherDiscipline.Id = Guid.NewGuid();
+            otherDiscipline.IssuingDiscipline = "电气";
+            otherDiscipline.DrawingSize = "A2";
+            otherDiscipline.DrawingCounts = "2";
+            otherDiscipline.DrawingCount = 2;
+            var otherProject = CreateEntry(DateTime.Today.AddDays(3));
+            otherProject.Id = Guid.NewGuid();
+            otherProject.ProjectNumber = "P200";
+            otherProject.DrawingSize = "A0";
+            otherProject.DrawingCounts = "1";
+            otherProject.DrawingCount = 1;
             var output = Path.Combine(root, "conditions.xlsx");
-            await new DesignConditionExportService().ExportAsync(output, [entry, second]);
+            await new DesignConditionExportService().ExportAsync(
+                output,
+                [entry, sameGroup, otherDiscipline, otherProject]);
 
             using var workbook = new XLWorkbook(output);
             var summary = workbook.Worksheet("设计条件汇总");
             var detail = workbook.Worksheet("设计条件明细");
-            Assert.Contains("项目", summary.Column(1).CellsUsed().Select(cell => cell.GetString()));
-            Assert.Equal("折A1", summary.Cell(1, 8).GetString());
-            Assert.Equal(7, summary.Cell(2, 7).GetValue<int>());
-            Assert.Equal(2.875m, summary.Cell(2, 8).GetValue<decimal>());
-            Assert.Equal(2, summary.Cell(2, 9).GetValue<int>());
-            Assert.Equal("附件数", summary.Cell(1, 9).GetString());
-            var issuingRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "提出专业").Address.RowNumber;
-            var receivingRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "接收专业").Address.RowNumber;
-            Assert.Equal(2.875m, summary.Cell(issuingRow, 8).GetValue<decimal>());
-            Assert.Equal(2.875m, summary.Cell(receivingRow, 8).GetValue<decimal>());
-            var conditionRows = summary.Column(1).CellsUsed()
-                .Where(cell => cell.GetString() == "条件明细")
-                .Select(cell => cell.Address.RowNumber)
-                .ToDictionary(row => summary.Cell(row, 5).GetString());
-            Assert.Equal(1.625m, summary.Cell(conditionRows[entry.ConditionName], 8).GetValue<decimal>());
-            Assert.Equal(2, summary.Cell(conditionRows[entry.ConditionName], 9).GetValue<int>());
-            Assert.Equal(1.25m, summary.Cell(conditionRows[second.ConditionName], 8).GetValue<decimal>());
-            Assert.Equal(0, summary.Cell(conditionRows[second.ConditionName], 9).GetValue<int>());
-            var totalRow = summary.Column(1).CellsUsed().Single(cell => cell.GetString() == "总计").Address.RowNumber;
-            Assert.Equal(7, summary.Cell(totalRow, 7).GetValue<int>());
-            Assert.Equal(2.875m, summary.Cell(totalRow, 8).GetValue<decimal>());
-            Assert.Equal(2, summary.Cell(totalRow, 9).GetValue<int>());
-            Assert.Equal("0.###", summary.Column(8).Style.NumberFormat.Format);
+            Assert.Equal(["项目", "提出专业", "张数", "折A1张数"],
+                summary.Row(1).Cells(1, 4).Select(cell => cell.GetString()));
+            Assert.Equal(4, summary.LastColumnUsed()!.ColumnNumber());
+            Assert.Equal("P100", summary.Cell(2, 1).GetString());
+            Assert.Equal("工艺", summary.Cell(2, 2).GetString());
+            Assert.Equal(7, summary.Cell(2, 3).GetValue<int>());
+            Assert.Equal(2.875m, summary.Cell(2, 4).GetValue<decimal>());
+            Assert.Equal("P100", summary.Cell(3, 1).GetString());
+            Assert.Equal("电气", summary.Cell(3, 2).GetString());
+            Assert.Equal(2, summary.Cell(3, 3).GetValue<int>());
+            Assert.Equal(1m, summary.Cell(3, 4).GetValue<decimal>());
+            Assert.Equal("P200", summary.Cell(4, 1).GetString());
+            Assert.Equal("工艺", summary.Cell(4, 2).GetString());
+            Assert.Equal(1, summary.Cell(4, 3).GetValue<int>());
+            Assert.Equal(2m, summary.Cell(4, 4).GetValue<decimal>());
+            Assert.Equal("总计", summary.Cell(5, 1).GetString());
+            Assert.Equal(string.Empty, summary.Cell(5, 2).GetString());
+            Assert.Equal(10, summary.Cell(5, 3).GetValue<int>());
+            Assert.Equal(5.875m, summary.Cell(5, 4).GetValue<decimal>());
+            Assert.True(summary.Cell(5, 1).Style.Font.Bold);
+            Assert.Equal("0.###", summary.Column(4).Style.NumberFormat.Format);
             Assert.Equal("A1", detail.Cell(2, 8).GetString());
             Assert.Equal(1, detail.Cell(2, 9).GetValue<int>());
             Assert.Equal("A4", detail.Cell(3, 8).GetString());
@@ -593,6 +605,28 @@ public sealed class DesignConditionModuleTests
             Assert.Contains(malformed.ConditionName, error.Message);
             Assert.Contains("项目数不一致", error.Message);
             Assert.False(File.Exists(output));
+        }
+        finally
+        {
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Excel_summary_with_no_entries_contains_zero_total()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var output = Path.Combine(root, "empty.xlsx");
+
+            await new DesignConditionExportService().ExportAsync(output, []);
+
+            using var workbook = new XLWorkbook(output);
+            var summary = workbook.Worksheet("设计条件汇总");
+            Assert.Equal("总计", summary.Cell(2, 1).GetString());
+            Assert.Equal(0, summary.Cell(2, 3).GetValue<int>());
+            Assert.Equal(0m, summary.Cell(2, 4).GetValue<decimal>());
         }
         finally
         {

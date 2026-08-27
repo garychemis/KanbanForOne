@@ -60,41 +60,35 @@ public sealed class DesignConditionExportService
     private static void AddSummary(XLWorkbook workbook, IReadOnlyList<DesignConditionEntry> entries)
     {
         var sheet = workbook.Worksheets.Add("设计条件汇总");
-        string[] headers = ["层级", "项目", "提出专业", "接收专业", "条件名称", "记录数", "图纸数量", "折A1", "附件数"];
+        string[] headers = ["项目", "提出专业", "张数", "折A1张数"];
         WriteHeader(sheet, headers);
         var row = 2;
-        foreach (var projectGroup in entries.GroupBy(item => item.ProjectNumber).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
+        var groups = entries
+            .GroupBy(item => (item.ProjectNumber, item.IssuingDiscipline))
+            .OrderBy(group => group.Key.ProjectNumber, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(group => group.Key.IssuingDiscipline, StringComparer.OrdinalIgnoreCase);
+        foreach (var group in groups)
         {
-            WriteSummaryRow(sheet, row++, "项目", projectGroup.Key, "", "", "", projectGroup.Count(),
-                projectGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(projectGroup),
-                projectGroup.Sum(item => item.AttachmentCount), 0);
-            foreach (var issuingGroup in projectGroup.GroupBy(item => item.IssuingDiscipline).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
-            {
-                WriteSummaryRow(sheet, row++, "提出专业", projectGroup.Key, issuingGroup.Key, "", "", issuingGroup.Count(),
-                    issuingGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(issuingGroup),
-                    issuingGroup.Sum(item => item.AttachmentCount), 1);
-                foreach (var receivingGroup in issuingGroup.GroupBy(item => item.ReceivingDiscipline).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
-                {
-                    WriteSummaryRow(sheet, row++, "接收专业", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, "", receivingGroup.Count(),
-                        receivingGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(receivingGroup),
-                        receivingGroup.Sum(item => item.AttachmentCount), 2);
-                    foreach (var conditionGroup in receivingGroup.GroupBy(item => item.ConditionName).OrderBy(group => group.Key, StringComparer.OrdinalIgnoreCase))
-                    {
-                        WriteSummaryRow(sheet, row++, "条件明细", projectGroup.Key, issuingGroup.Key, receivingGroup.Key, conditionGroup.Key, conditionGroup.Count(),
-                            conditionGroup.Sum(item => item.DrawingCount), GetFoldedA1Total(conditionGroup),
-                            conditionGroup.Sum(item => item.AttachmentCount), 3);
-                    }
-                }
-            }
+            WriteSummaryRow(
+                sheet,
+                row++,
+                group.Key.ProjectNumber,
+                group.Key.IssuingDiscipline,
+                group.Sum(item => item.DrawingCount),
+                GetFoldedA1Total(group));
         }
-        WriteSummaryRow(sheet, row, "总计", "", "", "", "", entries.Count,
-            entries.Sum(item => item.DrawingCount), GetFoldedA1Total(entries),
-            entries.Sum(item => item.AttachmentCount), 0);
+        WriteSummaryRow(
+            sheet,
+            row,
+            "总计",
+            string.Empty,
+            entries.Sum(item => item.DrawingCount),
+            GetFoldedA1Total(entries),
+            isTotal: true);
         sheet.Range(1, 1, row, headers.Length).SetAutoFilter();
         sheet.SheetView.FreezeRows(1);
         sheet.Columns().AdjustToContents();
-        sheet.Column(5).Width = Math.Clamp(sheet.Column(5).Width, 16, 40);
-        sheet.Column(8).Style.NumberFormat.Format = "0.###";
+        sheet.Column(4).Style.NumberFormat.Format = "0.###";
     }
 
     private static void AddDetails(XLWorkbook workbook, IReadOnlyList<DesignConditionEntry> entries)
@@ -169,30 +163,19 @@ public sealed class DesignConditionExportService
     private static void WriteSummaryRow(
         IXLWorksheet sheet,
         int row,
-        string level,
         string project,
-        string issuing,
-        string receiving,
-        string condition,
-        int records,
-        int drawings,
+        string issuingDiscipline,
+        int drawingCount,
         decimal foldedA1,
-        int attachments,
-        int indent)
+        bool isTotal = false)
     {
-        sheet.Cell(row, 1).Value = level;
-        sheet.Cell(row, 2).Value = project;
-        sheet.Cell(row, 3).Value = issuing;
-        sheet.Cell(row, 4).Value = receiving;
-        sheet.Cell(row, 5).Value = condition;
-        sheet.Cell(row, 5).Style.Alignment.Indent = indent;
-        sheet.Cell(row, 6).Value = records;
-        sheet.Cell(row, 7).Value = drawings;
-        sheet.Cell(row, 8).Value = foldedA1;
-        sheet.Cell(row, 9).Value = attachments;
-        if (level is not "条件明细")
+        sheet.Cell(row, 1).Value = project;
+        sheet.Cell(row, 2).Value = issuingDiscipline;
+        sheet.Cell(row, 3).Value = drawingCount;
+        sheet.Cell(row, 4).Value = foldedA1;
+        if (isTotal)
         {
-            sheet.Range(row, 1, row, 9).Style.Font.Bold = true;
+            sheet.Range(row, 1, row, 4).Style.Font.Bold = true;
         }
     }
 }
