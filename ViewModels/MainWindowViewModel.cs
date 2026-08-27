@@ -153,6 +153,7 @@ public sealed class MainWindowViewModel : ObservableObject
             WorkHourSummary.Invalidate();
             await _workHourOptions.LoadAsync();
             await _board.InitializeWorkspaceAsync();
+            DesignConditions.NotifyDataReset();
             await DesignConditions.EnsureLoadedAsync();
             await _calendar.InitializeAsync();
         }

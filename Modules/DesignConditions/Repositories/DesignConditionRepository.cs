@@ -6,7 +6,7 @@ using Microsoft.Data.Sqlite;
 
 namespace KanbanForOne.Modules.DesignConditions.Repositories;
 
-public sealed class DesignConditionRepository
+public sealed class DesignConditionRepository : IDesignConditionRepository
 {
     private readonly DesignConditionDatabaseService _database;
     private readonly DesignConditionAttachmentRepository _attachments;

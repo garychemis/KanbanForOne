@@ -1,27 +1,27 @@
 using System.Collections.ObjectModel;
-using KanbanForOne.Controls;
 using KanbanForOne.Modules.DesignConditions.Data;
 using KanbanForOne.Modules.DesignConditions.Models;
 using KanbanForOne.Modules.DesignConditions.Repositories;
 using KanbanForOne.Modules.DesignConditions.Services;
-using KanbanForOne.Modules.DesignConditions.Views;
 using KanbanForOne.Services;
 using KanbanForOne.ViewModels;
-using Microsoft.Win32;
 
 namespace KanbanForOne.Modules.DesignConditions.ViewModels;
 
 public sealed class DesignConditionViewModel : ObservableObject
 {
     private readonly DesignConditionDatabaseService _database;
-    private readonly DesignConditionRepository _repository;
+    private readonly IDesignConditionRepository _repository;
     private readonly DesignConditionAttachmentStorageService _storage;
     private readonly DesignConditionOptionRepository _options;
     private readonly DesignConditionExportService _export;
     private readonly DesignConditionOperationCoordinator _operations;
     private readonly NotificationService _notifications;
+    private readonly IDialogService _dialogs;
+    private readonly IFilePickerService _filePickers;
     private readonly List<DesignConditionEntry> _allEntries = [];
     private bool _isInitialized;
+    private int _loadVersion;
     private bool _isLoading;
     private bool _showSummary;
     private string _selectedProject = string.Empty;
@@ -34,12 +34,14 @@ public sealed class DesignConditionViewModel : ObservableObject
 
     public DesignConditionViewModel(
         DesignConditionDatabaseService database,
-        DesignConditionRepository repository,
+        IDesignConditionRepository repository,
         DesignConditionAttachmentStorageService storage,
         DesignConditionOptionRepository options,
         DesignConditionExportService export,
         DesignConditionOperationCoordinator operations,
-        NotificationService notifications)
+        NotificationService notifications,
+        IDialogService dialogs,
+        IFilePickerService filePickers)
     {
         _database = database;
         _repository = repository;
@@ -48,6 +50,8 @@ public sealed class DesignConditionViewModel : ObservableObject
         _export = export;
         _operations = operations;
         _notifications = notifications;
+        _dialogs = dialogs;
+        _filePickers = filePickers;
         NewCommand = new RelayCommand(() => ShowEditorAsync(null, DateTime.Today));
         OpenCommand = new RelayCommand(OpenAsync);
         SetViewCommand = new RelayCommand(SetView);
@@ -99,30 +103,47 @@ public sealed class DesignConditionViewModel : ObservableObject
 
     public Task CreateForDateAsync(DateTime issuedDate) => ShowEditorAsync(null, issuedDate.Date);
 
-    public void NotifyDataReset() => DataChanged?.Invoke(this, new DesignConditionChangedEventArgs(Guid.Empty, null, null));
+    /// <summary>外部数据被整体替换（如完整备份恢复）后调用：使缓存失效并通知订阅方（日历区块）刷新。</summary>
+    public void NotifyDataReset()
+    {
+        _isInitialized = false;
+        _loadVersion++; // 使进行中的加载失效，避免旧结果覆盖恢复后的新数据
+        DataChanged?.Invoke(this, new DesignConditionChangedEventArgs(Guid.Empty, null, null));
+    }
 
     public async Task ReloadAsync()
     {
+        var version = ++_loadVersion;
         try
         {
             IsLoading = true;
             ErrorMessage = string.Empty;
             await _database.InitializeAsync();
+            var entries = await _repository.GetAllAsync();
+            if (version != _loadVersion) return; // 已被更新的加载取代，不碰任何状态
+            // 清理暂存目录是带副作用的操作，仅在当前版本仍在执行时进行，
+            // 避免过期加载清掉仍在暂存中的附件文件。
             _storage.CleanupStaging();
             _allEntries.Clear();
-            _allEntries.AddRange(await _repository.GetAllAsync());
+            _allEntries.AddRange(entries);
             _isInitialized = true;
             RefreshOptions();
             ApplyFilters();
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
-            _notifications.Notify($"加载设计条件失败：{ex.Message}");
+            if (version == _loadVersion)
+            {
+                ErrorMessage = ex.Message;
+                _notifications.Notify($"加载设计条件失败：{ex.Message}");
+            }
         }
         finally
         {
-            IsLoading = false;
+            if (version == _loadVersion)
+            {
+                IsLoading = false;
+            }
         }
     }
 
@@ -162,7 +183,7 @@ public sealed class DesignConditionViewModel : ObservableObject
         var disciplines = (await _options.GetAsync("Discipline")).Concat(_allEntries.SelectMany(item => new[] { item.IssuingDiscipline, item.ReceivingDiscipline })).Where(value => value.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(value => value).ToArray();
         var receivers = (await _options.GetAsync("Receiver")).Concat(_allEntries.Select(item => item.Receiver)).Where(value => value.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(value => value).ToArray();
         var editor = new DesignConditionEditorViewModel(source, defaultDate, disciplines, receivers);
-        var action = DesignConditionEditorDialog.Show(DialogHelper.GetDialogOwner(), editor, _storage);
+        var action = _dialogs.ShowDesignConditionEditor(editor, _storage);
         if (action == DesignConditionEditorAction.None) return;
         if (action == DesignConditionEditorAction.Delete && source is not null)
         {
@@ -309,10 +330,10 @@ public sealed class DesignConditionViewModel : ObservableObject
             return;
         }
 
-        var dialog = new SaveFileDialog { DefaultExt = ".xlsx", Filter = "Excel 工作簿 (*.xlsx)|*.xlsx", FileName = $"设计条件汇总_{DateTime.Now:yyyyMMdd}.xlsx", Title = "导出设计条件汇总" };
-        if (dialog.ShowDialog() != true) return;
-        await _export.ExportAsync(dialog.FileName, exportEntries);
-        _notifications.Notify($"设计条件汇总已导出：{dialog.FileName}");
+        var file = _filePickers.PickSaveFile("导出设计条件汇总", $"设计条件汇总_{DateTime.Now:yyyyMMdd}.xlsx", "Excel 工作簿 (*.xlsx)|*.xlsx", ".xlsx");
+        if (file is null) return;
+        await _export.ExportAsync(file, exportEntries);
+        _notifications.Notify($"设计条件汇总已导出：{file}");
     }
 
     private void NotifyStatistics()

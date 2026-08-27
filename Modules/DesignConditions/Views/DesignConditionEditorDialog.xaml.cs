@@ -11,8 +11,6 @@ using Microsoft.Win32;
 
 namespace KanbanForOne.Modules.DesignConditions.Views;
 
-public enum DesignConditionEditorAction { None, Save, Delete }
-
 public partial class DesignConditionEditorDialog : Window
 {
     private readonly DesignConditionEditorViewModel _viewModel;

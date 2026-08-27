@@ -23,9 +23,15 @@ namespace KanbanForOne
         {
             var services = new ServiceCollection();
 
+            // 对话框 / 文件选择 / 剪贴板抽象（WPF 实现，View 适配边界）
+            services.AddSingleton<IDialogService, DialogService>();
+            services.AddSingleton<IFilePickerService, FilePickerService>();
+            services.AddSingleton<IClipboardService, ClipboardService>();
+
             // 基础服务
             services.AddSingleton<DatabaseService>();
             services.AddSingleton<AttachmentStorageService>();
+            services.AddSingleton<AttachmentOrchestrator>();
             services.AddSingleton<BackupService>();
             services.AddSingleton<UnifiedBackupService>();
             services.AddSingleton<WorkHourOptionsService>();
@@ -47,6 +53,7 @@ namespace KanbanForOne
             services.AddSingleton<WorkHourRepository>();
             services.AddSingleton<DesignConditionAttachmentRepository>();
             services.AddSingleton<DesignConditionRepository>();
+            services.AddSingleton<IDesignConditionRepository>(sp => sp.GetRequiredService<DesignConditionRepository>());
             services.AddSingleton<DesignConditionOptionRepository>();
 
             // 共享状态
@@ -65,7 +72,8 @@ namespace KanbanForOne
             services.AddSingleton(sp => new WorkHourSummaryViewModel(
                 sp.GetRequiredService<WorkHourRepository>(),
                 sp.GetRequiredService<WorkHourExportService>(),
-                message => sp.GetRequiredService<NotificationService>().Notify(message)));
+                message => sp.GetRequiredService<NotificationService>().Notify(message),
+                sp.GetRequiredService<IFilePickerService>()));
             services.AddSingleton<MainWindowViewModel>();
 
             Services = services.BuildServiceProvider();

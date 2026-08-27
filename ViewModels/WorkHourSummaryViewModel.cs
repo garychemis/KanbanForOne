@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
-using Microsoft.Win32;
 
 namespace KanbanForOne.ViewModels;
 
@@ -10,6 +9,7 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
     private readonly WorkHourRepository _repository;
     private readonly WorkHourExportService _exportService;
     private readonly Action<string> _notify;
+    private readonly IFilePickerService _filePickers;
     private bool _isMonthMode = true;
     private int _selectedYear = DateTime.Today.Year;
     private int _selectedMonth = DateTime.Today.Month;
@@ -33,11 +33,13 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
     public WorkHourSummaryViewModel(
         WorkHourRepository repository,
         WorkHourExportService exportService,
-        Action<string> notify)
+        Action<string> notify,
+        IFilePickerService filePickers)
     {
         _repository = repository;
         _exportService = exportService;
         _notify = notify;
+        _filePickers = filePickers;
 
         var firstOfMonth = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
         _rangeStartDate = firstOfMonth;
@@ -358,16 +360,13 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
             return;
         }
 
-        var dialog = new SaveFileDialog
-        {
-            AddExtension = true,
-            DefaultExt = ".xlsx",
-            Filter = "Excel 工作簿 (*.xlsx)|*.xlsx",
-            FileName = $"人工时汇总_{_currentStartDate:yyyyMMdd}-{_currentEndDate:yyyyMMdd}.xlsx",
-            Title = "导出人工时汇总"
-        };
+        var file = _filePickers.PickSaveFile(
+            "导出人工时汇总",
+            $"人工时汇总_{_currentStartDate:yyyyMMdd}-{_currentEndDate:yyyyMMdd}.xlsx",
+            "Excel 工作簿 (*.xlsx)|*.xlsx",
+            ".xlsx");
 
-        if (dialog.ShowDialog() != true)
+        if (file is null)
         {
             return;
         }
@@ -391,12 +390,12 @@ public sealed class WorkHourSummaryViewModel : ObservableObject
                     workActivityFilter))
                 .ToArray();
             await _exportService.ExportAsync(
-                dialog.FileName,
+                file,
                 startDate,
                 endDate,
                 summaries,
                 details);
-            _notify($"人工时汇总已导出：{dialog.FileName}");
+            _notify($"人工时汇总已导出：{file}");
         }
         catch (Exception ex)
         {

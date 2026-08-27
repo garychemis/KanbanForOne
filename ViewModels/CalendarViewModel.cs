@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using KanbanForOne.Controls;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
 using KanbanForOne.Modules.DesignConditions.ViewModels;
@@ -19,6 +18,7 @@ public sealed class CalendarViewModel : ObservableObject
     private readonly NotificationService _notifications;
     private readonly WorkspaceFilterState _filter;
     private readonly DesignConditionCalendarSectionViewModel _designConditions;
+    private readonly IDialogService _dialogs;
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private DateTime _selectedCalendarDate = DateTime.Today;
     private string _calendarViewMode = "Month";
@@ -31,7 +31,8 @@ public sealed class CalendarViewModel : ObservableObject
         WorkHourSummaryViewModel workHourSummary,
         NotificationService notifications,
         WorkspaceFilterState filter,
-        DesignConditionCalendarSectionViewModel designConditions)
+        DesignConditionCalendarSectionViewModel designConditions,
+        IDialogService dialogs)
     {
         _board = board;
         _workHourRepository = workHourRepository;
@@ -40,6 +41,7 @@ public sealed class CalendarViewModel : ObservableObject
         _notifications = notifications;
         _filter = filter;
         _designConditions = designConditions;
+        _dialogs = dialogs;
         _designConditions.SummariesChanged += (_, _) => ApplyDesignConditionSummaries();
 
         _board.DataChanged += refreshCalendar =>
@@ -339,8 +341,7 @@ public sealed class CalendarViewModel : ObservableObject
 
     private async Task ShowWorkHourDialogAsync(WorkHourEntry? entry)
     {
-        var result = WorkHourEntryDialog.Show(
-            DialogHelper.GetDialogOwner(),
+        var result = _dialogs.EditWorkHourEntry(
             entry,
             SelectedCalendarDate,
             _workHourOptions.WorkDisciplines,
@@ -364,8 +365,7 @@ public sealed class CalendarViewModel : ObservableObject
             result.WorkDate,
             entry?.Id);
         if (otherUnits + result.HourUnits > WorkHourValueConverter.MaximumEntryUnits &&
-            !ConfirmDialog.Show(
-                DialogHelper.GetDialogOwner(),
+            !_dialogs.Confirm(
                 "当天工时超过 24 小时",
                 $"保存后 {result.WorkDate:yyyy/M/d} 的总工时将超过 24 小时，是否继续？",
                 "继续保存"))

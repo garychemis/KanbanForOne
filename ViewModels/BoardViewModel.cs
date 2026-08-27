@@ -3,10 +3,8 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using KanbanForOne.Controls;
 using KanbanForOne.Models;
 using KanbanForOne.Services;
-using Microsoft.Win32;
 using TaskStatus = KanbanForOne.Models.TaskStatus;
 
 namespace KanbanForOne.ViewModels;
@@ -23,8 +21,12 @@ public sealed class BoardViewModel : ObservableObject
     private readonly AttachmentRepository _attachmentRepository;
     private readonly ArchiveSectionRepository _archiveSectionRepository;
     private readonly AttachmentStorageService _attachmentStorage;
+    private readonly AttachmentOrchestrator _attachmentOrchestrator;
     private readonly NotificationService _notifications;
     private readonly WorkspaceFilterState _filter;
+    private readonly IDialogService _dialogs;
+    private readonly IFilePickerService _filePickers;
+    private readonly IClipboardService _clipboard;
     private bool _isInitialized;
     private bool _isLoading;
     private ArchiveSection? _selectedArchiveSection;
@@ -63,16 +65,24 @@ public sealed class BoardViewModel : ObservableObject
         AttachmentRepository attachmentRepository,
         ArchiveSectionRepository archiveSectionRepository,
         AttachmentStorageService attachmentStorage,
+        AttachmentOrchestrator attachmentOrchestrator,
         NotificationService notifications,
-        WorkspaceFilterState filter)
+        WorkspaceFilterState filter,
+        IDialogService dialogs,
+        IFilePickerService filePickers,
+        IClipboardService clipboard)
     {
         _taskRepository = taskRepository;
         _noteRepository = noteRepository;
         _attachmentRepository = attachmentRepository;
         _archiveSectionRepository = archiveSectionRepository;
         _attachmentStorage = attachmentStorage;
+        _attachmentOrchestrator = attachmentOrchestrator;
         _notifications = notifications;
         _filter = filter;
+        _dialogs = dialogs;
+        _filePickers = filePickers;
+        _clipboard = clipboard;
 
         _filter.PropertyChanged += (_, e) =>
         {
@@ -1140,7 +1150,7 @@ public sealed class BoardViewModel : ObservableObject
         var defaultSection = ArchiveSections.FirstOrDefault(section => section.IsDefault)
             ?? ArchiveSections.FirstOrDefault(section => section.Id == ArchiveSection.DefaultId)
             ?? await _archiveSectionRepository.GetDefaultAsync();
-        var selection = ArchiveSectionDialog.Show(DialogHelper.GetDialogOwner(), ArchiveSections, defaultSection);
+        var selection = _dialogs.PickArchiveSection(ArchiveSections, defaultSection);
 
         if (selection is null)
         {
@@ -1203,7 +1213,7 @@ public sealed class BoardViewModel : ObservableObject
 
         await LoadArchiveSectionsAsync();
 
-        var selection = ArchiveSectionPickerDialog.Show(DialogHelper.GetDialogOwner(), ArchiveSections, SelectedArchiveSection);
+        var selection = _dialogs.PickExistingArchiveSection(ArchiveSections, SelectedArchiveSection);
 
         if (selection is null)
         {
@@ -1291,7 +1301,7 @@ public sealed class BoardViewModel : ObservableObject
 
         var task = ActiveTask;
 
-        if (!DialogHelper.Confirm(
+        if (!_dialogs.Confirm(
                 "删除任务",
                 "删除后会同时删除这张任务卡片的本地附件，是否继续？",
                 "删除"))
@@ -1305,12 +1315,12 @@ public sealed class BoardViewModel : ObservableObject
 
         try
         {
-            stagedDeletes = StageAttachmentDeletes(task.Attachments);
+            stagedDeletes = _attachmentOrchestrator.StageDeletes(task.Attachments);
             await _attachmentRepository.DeleteByOwnerAsync(AttachmentOwnerType.Task, task.Id);
             attachmentsDeleted = true;
             await _taskRepository.DeleteAsync(task.Id);
             taskDeleted = true;
-            CommitStagedDeletes(stagedDeletes);
+            _attachmentOrchestrator.CommitDeletes(stagedDeletes);
             UntrackTask(task);
             _allTasks.Remove(task);
             FocusedTask = null;
@@ -1323,7 +1333,7 @@ public sealed class BoardViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            var filesRestored = TryRollbackStagedDeletes(stagedDeletes);
+            var filesRestored = _attachmentOrchestrator.TryRollbackDeletes(stagedDeletes);
             var restored = await RestoreDeletedTaskRecordsAsync(task, attachmentsDeleted, taskDeleted);
             _notifications.Notify(filesRestored && restored
                 ? $"删除任务失败：{ex.Message}"
@@ -1340,7 +1350,7 @@ public sealed class BoardViewModel : ObservableObject
 
         var note = ActiveNote;
 
-        if (!DialogHelper.Confirm(
+        if (!_dialogs.Confirm(
                 "删除备忘",
                 "删除后会同时删除这张备忘的本地附件，是否继续？",
                 "删除"))
@@ -1354,12 +1364,12 @@ public sealed class BoardViewModel : ObservableObject
 
         try
         {
-            stagedDeletes = StageAttachmentDeletes(note.Attachments);
+            stagedDeletes = _attachmentOrchestrator.StageDeletes(note.Attachments);
             await _attachmentRepository.DeleteByOwnerAsync(AttachmentOwnerType.Note, note.Id);
             attachmentsDeleted = true;
             await _noteRepository.DeleteAsync(note.Id);
             noteDeleted = true;
-            CommitStagedDeletes(stagedDeletes);
+            _attachmentOrchestrator.CommitDeletes(stagedDeletes);
             UntrackNote(note);
             _allNotes.Remove(note);
             FocusedNote = null;
@@ -1372,7 +1382,7 @@ public sealed class BoardViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            var filesRestored = TryRollbackStagedDeletes(stagedDeletes);
+            var filesRestored = _attachmentOrchestrator.TryRollbackDeletes(stagedDeletes);
             var restored = await RestoreDeletedNoteRecordsAsync(note, attachmentsDeleted, noteDeleted);
             _notifications.Notify(filesRestored && restored
                 ? $"删除备忘失败：{ex.Message}"
@@ -1731,16 +1741,11 @@ public sealed class BoardViewModel : ObservableObject
             return;
         }
 
-        var dialog = new OpenFileDialog
-        {
-            Multiselect = true,
-            CheckFileExists = true,
-            Title = "选择附件"
-        };
+        var files = _filePickers.PickOpenFiles("选择附件", string.Empty, "所有文件 (*.*)|*.*");
 
-        if (dialog.ShowDialog() == true)
+        if (files.Count > 0)
         {
-            await AttachFilesAsync(new FileDropPayload(owner, dialog.FileNames));
+            await AttachFilesAsync(new FileDropPayload(owner, files));
         }
     }
 
@@ -1766,12 +1771,12 @@ public sealed class BoardViewModel : ObservableObject
 
         try
         {
-            if (!Clipboard.ContainsImage())
+            if (!_clipboard.ContainsImage())
             {
                 return;
             }
 
-            image = Clipboard.GetImage();
+            image = _clipboard.GetImage();
         }
         catch (Exception ex)
         {
@@ -1899,12 +1904,12 @@ public sealed class BoardViewModel : ObservableObject
 
             if (stagedDelete is not null)
             {
-                fileRestored = TryRollbackStagedDelete(stagedDelete);
+                fileRestored = _attachmentOrchestrator.TryRollbackDelete(stagedDelete);
             }
 
             if (databaseDeleted)
             {
-                var restored = await RestoreAttachmentRecordAsync(attachment);
+                var restored = await _attachmentOrchestrator.RestoreAttachmentRecordAsync(attachment);
                 _notifications.Notify(fileRestored && restored
                     ? $"删除附件失败：{ex.Message}"
                     : $"删除附件失败，且恢复附件文件或数据库记录失败：{ex.Message}");
@@ -1919,112 +1924,48 @@ public sealed class BoardViewModel : ObservableObject
 
     private async Task<bool> RestoreDeletedTaskRecordsAsync(TaskItem task, bool attachmentsDeleted, bool taskDeleted)
     {
-        try
+        var restoredTask = true;
+
+        if (taskDeleted)
         {
-            if (taskDeleted)
+            try
             {
                 await _taskRepository.UpsertAsync(task);
             }
-
-            if (attachmentsDeleted)
+            catch
             {
-                await _attachmentRepository.AddRangeAsync(task.Attachments);
+                restoredTask = false;
             }
+        }
 
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var restoredAttachments = attachmentsDeleted
+            ? await _attachmentOrchestrator.RestoreDeletedAttachmentRecordsAsync(task.Attachments)
+            : true;
+
+        return restoredTask && restoredAttachments;
     }
 
     private async Task<bool> RestoreDeletedNoteRecordsAsync(NoteItem note, bool attachmentsDeleted, bool noteDeleted)
     {
-        try
+        var restoredNote = true;
+
+        if (noteDeleted)
         {
-            if (noteDeleted)
+            try
             {
                 await _noteRepository.UpsertAsync(note);
             }
-
-            if (attachmentsDeleted)
+            catch
             {
-                await _attachmentRepository.AddRangeAsync(note.Attachments);
+                restoredNote = false;
             }
-
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private async Task<bool> RestoreAttachmentRecordAsync(AttachmentItem attachment)
-    {
-        try
-        {
-            await _attachmentRepository.AddRangeAsync([attachment]);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private IReadOnlyList<StagedAttachmentDelete> StageAttachmentDeletes(IEnumerable<AttachmentItem> attachments)
-    {
-        var stagedDeletes = new List<StagedAttachmentDelete>();
-
-        try
-        {
-            foreach (var attachment in attachments.ToArray())
-            {
-                stagedDeletes.Add(_attachmentStorage.StageAttachmentFileForDelete(attachment));
-            }
-
-            return stagedDeletes;
-        }
-        catch
-        {
-            TryRollbackStagedDeletes(stagedDeletes);
-            throw;
-        }
-    }
-
-    private void CommitStagedDeletes(IEnumerable<StagedAttachmentDelete> stagedDeletes)
-    {
-        foreach (var stagedDelete in stagedDeletes)
-        {
-            _attachmentStorage.CommitStagedDelete(stagedDelete);
-        }
-    }
-
-    private bool TryRollbackStagedDeletes(IEnumerable<StagedAttachmentDelete> stagedDeletes)
-    {
-        var succeeded = true;
-
-        foreach (var stagedDelete in stagedDeletes.Reverse())
-        {
-            succeeded &= TryRollbackStagedDelete(stagedDelete);
         }
 
-        return succeeded;
-    }
+        var restoredAttachments = attachmentsDeleted
+            ? await _attachmentOrchestrator.RestoreDeletedAttachmentRecordsAsync(note.Attachments)
+            : true;
 
-    private bool TryRollbackStagedDelete(StagedAttachmentDelete stagedDelete)
-    {
-        try
-        {
-            _attachmentStorage.RollbackStagedDelete(stagedDelete);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        return restoredNote && restoredAttachments;
     }
 
     /// <summary>调整任务日期（由 CalendarViewModel 调用，拖拽任务到日历日期）。</summary>

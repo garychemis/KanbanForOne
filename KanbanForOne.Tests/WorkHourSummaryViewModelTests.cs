@@ -148,7 +148,7 @@ public sealed class WorkHourSummaryViewModelTests
 
     private static WorkHourSummaryViewModel CreateViewModel(WorkHourRepository repository)
     {
-        return new WorkHourSummaryViewModel(repository, new WorkHourExportService(), _ => { });
+        return new WorkHourSummaryViewModel(repository, new WorkHourExportService(), _ => { }, new FilePickerService());
     }
 
     private static WorkHourEntry CreateEntry(

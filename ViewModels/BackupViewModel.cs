@@ -1,7 +1,6 @@
 using System.IO;
 using KanbanForOne.Modules.DesignConditions.Data;
 using KanbanForOne.Services;
-using Microsoft.Win32;
 
 namespace KanbanForOne.ViewModels;
 
@@ -14,6 +13,8 @@ public sealed class BackupViewModel : ObservableObject
     private readonly BoardViewModel _board;
     private readonly NotificationService _notifications;
     private readonly DesignConditionStorageOptions _designConditionPaths;
+    private readonly IDialogService _dialogs;
+    private readonly IFilePickerService _filePickers;
     private string _lastBackupPath = string.Empty;
     private int _lastBackupAttachmentCount;
     private long _lastBackupSizeBytes;
@@ -27,12 +28,16 @@ public sealed class BackupViewModel : ObservableObject
         UnifiedBackupService backupService,
         BoardViewModel board,
         NotificationService notifications,
-        DesignConditionStorageOptions designConditionPaths)
+        DesignConditionStorageOptions designConditionPaths,
+        IDialogService dialogs,
+        IFilePickerService filePickers)
     {
         _backupService = backupService;
         _board = board;
         _notifications = notifications;
         _designConditionPaths = designConditionPaths;
+        _dialogs = dialogs;
+        _filePickers = filePickers;
         CreateBackupCommand = new RelayCommand(CreateBackupAsync);
         RestoreBackupCommand = new RelayCommand(RestoreBackupAsync);
     }
@@ -100,17 +105,13 @@ public sealed class BackupViewModel : ObservableObject
     {
         if (!_board.ConfirmDiscardSpotlightChanges()) return;
 
-        var dialog = new OpenFileDialog
-        {
-            CheckFileExists = true,
-            Multiselect = false,
-            Title = "选择 Kanban41 完整备份文件",
-            InitialDirectory = Directory.Exists(BackupDirectory) ? BackupDirectory : DataDirectory,
-            Filter = "Kanban41 完整备份 (*.zip)|*.zip|所有文件 (*.*)|*.*"
-        };
-        if (dialog.ShowDialog() != true) return;
+        var file = _filePickers.PickOpenFile(
+            "选择 Kanban41 完整备份文件",
+            Directory.Exists(BackupDirectory) ? BackupDirectory : DataDirectory,
+            "Kanban41 完整备份 (*.zip)|*.zip|所有文件 (*.*)|*.*");
+        if (file is null) return;
 
-        if (!DialogHelper.Confirm(
+        if (!_dialogs.Confirm(
                 "恢复完整备份",
                 "恢复会覆盖看板、任务、人工时、全部附件和设计条件数据。恢复前会自动创建一份当前全部数据的保护备份，是否继续？",
                 "恢复")) return;
@@ -118,7 +119,7 @@ public sealed class BackupViewModel : ObservableObject
         try
         {
             _board.ClearSpotlightState();
-            var result = await _backupService.RestoreBackupAsync(dialog.FileName);
+            var result = await _backupService.RestoreBackupAsync(file);
             if (RestoreCompleted is not null) await RestoreCompleted();
 
             LastRestoreSourcePath = result.SourceBackupPath;

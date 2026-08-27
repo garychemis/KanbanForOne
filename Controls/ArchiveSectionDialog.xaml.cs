@@ -6,8 +6,6 @@ using KanbanForOne.Models;
 
 namespace KanbanForOne.Controls;
 
-public sealed record ArchiveSectionDialogResult(Guid? SectionId, string? NewSectionName, Guid? DeleteSectionId = null);
-
 public partial class ArchiveSectionDialog : Window
 {
     private readonly IReadOnlyList<ArchiveSection> _sections;

@@ -6,6 +6,8 @@ using KanbanForOne.Modules.DesignConditions.Models;
 using KanbanForOne.Modules.DesignConditions.Repositories;
 using KanbanForOne.Modules.DesignConditions.Services;
 using KanbanForOne.Modules.DesignConditions.ViewModels;
+using KanbanForOne.Services;
+using KanbanForOne.ViewModels;
 using Microsoft.Data.Sqlite;
 
 namespace KanbanForOne.Tests;
@@ -850,6 +852,104 @@ public sealed class DesignConditionModuleTests
         }
     }
 
+    [Fact]
+    public async Task NotifyDataReset_forces_reload_after_external_data_change()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var context = await CreateContextAsync(root);
+            var viewModel = new DesignConditionViewModel(
+                context.Database,
+                context.Repository,
+                context.Storage,
+                new DesignConditionOptionRepository(context.Database),
+                new DesignConditionExportService(),
+                new DesignConditionOperationCoordinator(),
+                new NotificationService(),
+                new DialogService(),
+                new FilePickerService());
+
+            await context.Repository.UpsertAsync(CreateEntry(new DateTime(2026, 8, 20)));
+            await viewModel.EnsureLoadedAsync();
+            Assert.Single(viewModel.Entries);
+
+            // 模拟完整备份恢复：数据在 ViewModel 不知情时被整体替换
+            var restored = CreateEntry(new DateTime(2026, 8, 21));
+            restored.ConditionName = "恢复后的新条件";
+            await context.Repository.UpsertAsync(restored);
+
+            var dataChangedCount = 0;
+            viewModel.DataChanged += (_, _) => dataChangedCount++;
+            viewModel.NotifyDataReset();
+
+            Assert.Equal(1, dataChangedCount);
+            await viewModel.EnsureLoadedAsync();
+            Assert.Equal(2, viewModel.Entries.Count);
+            Assert.Contains(viewModel.Entries, item => item.ConditionName == "恢复后的新条件");
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
+    public async Task Pending_load_is_discarded_when_notify_data_reset_intervenes()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var context = await CreateContextAsync(root);
+            var gated = new GateDesignConditionRepository(context.Repository);
+            var viewModel = new DesignConditionViewModel(
+                context.Database,
+                gated,
+                context.Storage,
+                new DesignConditionOptionRepository(context.Database),
+                new DesignConditionExportService(),
+                new DesignConditionOperationCoordinator(),
+                new NotificationService(),
+                new DialogService(),
+                new FilePickerService());
+
+            // 预置一次加载：首次 GetAllAsync 返回"旧数据"并挂起，模拟加载进行中
+            var before = CreateEntry(new DateTime(2026, 8, 20));
+            before.ConditionName = "旧数据";
+            var after = CreateEntry(new DateTime(2026, 8, 21));
+            after.ConditionName = "新数据";
+
+            // 首次加载：挂起在 GetAllAsync
+            gated.ResultProvider = () => new[] { before };
+            var firstLoad = viewModel.ReloadAsync();
+
+            // 让第一次挂起的加载有机会进入 await 挂起点
+            await gated.WaitForGetAllCalledAsync();
+
+            // 数据被外部整体替换（备份恢复），并触发版本失效
+            gated.ResultProvider = () => new[] { after };
+            viewModel.NotifyDataReset();
+
+            // 释放第一次挂起的加载：它应被判定为过期而丢弃，不更新状态
+            gated.ReleaseGetAll();
+            await firstLoad;
+
+            // 再执行一次干净的加载获取最新数据
+            await viewModel.EnsureLoadedAsync();
+
+            // 旧加载被丢弃：最终数据应为"新数据"，且过期加载没有覆盖恢复后的数据
+            Assert.Contains(viewModel.Entries, item => item.ConditionName == "新数据");
+            Assert.DoesNotContain(viewModel.Entries, item => item.ConditionName == "旧数据");
+            Assert.False(viewModel.IsLoading);
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
     private static DesignConditionEntry CreateEntry(DateTime issuedDate) => new()
     {
         ProjectNumber = "P100",
@@ -910,4 +1010,47 @@ public sealed class DesignConditionModuleTests
         DesignConditionAttachmentRepository Attachments,
         DesignConditionRepository Repository,
         DesignConditionAttachmentStorageService Storage);
+
+    /// <summary>包装真实仓库，让 GetAllAsync 可被控制挂起，用于模拟"加载进行中"的并发场景。</summary>
+    private sealed class GateDesignConditionRepository : IDesignConditionRepository
+    {
+        private readonly IDesignConditionRepository _inner;
+        private readonly TaskCompletionSource _getAllCalled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private bool _gated;
+
+        public GateDesignConditionRepository(IDesignConditionRepository inner) => _inner = inner;
+
+        public Func<IReadOnlyList<DesignConditionEntry>> ResultProvider { get; set; } = static () => [];
+
+        public Task WaitForGetAllCalledAsync() => _getAllCalled.Task;
+
+        public void ReleaseGetAll() => _gate.TrySetResult();
+
+        public async Task<IReadOnlyList<DesignConditionEntry>> GetAllAsync()
+        {
+            var isFirst = !_gated;
+            _gated = true;
+            _getAllCalled.TrySetResult();
+            if (isFirst)
+            {
+                await _gate.Task;
+            }
+
+            return ResultProvider();
+        }
+
+        public Task<IReadOnlyList<DesignConditionEntry>> GetByIssuedDateAsync(DateTime date) => _inner.GetByIssuedDateAsync(date);
+
+        public Task<IReadOnlyList<DesignConditionEntry>> GetByIssuedDateRangeAsync(DateTime startDate, DateTime endDate) => _inner.GetByIssuedDateRangeAsync(startDate, endDate);
+
+        public Task<IReadOnlyList<DesignConditionCalendarSummary>> GetCalendarSummariesAsync(DateTime startDate, DateTime endDate) => _inner.GetCalendarSummariesAsync(startDate, endDate);
+
+        public Task UpsertAsync(DesignConditionEntry entry) => _inner.UpsertAsync(entry);
+
+        public Task SaveAggregateAsync(DesignConditionEntry entry, IEnumerable<Guid> deletedAttachmentIds, IEnumerable<DesignConditionAttachment> addedAttachments) =>
+            _inner.SaveAggregateAsync(entry, deletedAttachmentIds, addedAttachments);
+
+        public Task DeleteAsync(Guid id) => _inner.DeleteAsync(id);
+    }
 }

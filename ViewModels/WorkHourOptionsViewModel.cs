@@ -10,15 +10,18 @@ public sealed class WorkHourOptionsViewModel : ObservableObject
 {
     private readonly WorkHourOptionsService _service;
     private readonly NotificationService _notifications;
+    private readonly IDialogService _dialogs;
     private string _newWorkDiscipline = string.Empty;
     private string _newWorkActivity = string.Empty;
 
     public WorkHourOptionsViewModel(
         WorkHourOptionsService service,
-        NotificationService notifications)
+        NotificationService notifications,
+        IDialogService dialogs)
     {
         _service = service;
         _notifications = notifications;
+        _dialogs = dialogs;
 
         AddWorkDisciplineCommand = new RelayCommand(AddWorkDisciplineAsync, _ => !string.IsNullOrWhiteSpace(NewWorkDiscipline));
         RemoveWorkDisciplineCommand = new RelayCommand(RemoveWorkDisciplineAsync);
@@ -109,7 +112,7 @@ public sealed class WorkHourOptionsViewModel : ObservableObject
     private async Task RemoveWorkDisciplineAsync(object? parameter)
     {
         if (parameter is not string value ||
-            !DialogHelper.Confirm("移除专业选项", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
+            !_dialogs.Confirm("移除专业选项", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
         {
             return;
         }
@@ -122,7 +125,7 @@ public sealed class WorkHourOptionsViewModel : ObservableObject
     private async Task RemoveWorkActivityAsync(object? parameter)
     {
         if (parameter is not string value ||
-            !DialogHelper.Confirm("移除工作内容", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
+            !_dialogs.Confirm("移除工作内容", $"从下拉选项中移除“{value}”吗？历史人工时不会受到影响。", "移除"))
         {
             return;
         }

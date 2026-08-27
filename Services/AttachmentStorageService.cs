@@ -144,7 +144,10 @@ public sealed class AttachmentStorageService
                 Id = attachmentId,
                 OwnerType = ownerType,
                 OwnerId = ownerId,
-                OriginalFileName = safeName,
+                // 磁盘文件名用安全名（safeName），但原始文件名保留用户提供的值，
+                // 与 CopyFilesAsync 的 fileInfo.Name 行为保持一致，避免静默改写。
+                // BuildSafeFileName 对 null/空串已安全归一，这里只需处理 null 的展示兜底。
+                OriginalFileName = originalFileName ?? safeName,
                 StoredFileName = storedName,
                 RelativePath = Path.GetRelativePath(DataRoot, destination),
                 FileExtension = fileInfo.Extension,
@@ -260,9 +263,10 @@ public sealed class AttachmentStorageService
             throw new FileNotFoundException("附件文件不存在。", path);
         }
 
-        Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"")
+        Process.Start(new ProcessStartInfo("explorer.exe")
         {
-            UseShellExecute = true
+            UseShellExecute = true,
+            ArgumentList = { $"/select,{path}" }
         });
     }
 
@@ -274,6 +278,11 @@ public sealed class AttachmentStorageService
 
     private static string BuildSafeFileName(string fileName)
     {
+        if (string.IsNullOrEmpty(fileName))
+        {
+            return "attachment";
+        }
+
         var invalidChars = Path.GetInvalidFileNameChars();
         var safeChars = fileName.Select(ch => invalidChars.Contains(ch) ? '_' : ch).ToArray();
         var safeName = new string(safeChars).Trim();

@@ -137,7 +137,11 @@ public sealed class DesignConditionAttachmentStorageService
         {
             throw new FileNotFoundException("条件文件不存在。", path);
         }
-        Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{path}\"") { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo("explorer.exe")
+        {
+            UseShellExecute = true,
+            ArgumentList = { $"/select,{path}" }
+        });
     }
 
     public DesignConditionStagedDelete StageDelete(DesignConditionAttachment attachment)

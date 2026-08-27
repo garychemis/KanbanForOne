@@ -8,24 +8,6 @@ using KanbanForOne.Services;
 
 namespace KanbanForOne.Controls;
 
-public enum WorkHourDialogAction
-{
-    None,
-    Save,
-    Delete
-}
-
-public sealed record WorkHourEntryDialogResult(
-    WorkHourDialogAction Action,
-    Guid Id,
-    DateTime WorkDate,
-    string ProjectNumber,
-    string Discipline,
-    string WorkActivity,
-    int HourUnits,
-    string Remark,
-    DateTime CreatedAt);
-
 public partial class WorkHourEntryDialog : Window
 {
     private readonly WorkHourEntry? _sourceEntry;
