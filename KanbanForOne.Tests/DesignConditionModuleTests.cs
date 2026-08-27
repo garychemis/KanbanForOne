@@ -306,9 +306,35 @@ public sealed class DesignConditionModuleTests
     }
 
     [Fact]
+    public async Task Repository_does_not_persist_fixed_drawing_sizes_as_dynamic_options()
+    {
+        var root = CreateRoot();
+        try
+        {
+            var context = await CreateContextAsync(root);
+            var entry = CreateEntry(DateTime.Today);
+            entry.DrawingSize = "A1+0.25";
+            entry.DrawingCounts = "1";
+            entry.DrawingCount = 1;
+
+            await context.Repository.SaveAggregateAsync(entry, [], []);
+
+            await using var connection = context.Database.CreateConnection();
+            await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
+            Assert.Equal("0", await ScalarAsync(connection,
+                "SELECT COUNT(*) FROM DesignConditionOptions WHERE OptionType='DrawingSize' AND Value='A1+0.25'"));
+        }
+        finally
+        {
+            SqliteConnection.ClearAllPools();
+            Directory.Delete(root, true);
+        }
+    }
+
+    [Fact]
     public void Editor_serializes_rows_and_blocks_duplicate_sizes()
     {
-        var editor = new DesignConditionEditorViewModel(null, DateTime.Today, ["工艺", "设备"], ["张三"], ["A1", "A4"])
+        var editor = new DesignConditionEditorViewModel(null, DateTime.Today, ["工艺", "设备"], ["张三"])
         {
             ProjectNumber = "P100",
             IssuingDiscipline = "工艺",
@@ -355,7 +381,7 @@ public sealed class DesignConditionModuleTests
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
         };
-        var editor = new DesignConditionEditorViewModel(legacy, DateTime.Today, ["工艺", "设备"], ["张三"], ["A0", "A1"]);
+        var editor = new DesignConditionEditorViewModel(legacy, DateTime.Today, ["工艺", "设备"], ["张三"]);
         // 无有效分图幅数据时按旧单值字段逐项兜底加载
         Assert.Equal(2, editor.DrawingRows.Count);
         Assert.Equal("A0", editor.DrawingRows[0].DrawingSize);
@@ -382,12 +408,48 @@ public sealed class DesignConditionModuleTests
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now
         };
-        var editor = new DesignConditionEditorViewModel(modern, DateTime.Today, ["工艺", "设备"], ["张三"], ["A0", "A1"]);
+        var editor = new DesignConditionEditorViewModel(modern, DateTime.Today, ["工艺", "设备"], ["张三"]);
         Assert.Equal(2, editor.DrawingRows.Count);
         Assert.Equal("A0", editor.DrawingRows[0].DrawingSize);
         Assert.Equal("1", editor.DrawingRows[0].DrawingCountText);
         Assert.Equal("A1", editor.DrawingRows[1].DrawingSize);
         Assert.Equal("5", editor.DrawingRows[1].DrawingCountText);
+    }
+
+    [Fact]
+    public void Editor_clears_unknown_legacy_size_without_mutating_source()
+    {
+        var source = new DesignConditionEntry
+        {
+            ProjectNumber = "P100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "张三",
+            IssuedDate = new DateTime(2026, 8, 20),
+            ConditionName = "旧图幅",
+            DrawingSize = "A1|自定义",
+            DrawingCounts = "1|4",
+            DrawingCount = 5
+        };
+
+        var editor = new DesignConditionEditorViewModel(source, DateTime.Today, ["工艺", "设备"], ["张三"]);
+
+        Assert.Equal(DesignConditionDrawingSizeCatalog.Names, editor.DrawingSizes);
+        Assert.Equal("A1", editor.DrawingRows[0].DrawingSize);
+        Assert.Equal(string.Empty, editor.DrawingRows[1].DrawingSize);
+        Assert.Equal("4", editor.DrawingRows[1].DrawingCountText);
+        Assert.Contains("自定义", editor.ValidationMessage);
+        Assert.Equal("A1|自定义", source.DrawingSize);
+    }
+
+    [Fact]
+    public void Editor_rejects_programmatically_assigned_unknown_size()
+    {
+        var editor = CreateValidEditor();
+        editor.DrawingRows[0].DrawingSize = "自定义";
+
+        Assert.False(editor.TryBuild(out _));
+        Assert.Contains("固定图幅", editor.ValidationMessage);
     }
 
     [Fact]
@@ -681,6 +743,21 @@ public sealed class DesignConditionModuleTests
         CreatedAt = DateTime.Now,
         UpdatedAt = DateTime.Now
     };
+
+    private static DesignConditionEditorViewModel CreateValidEditor()
+    {
+        var editor = new DesignConditionEditorViewModel(null, DateTime.Today, ["工艺", "设备"], ["张三"])
+        {
+            ProjectNumber = "P100",
+            IssuingDiscipline = "工艺",
+            ReceivingDiscipline = "设备",
+            Receiver = "张三",
+            ConditionName = "固定图幅条件"
+        };
+        editor.DrawingRows[0].DrawingSize = "A1";
+        editor.DrawingRows[0].DrawingCountText = "1";
+        return editor;
+    }
 
     private static async Task<TestContext> CreateContextAsync(string root)
     {

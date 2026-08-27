@@ -113,10 +113,10 @@
                                         </DataGridTemplateColumn.CellTemplate>
                                         <DataGridTemplateColumn.CellEditingTemplate>
                                             <DataTemplate>
-                                                <ComboBox IsEditable="True"
+                                                <ComboBox IsEditable="False"
                                                           ItemsSource="{Binding DataContext.DrawingSizes, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                          Text="{Binding DrawingSize, UpdateSourceTrigger=PropertyChanged}"
-                                                          HorizontalContentAlignment="Center" Loaded="OnDrawingComboBoxLoaded"
+                                                          SelectedItem="{Binding DrawingSize, UpdateSourceTrigger=PropertyChanged}"
+                                                          HorizontalContentAlignment="Center"
                                                           AutomationProperties.Name="条件图幅"
                                                           Style="{StaticResource ConditionComboBoxStyle}" Height="34" />
                                             </DataTemplate>

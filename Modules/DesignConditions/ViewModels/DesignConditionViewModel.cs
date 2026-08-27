@@ -161,13 +161,7 @@ public sealed class DesignConditionViewModel : ObservableObject
         if (HasError) return;
         var disciplines = (await _options.GetAsync("Discipline")).Concat(_allEntries.SelectMany(item => new[] { item.IssuingDiscipline, item.ReceivingDiscipline })).Where(value => value.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(value => value).ToArray();
         var receivers = (await _options.GetAsync("Receiver")).Concat(_allEntries.Select(item => item.Receiver)).Where(value => value.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(value => value).ToArray();
-        var sizes = (await _options.GetAsync("DrawingSize"))
-            .Concat(_allEntries.SelectMany(item => item.DrawingSpecifications).Select(item => item.DrawingSize))
-            .Where(value => value.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(value => value)
-            .ToArray();
-        var editor = new DesignConditionEditorViewModel(source, defaultDate, disciplines, receivers, sizes);
+        var editor = new DesignConditionEditorViewModel(source, defaultDate, disciplines, receivers);
         var action = DesignConditionEditorDialog.Show(DialogHelper.GetDialogOwner(), editor, _storage);
         if (action == DesignConditionEditorAction.None) return;
         if (action == DesignConditionEditorAction.Delete && source is not null)

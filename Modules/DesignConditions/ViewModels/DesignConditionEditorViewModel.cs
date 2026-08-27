@@ -19,18 +19,17 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
     private string _conditionName = string.Empty;
     private string _revision = string.Empty;
     private string _validationMessage = string.Empty;
+    private readonly List<string> _unknownDrawingSizes = [];
 
     public DesignConditionEditorViewModel(
         DesignConditionEntry? source,
         DateTime defaultIssuedDate,
         IReadOnlyList<string> disciplines,
-        IReadOnlyList<string> receivers,
-        IReadOnlyList<string> drawingSizes)
+        IReadOnlyList<string> receivers)
     {
         Source = source;
         Disciplines = disciplines;
         Receivers = receivers;
-        DrawingSizes = drawingSizes;
         AttachFilesCommand = new RelayCommand(AttachDroppedFiles);
         AddDrawingRowCommand = new RelayCommand(() => AddDrawingRow());
         RemoveDrawingRowCommand = new RelayCommand(RemoveDrawingRow);
@@ -58,6 +57,10 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
             {
                 Attachments.Add(attachment);
             }
+            if (_unknownDrawingSizes.Count > 0)
+            {
+                ValidationMessage = $"记录“{ConditionName}”包含无法计算折 A1 的历史图幅：{string.Join("、", _unknownDrawingSizes.Distinct(StringComparer.OrdinalIgnoreCase))}。请重新选择固定图幅后保存。";
+            }
         }
         RefreshDrawingStatistics();
     }
@@ -67,7 +70,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
     public DateTime CreatedAt { get; }
     public IReadOnlyList<string> Disciplines { get; }
     public IReadOnlyList<string> Receivers { get; }
-    public IReadOnlyList<string> DrawingSizes { get; }
+    public IReadOnlyList<string> DrawingSizes { get; } = DesignConditionDrawingSizeCatalog.Names;
     public ObservableCollection<DesignConditionDrawingRow> DrawingRows { get; } = new();
     public ObservableCollection<DesignConditionAttachment> Attachments { get; } = new();
     public ObservableCollection<DesignConditionAttachment> DeletedAttachments { get; } = new();
@@ -205,12 +208,17 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
                 errorMessage = $"第 {index + 1} 行：自定义图幅不能包含半角竖线 |。";
                 return false;
             }
+            if (!DesignConditionDrawingSizeCatalog.TryGetDefinition(size, out var definition))
+            {
+                errorMessage = $"第 {index + 1} 行：请选择固定图幅。";
+                return false;
+            }
             if (!int.TryParse(rows[index].DrawingCountText.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var count) || count <= 0)
             {
                 errorMessage = $"第 {index + 1} 行：条件数量必须是大于 0 的整数。";
                 return false;
             }
-            specifications.Add(new DesignConditionDrawingSpec(size, count));
+            specifications.Add(new DesignConditionDrawingSpec(definition.Name, count));
         }
 
         if (!DesignConditionDrawingCodec.TrySerialize(specifications, out storage, out errorMessage))
@@ -233,7 +241,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
             foreach (var item in source.DrawingSpecifications)
             {
                 DrawingRows.Add(new DesignConditionDrawingRow(
-                    item.DrawingSize,
+                    GetEditableDrawingSize(item.DrawingSize),
                     item.DrawingCount.ToString(CultureInfo.InvariantCulture)));
             }
             return;
@@ -245,10 +253,25 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
         for (var index = 0; index < rowCount; index++)
         {
             DrawingRows.Add(new DesignConditionDrawingRow(
-                index < sizes.Length ? sizes[index] : string.Empty,
+                index < sizes.Length ? GetEditableDrawingSize(sizes[index]) : string.Empty,
                 index < counts.Length ? counts[index] : string.Empty));
         }
         if (DrawingRows.Count == 0) DrawingRows.Add(new DesignConditionDrawingRow());
+    }
+
+    private string GetEditableDrawingSize(string drawingSize)
+    {
+        if (DesignConditionDrawingSizeCatalog.TryGetDefinition(drawingSize, out var definition))
+        {
+            return definition.Name;
+        }
+
+        var unknown = drawingSize.Trim();
+        if (unknown.Length > 0)
+        {
+            _unknownDrawingSizes.Add(unknown);
+        }
+        return string.Empty;
     }
 
     private void OnDrawingRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)

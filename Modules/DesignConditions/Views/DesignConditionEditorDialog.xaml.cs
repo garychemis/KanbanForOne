@@ -68,16 +68,6 @@ public partial class DesignConditionEditorDialog : Window
         }, DispatcherPriority.Input);
     }
 
-    private void OnDrawingComboBoxLoaded(object sender, RoutedEventArgs e)
-    {
-        if (sender is not ComboBox comboBox) return;
-        comboBox.ApplyTemplate();
-        if (comboBox.Template.FindName("PART_EditableTextBox", comboBox) is TextBox textBox)
-        {
-            textBox.TextAlignment = TextAlignment.Center;
-        }
-    }
-
     private void OnDrawingCountPreviewTextInput(object sender, TextCompositionEventArgs e)
     {
         if (sender is TextBox textBox)

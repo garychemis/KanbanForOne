@@ -127,7 +127,6 @@ public sealed class DesignConditionRepository
                 (Type: "Discipline", Value: entry.ReceivingDiscipline),
                 (Type: "Receiver", Value: entry.Receiver)
             }
-            .Concat(entry.DrawingSpecifications.Select(item => (Type: "DrawingSize", Value: item.DrawingSize)))
             .Where(item => !string.IsNullOrWhiteSpace(item.Value));
         foreach (var option in optionValues)
         {
