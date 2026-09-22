@@ -1,7 +1,7 @@
 <UserControl x:Class="KanbanForOne.Modules.DesignConditions.Views.DesignConditionView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:controls="clr-namespace:KanbanForOne.Controls">
+             xmlns:controls="clr-namespace:KanbanForOne.Controls" Style="{StaticResource {x:Type UserControl}}">
     <UserControl.Resources>
         <ResourceDictionary>
         <ResourceDictionary.MergedDictionaries>
@@ -19,7 +19,7 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="12" />
             <Setter Property="Effect">
-                <Setter.Value><DropShadowEffect BlurRadius="16" ShadowDepth="5" Direction="270" Opacity="0.07" /></Setter.Value>
+                <Setter.Value><DropShadowEffect BlurRadius="16" ShadowDepth="2" Direction="270" Opacity="0.06" /></Setter.Value>
             </Setter>
         </Style>
         <Style x:Key="ConditionPrimaryButtonStyle" TargetType="Button">
@@ -27,12 +27,12 @@
             <Setter Property="Background" Value="{StaticResource ConditionModuleBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionModuleBrush}" />
             <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Cursor" Value="Hand" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -55,9 +55,9 @@
             <Setter Property="Height" Value="38" /><Setter Property="MinWidth" Value="104" /><Setter Property="Padding" Value="18,0" />
             <Setter Property="Background" Value="{StaticResource ConditionModuleSoftBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="#315C55" /><Setter Property="FontSize" Value="12" />
-            <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-                <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10">
+                <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <ControlTemplate.Triggers>
@@ -71,11 +71,11 @@
         <Style x:Key="ConditionModeRadioStyle" TargetType="RadioButton">
             <Setter Property="Height" Value="30" /><Setter Property="MinWidth" Value="76" /><Setter Property="Padding" Value="12,0" />
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" /><Setter Property="FontSize" Value="12" />
-            <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="Chrome" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="8">
+                        <Border x:Name="Chrome" Padding="{TemplateBinding Padding}" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -105,7 +105,7 @@
         <Style x:Key="ConditionCellStyle" TargetType="DataGridCell">
             <Setter Property="Padding" Value="12,0" /><Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" /><Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style x:Key="ConditionRowStyle" TargetType="DataGridRow">
@@ -143,7 +143,7 @@
 
     <Grid Background="{StaticResource AppBackgroundBrush}" TextElement.FontFamily="{StaticResource AppFontFamily}"
           TextElement.Foreground="{StaticResource TextPrimaryBrush}" TextOptions.TextFormattingMode="Display">
-        <Grid Margin="28,22,28,24">
+        <Grid Margin="{StaticResource PageSpacing}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /><RowDefinition Height="16" /><RowDefinition Height="Auto" />
                 <RowDefinition Height="12" /><RowDefinition Height="Auto" /><RowDefinition Height="16" /><RowDefinition Height="*" />
@@ -368,7 +368,7 @@
                                                         <Style TargetType="ProgressBar" BasedOn="{StaticResource ConditionProgressStyle}">
                                                             <Setter Property="Foreground" Value="#7FA59D" />
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="0"><Setter Property="Foreground" Value="#3F746B" /></DataTrigger>
+                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="0"><Setter Property="Foreground" Value="{StaticResource AccentBrush}" /></DataTrigger>
                                                                 <DataTrigger Binding="{Binding LevelDepth}" Value="1"><Setter Property="Foreground" Value="#5D8C82" /></DataTrigger>
                                                                 <DataTrigger Binding="{Binding LevelDepth}" Value="2"><Setter Property="Foreground" Value="#7FA59D" /></DataTrigger>
                                                             </Style.Triggers>

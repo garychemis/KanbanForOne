@@ -23,7 +23,14 @@ public sealed class ReleaseNotesServiceTests
     [Fact]
     public void FromAssembly_reads_release_notes_from_project_metadata()
     {
-        var entries = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
+        var releases = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
+
+        Assert.Equal(12, releases.Count);
+        Assert.Equal("v0.5.1", releases[0].Version);
+        Assert.Equal("2026-09-22", releases[0].Date);
+        Assert.Equal("优化了UI", Assert.Single(releases[0].Items));
+
+        IReadOnlyList<ReleaseNoteEntry> entries = releases.Skip(1).ToArray();
 
         Assert.Equal(11, entries.Count);
         Assert.Equal("V0.5.0.5", entries[0].Version);

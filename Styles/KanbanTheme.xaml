@@ -21,18 +21,18 @@
     <converters:TagListDisplayConverter x:Key="TagListDisplayConverter" />
     <converters:SizeMultiplierConverter x:Key="SizeMultiplierConverter" />
 
-    <!-- Primitive brand colors: shared with icon/kanban41.svg. -->
-    <Color x:Key="BrandNavyColor">#172730</Color>
-    <Color x:Key="BrandNavyHoverColor">#223B46</Color>
-    <Color x:Key="BrandNavyPressedColor">#0F1F27</Color>
-    <Color x:Key="BrandTealColor">#5C9187</Color>
-    <Color x:Key="BrandPaperColor">#F7F6F1</Color>
+    <!-- Low-saturation palette for long desktop sessions. -->
+    <Color x:Key="BrandNavyColor">#283D38</Color>
+    <Color x:Key="BrandNavyHoverColor">#3C655A</Color>
+    <Color x:Key="BrandNavyPressedColor">#294B42</Color>
+    <Color x:Key="BrandTealColor">#527D70</Color>
+    <Color x:Key="BrandPaperColor">#F7F8F5</Color>
 
-    <!-- Semantic surfaces and states derived from the icon palette. -->
+    <!-- Semantic surfaces and states shared by every workspace and editor. -->
     <SolidColorBrush x:Key="BrandNavyBrush" Color="{StaticResource BrandNavyColor}" />
     <SolidColorBrush x:Key="BrandTealBrush" Color="{StaticResource BrandTealColor}" />
     <SolidColorBrush x:Key="BrandPaperBrush" Color="{StaticResource BrandPaperColor}" />
-    <SolidColorBrush x:Key="BrandTealTintBrush" Color="#DDEAE7" />
+    <SolidColorBrush x:Key="BrandTealTintBrush" Color="#E3EDE9" />
     <SolidColorBrush x:Key="WorkHourModuleTintBrush" Color="#F8F5EF" />
     <SolidColorBrush x:Key="WorkHourModuleHoverBrush" Color="#F3EDE3" />
     <SolidColorBrush x:Key="WorkHourModuleBorderBrush" Color="#E5DAC9" />
@@ -45,25 +45,37 @@
     <SolidColorBrush x:Key="ArchiveModuleHoverBrush" Color="#EFE7D9" />
     <SolidColorBrush x:Key="ArchiveModuleBorderBrush" Color="#E0D5C0" />
     <SolidColorBrush x:Key="ArchiveModuleTextBrush" Color="#6E6250" />
-    <SolidColorBrush x:Key="ArchiveColumnBackgroundBrush" Color="#66FBF8F2" />
-    <SolidColorBrush x:Key="ArchiveCardTintBrush" Color="#F7F1E5" />
-    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#EDF1F0" />
-    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#EDF1F0" />
+    <SolidColorBrush x:Key="ArchiveColumnBackgroundBrush" Color="#F5F3ED" />
+    <SolidColorBrush x:Key="ArchiveCardTintBrush" Color="#F8F5EC" />
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F1F3EF" />
+    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#F1F3EF" />
     <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="{StaticResource BrandPaperColor}" />
-    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#F8F9F7" />
+    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#F8F9F6" />
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource BrandNavyColor}" />
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#647279" />
-    <SolidColorBrush x:Key="BorderBrushSoft" Color="#D7DEDC" />
-    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#DDEAE7" />
-    <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#40F8FAFC" />
-    <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#FFF8B7" />
-    <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#F7E98A" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FCFCFA" />
-    <SolidColorBrush x:Key="HoverBrush" Color="#E8EFED" />
-    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource BrandNavyColor}" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#65716C" />
+    <SolidColorBrush x:Key="BorderBrushSoft" Color="#DEE4DD" />
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E3EDE9" />
+    <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#F6F7F3" />
+    <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#F8F3E3" />
+    <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#E7DFC8" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FDFDF9" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#EBF0EA" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#426D5E" />
     <SolidColorBrush x:Key="ButtonHoverBrush" Color="{StaticResource BrandNavyHoverColor}" />
     <SolidColorBrush x:Key="ButtonPressedBrush" Color="{StaticResource BrandNavyPressedColor}" />
-    <SolidColorBrush x:Key="DisabledBrush" Color="#AAB5B3" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#A8B3AB" />
+
+    <!-- Shared interaction and spacing tokens. -->
+    <SolidColorBrush x:Key="DangerBrush" Color="#A34F59" />
+    <SolidColorBrush x:Key="DangerTintBrush" Color="#F8ECEB" />
+    <SolidColorBrush x:Key="DangerBorderBrush" Color="#EBD4D3" />
+    <Thickness x:Key="PageSpacing">24</Thickness>
+    <CornerRadius x:Key="ControlCornerRadius">6</CornerRadius>
+    <Style x:Key="KeyboardFocusStyle" TargetType="Control">
+        <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control">
+            <Border Margin="2" BorderBrush="{StaticResource BrandTealBrush}" BorderThickness="1" CornerRadius="4" />
+        </ControlTemplate></Setter.Value></Setter>
+    </Style>
 
     <FontFamily x:Key="AppFontFamily">Segoe UI Variable, Segoe UI, Microsoft YaHei UI, Microsoft YaHei</FontFamily>
     <FontFamily x:Key="AppNumericFontFamily">Cascadia Mono, Consolas, Segoe UI</FontFamily>
@@ -75,7 +87,7 @@
     </Style>
 
     <Style x:Key="AppPageTitleTextStyle" TargetType="{x:Type TextBlock}">
-        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
@@ -126,9 +138,13 @@
     <Style TargetType="{x:Type Window}">
         <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="UseLayoutRounding" Value="True" />
     </Style>
 
     <Style x:Key="IconButtonStyle" TargetType="{x:Type Button}">
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="MinWidth" Value="32" />
         <Setter Property="Height" Value="32" />
         <Setter Property="Padding" Value="8,0" />
@@ -143,8 +159,8 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="8">
-                        <ContentPresenter HorizontalAlignment="Center"
+                            CornerRadius="{StaticResource ControlCornerRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -178,8 +194,8 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10">
-                        <ContentPresenter HorizontalAlignment="Center"
+                            CornerRadius="{StaticResource ControlCornerRadius}">
+                        <ContentPresenter Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" HorizontalAlignment="Center"
                                           VerticalAlignment="Center" />
                     </Border>
                     <ControlTemplate.Triggers>
@@ -217,10 +233,10 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="Chrome"
-                            CornerRadius="7">
+                            CornerRadius="{StaticResource ControlCornerRadius}">
                         <Border.Background>
                             <MultiBinding Converter="{StaticResource FilterSelectedBackgroundConverter}"
-                                          ConverterParameter="#DDEAE7|#00FFFFFF">
+                                          ConverterParameter="#E3EDE9|#00FFFFFF">
                                 <Binding Path="DataContext.CurrentFilter"
                                          RelativeSource="{RelativeSource TemplatedParent}" />
                                 <Binding Path="CommandParameter"
@@ -253,7 +269,7 @@
         <Setter Property="Padding" Value="12,7" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-        <Setter Property="Background" Value="#FFFFFF" />
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template">
             <Setter.Value>
@@ -261,7 +277,7 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="10">
+                            CornerRadius="{StaticResource ControlCornerRadius}">
                         <ScrollViewer x:Name="PART_ContentHost"
                                       Margin="{TemplateBinding Padding}" />
                     </Border>
@@ -279,14 +295,6 @@
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="16"
-                                  ShadowDepth="5"
-                                  Direction="270"
-                                  Opacity="0.07" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <Style x:Key="ListCardButtonStyle" TargetType="{x:Type Button}">

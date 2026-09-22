@@ -178,7 +178,7 @@ public partial class NoteCardControl : UserControl
 
         Cursor = Cursors.Hand;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#E0CE76")!;
+        CardBorder.BorderBrush = (Brush)FindResource("WorkHourModuleBorderBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 16,
@@ -243,7 +243,7 @@ public partial class NoteCardControl : UserControl
         e.Effects = DragDropEffects.Copy;
         DropHint.Visibility = Visibility.Visible;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#D6B63F")!;
+        CardBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
         e.Handled = true;
     }
 
@@ -259,13 +259,7 @@ public partial class NoteCardControl : UserControl
         CardContent.Effect = null;
         InlineRestoreButton.Opacity = 0;
         CardBorder.BorderBrush = (Brush)FindResource("NoteCardBorderBrush");
-        CardBorder.Effect = new DropShadowEffect
-        {
-            BlurRadius = 12,
-            ShadowDepth = 4,
-            Direction = 270,
-            Opacity = 0.05
-        };
+        CardBorder.Effect = null;
     }
 
     private void ApplyDraggingVisualState()
@@ -278,7 +272,7 @@ public partial class NoteCardControl : UserControl
         CardBorder.Opacity = 0.75;
         CardContent.Opacity = 1;
         CardContent.Effect = null;
-        CardBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#C3A737")!;
+        CardBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 10,

@@ -2,7 +2,7 @@
              x:Name="Root"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             MinHeight="42">
+             MinHeight="42" Style="{StaticResource {x:Type UserControl}}">
     <Border x:Name="Container"
             Padding="12,8,10,4"
             CornerRadius="14"

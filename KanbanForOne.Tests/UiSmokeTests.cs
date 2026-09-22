@@ -68,6 +68,9 @@ public sealed class UiSmokeTests
             app.InitializeComponent();
             VerifyDesignConditionDrawingGridStyles();
 
+            // Capture the same container as this window: App startup can replace
+            // the static provider when the test subsequently pumps the dispatcher.
+            var notifications = App.Services.GetRequiredService<NotificationService>();
             var window = new MainWindow();
             window.Show();
             DoEvents();
@@ -90,6 +93,8 @@ public sealed class UiSmokeTests
             VerifyCalendarChipRefresh(vm, calendarView);
             VerifyDesignConditionPageAndCalendar(vm, designConditionView, calendarView);
             VerifyUnifiedBackupRoundTrip();
+            VerifyWorkspaceLayout(window, vm, notifications);
+            VerifyEditors(window, vm);
 
             window.Close();
             app.Shutdown();
@@ -124,6 +129,135 @@ public sealed class UiSmokeTests
         Assert.IsType<Style>(resources["ConditionDrawingDeleteButtonStyle"]);
     }
 
+    private static void VerifyWorkspaceLayout(MainWindow window, MainWindowViewModel vm, NotificationService notifications)
+    {
+        Assert.Equal(WindowStyle.None, window.WindowStyle);
+        foreach (var width in new[] { 1100d, 1512d, 1920d })
+        {
+            window.Width = width;
+            window.Height = width == 1100 ? 720 : 900;
+            foreach (var page in new[] { "Board", "Calendar", "WorkHourSummary", "DesignConditions", "Archived", "Backup", "Settings", "About" })
+            {
+                vm.ChangeFilterCommand.Execute(page);
+                notifications.Notify("界面验证通知");
+                DoEvents();
+                window.UpdateLayout();
+                Assert.True(IsVisibleText(window, "界面验证通知"),
+                    $"{page}: global notifications must remain visible; current={vm.NotificationText}; matches={FindElementsByText(window, "界面验证通知").Count}");
+                var close = FindButtons(window).Single(button =>
+                    System.Windows.Automation.AutomationProperties.GetName(button) == "关闭");
+                var bounds = close.TransformToAncestor(window).TransformBounds(new Rect(close.RenderSize));
+                Assert.True(bounds.Right <= window.ActualWidth && bounds.Left >= 0,
+                    $"{page}: close button is outside the window at {width}px");
+                if (page == "Board")
+                {
+                    var column = FindVisualChild<KanbanColumnControl>(window)!;
+                    var board = FindVisualChild<BoardView>(window)!;
+                    Assert.True(column.ActualHeight <= board.ActualHeight,
+                        "Board columns must fit the available vertical space");
+                    if (width == 1920)
+                        Assert.True(column.ActualWidth > 280, "Columns should expand on a wide workspace");
+                    if (width == 1100)
+                    {
+                        var scroll = (ScrollViewer)board.FindName("BoardScrollViewer");
+                        scroll.ScrollToRightEnd();
+                        DoEvents();
+                        Assert.True(scroll.HorizontalOffset > 0, "Narrow windows must allow access to all five columns");
+                        scroll.ScrollToLeftEnd();
+                        DoEvents();
+                    }
+                }
+                if (page == "Calendar" && width == 1100)
+                {
+                    var count = FindElementsByText(window, "条 1").OfType<TextBlock>().FirstOrDefault();
+                    Assert.NotNull(count);
+                    Assert.True(count.IsVisible, "A compact calendar day must retain its design-condition count");
+                    var countBounds = count.TransformToAncestor(window).TransformBounds(new Rect(count.RenderSize));
+                    Assert.True(countBounds.Bottom <= window.ActualHeight, "Calendar summaries must fit the short window");
+                }
+                SavePreview(window, $"{page}-{width:0}");
+            }
+        }
+    }
+
+    private static void SavePreview(FrameworkElement element, string name)
+    {
+        var directory = Environment.GetEnvironmentVariable("KANBAN_UI_PREVIEW_DIR");
+        if (string.IsNullOrWhiteSpace(directory)) return;
+        // Let popup layouts and the existing 150–220 ms editor animation settle.
+        var renderAt = Environment.TickCount64 + 300;
+        WaitUntil(() => Environment.TickCount64 >= renderAt);
+        element.UpdateLayout();
+        Directory.CreateDirectory(directory);
+        var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
+            (int)element.ActualWidth, (int)element.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(element);
+        var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
+        encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+        using var output = File.Create(Path.Combine(directory, name + ".png"));
+        encoder.Save(output);
+    }
+
+    private static void VerifyEditors(MainWindow window, MainWindowViewModel vm)
+    {
+        window.Width = 1512;
+        window.Height = 900;
+        vm.ChangeFilterCommand.Execute("Board");
+        DoEvents();
+        vm.Board.OpenTaskCommand.Execute(vm.Board.AllTasks.First());
+        WaitUntil(() => vm.Board.IsSpotlightOpen);
+        DoEvents();
+        SavePreview(window, "Task-details");
+        vm.Board.CloseSpotlightCommand.Execute(null);
+        DoEvents();
+        vm.Board.CreateNoteCommand.Execute(KanbanColumnKind.Notes);
+        WaitUntil(() => vm.Board.IsSpotlightOpen);
+        SavePreview(window, "Note-details");
+        vm.Board.CloseSpotlightCommand.Execute(null);
+        DoEvents();
+
+        var editorVm = new KanbanForOne.Modules.DesignConditions.ViewModels.DesignConditionEditorViewModel(
+            null, DateTime.Today, new[] { "工艺", "设备" }, new[] { "测试人员" });
+        var condition = (DesignConditionEditorDialog)Activator.CreateInstance(
+            typeof(DesignConditionEditorDialog), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, new object[] { editorVm, App.Services.GetRequiredService<DesignConditionAttachmentStorageService>() }, null)!;
+        condition.Owner = window;
+        condition.Show();
+        DoEvents();
+        Assert.Equal(WindowStyle.None, condition.WindowStyle);
+        Assert.True(IsVisibleText(condition, "设计条件详情"));
+        var combo = FindVisualChild<ComboBox>(condition)!;
+        combo.IsDropDownOpen = true;
+        DoEvents();
+        Assert.True(((Popup)combo.Template.FindName("PART_Popup", combo)).IsOpen);
+        combo.SelectedIndex = 0;
+        combo.IsDropDownOpen = false;
+        Assert.Equal("工艺", editorVm.IssuingDiscipline);
+        SavePreview(condition, "Design-condition-editor");
+        condition.Close();
+
+        var hours = (WorkHourEntryDialog)Activator.CreateInstance(
+            typeof(WorkHourEntryDialog), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, new object?[] { null, DateTime.Today, new[] { "工艺", "设备" }, new[] { "设计", "校核" } }, null)!;
+        hours.Owner = window;
+        hours.Show();
+        DoEvents();
+        Assert.Equal(WindowStyle.None, hours.WindowStyle);
+        var date = (DatePicker)hours.FindName("WorkDatePicker");
+        date.IsDropDownOpen = true;
+        DoEvents();
+        Assert.True(date.IsDropDownOpen);
+        date.IsDropDownOpen = false;
+        SavePreview(hours, "Work-hour-editor");
+        hours.Close();
+        var confirm = new ConfirmDialog("删除记录", "删除后无法撤销，请确认是否继续。", "删除", "取消") { Owner = window };
+        confirm.Show();
+        DoEvents();
+        Assert.Equal(WindowStyle.None, confirm.WindowStyle);
+        SavePreview(confirm, "Confirmation");
+        confirm.Close();
+    }
+
     private static void VerifyArchivePage(MainWindowViewModel vm, BoardView boardView)
     {
         // 默认看板：归档横条不可见
@@ -146,6 +280,7 @@ public sealed class UiSmokeTests
         Assert.True(IsVisibleText(dialog, "选择归档分区"), "归档对话框标题应渲染");
         Assert.True(IsVisibleText(dialog, "默认"), "默认分区标签应渲染");
         Assert.True(IsVisibleText(dialog, "0 项"), "计数徽章应渲染");
+        SavePreview(dialog, "Archive-picker");
         dialog.Close();
 
         // 分区管理对话框渲染：副标题、搜索框、新建输入、默认分区无删除按钮
@@ -157,6 +292,7 @@ public sealed class UiSmokeTests
         Assert.True(textBoxes.Count >= 2, "管理对话框应包含搜索框与新建输入框");
         var deleteButtons = FindButtons(picker).Where(button => button.IsVisible && ContainsText(button, "删除")).ToArray();
         Assert.True(deleteButtons.Length == 0, "默认分区不应显示删除按钮");
+        SavePreview(picker, "Archive-manager");
         picker.Close();
     }
 

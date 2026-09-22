@@ -11,7 +11,7 @@
              DragEnter="OnFileDragEnter"
              DragOver="OnFileDragOver"
              DragLeave="OnFileDragLeave"
-             Drop="OnFileDrop">
+             Drop="OnFileDrop" Style="{StaticResource {x:Type UserControl}}">
     <Grid>
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">

@@ -289,17 +289,17 @@ public partial class KanbanColumnControl : UserControl
 
         if (isAllowed)
         {
-            ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#BFDBFE")!;
-            ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#EAF3FF")!;
-            ColumnDropZone.Background = (Brush)new BrushConverter().ConvertFromString("#EFF6FF")!;
-            ColumnDropZone.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#93C5FD")!;
+            ColumnBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
+            ColumnBorder.Background = (Brush)FindResource("SelectedBackgroundBrush");
+            ColumnDropZone.Background = (Brush)FindResource("SelectedBackgroundBrush");
+            ColumnDropZone.BorderBrush = (Brush)FindResource("BrandTealBrush");
             ColumnDropZone.Opacity = 1;
             ShowDropIndicator(e);
         }
         else
         {
-            ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#FCA5A5")!;
-            ColumnBorder.Background = (Brush)new BrushConverter().ConvertFromString("#FFF1F2")!;
+            ColumnBorder.BorderBrush = (Brush)FindResource("DangerBorderBrush");
+            ColumnBorder.Background = (Brush)FindResource("DangerTintBrush");
             DropIndicator.Visibility = Visibility.Collapsed;
         }
 
@@ -323,12 +323,12 @@ public partial class KanbanColumnControl : UserControl
 
     private void ResetDragState()
     {
-        ColumnBorder.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#55FFFFFF")!;
+        ColumnBorder.BorderBrush = (Brush)FindResource("BorderBrushSoft");
         ColumnBorder.Background = IsArchiveFilter
             ? (Brush)FindResource("ArchiveColumnBackgroundBrush")
             : (Brush)FindResource("ColumnBackgroundBrush");
         ColumnDropZone.Background = Brushes.Transparent;
-        ColumnDropZone.BorderBrush = (Brush)new BrushConverter().ConvertFromString("#66CBD5E1")!;
+        ColumnDropZone.BorderBrush = (Brush)FindResource("BorderBrushSoft");
         ColumnDropZone.Opacity = IsMouseOver ? 0.48 : 0.18;
         DropIndicator.Visibility = Visibility.Collapsed;
         DropIndicator.BeginAnimation(MarginProperty, null);

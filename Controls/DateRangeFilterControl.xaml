@@ -3,7 +3,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              MinWidth="236"
-             Height="38">
+             Height="38" Style="{StaticResource {x:Type UserControl}}">
     <UserControl.Resources>
         <Style x:Key="TopDatePickerStyle"
                TargetType="{x:Type DatePicker}"
@@ -14,10 +14,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Border Background="#FAFAFA"
-            BorderBrush="#F1F2F4"
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrushSoft}"
             BorderThickness="1"
-            CornerRadius="10">
+            CornerRadius="6">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="8" />

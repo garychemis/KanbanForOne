@@ -3,7 +3,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              MinHeight="92"
-             PreviewMouseWheel="OnPreviewMouseWheel">
+             PreviewMouseWheel="OnPreviewMouseWheel" Style="{StaticResource {x:Type UserControl}}">
     <Border Padding="14"
             CornerRadius="11"
             Background="{Binding ViewerBackground, ElementName=Root}"

@@ -2,26 +2,26 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:KanbanForOne.Controls"
                     xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework">
-    <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#F7F8FA" />
-    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#FFF9E8" />
-    <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#1F2937" />
-    <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#334155" />
-    <SolidColorBrush x:Key="DrawerMutedBrush" Color="#64748B" />
-    <SolidColorBrush x:Key="DrawerSoftDividerBrush" Color="#D6DEE8" />
-    <SolidColorBrush x:Key="DrawerSoftSurfaceBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="DrawerStrongSurfaceBrush" Color="#E9EEF5" />
+    <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#F7F8F4" />
+    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#F8F3E3" />
+    <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#283D38" />
+    <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#4D5F56" />
+    <SolidColorBrush x:Key="DrawerMutedBrush" Color="#65716C" />
+    <SolidColorBrush x:Key="DrawerSoftDividerBrush" Color="#DEE4DD" />
+    <SolidColorBrush x:Key="DrawerSoftSurfaceBrush" Color="#FDFDF9" />
+    <SolidColorBrush x:Key="DrawerStrongSurfaceBrush" Color="#E3EDE9" />
 
     <Style x:Key="DrawerPanelStyle" TargetType="{x:Type Border}">
         <Setter Property="CornerRadius" Value="10,0,0,10" />
         <Setter Property="Background" Value="{StaticResource DrawerPanelBackgroundBrush}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="DrawerRootStyle" TargetType="{x:Type Grid}">
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="KeyboardNavigation.TabNavigation" Value="Cycle" />
     </Style>
 
@@ -30,17 +30,17 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="DrawerFooterStyle" TargetType="{x:Type Border}">
         <Setter Property="Padding" Value="16,10" />
         <Setter Property="MinHeight" Value="54" />
-        <Setter Property="Background" Value="#EEF2F7" />
+        <Setter Property="Background" Value="{StaticResource HoverBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
         <Setter Property="BorderThickness" Value="0,1,0,0" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="DrawerTitleTextBoxStyle" TargetType="{x:Type TextBox}">
@@ -53,7 +53,7 @@
         <Setter Property="Padding" Value="0" />
         <Setter Property="TextWrapping" Value="Wrap" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
@@ -67,7 +67,7 @@
     <Style x:Key="BorderlessDrawerSectionStyle" TargetType="{x:Type StackPanel}">
         <Setter Property="Margin" Value="0,0,0,14" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="BorderlessDrawerSectionTitleStyle" TargetType="{x:Type TextBlock}">
@@ -89,7 +89,7 @@
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextSecondaryBrush}" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type RadioButton}">
@@ -109,7 +109,7 @@
                             <Setter Property="Foreground" Value="{StaticResource DrawerTextPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#F3F6FA" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.55" />
@@ -161,7 +161,7 @@
                          Converter="{StaticResource TaskStatusBrushConverter}" />
             </Setter.Value>
         </Setter>
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type RadioButton}">
@@ -208,7 +208,7 @@
     </Style>
 
     <Style x:Key="DrawerScrollBarThumbStyle" TargetType="{x:Type primitives:Thumb}">
-        <Setter Property="Background" Value="#CBD5E1" />
+        <Setter Property="Background" Value="{StaticResource BorderBrushSoft}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type primitives:Thumb}">
@@ -218,10 +218,10 @@
                             Background="{TemplateBinding Background}" />
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="ThumbChrome" Property="Background" Value="#94A3B8" />
+                            <Setter TargetName="ThumbChrome" Property="Background" Value="{StaticResource BrandTealBrush}" />
                         </Trigger>
                         <Trigger Property="IsDragging" Value="True">
-                            <Setter TargetName="ThumbChrome" Property="Background" Value="#64748B" />
+                            <Setter TargetName="ThumbChrome" Property="Background" Value="{StaticResource TextSecondaryBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -266,7 +266,7 @@
         <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Focusable" Value="False" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="DrawerDateCardStyle"
@@ -278,7 +278,7 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Foreground" Value="{StaticResource DrawerTextPrimaryBrush}" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type DatePicker}">
@@ -317,12 +317,12 @@
                                PlacementTarget="{Binding ElementName=PART_TextBox}"
                                StaysOpen="False">
                             <Border Padding="8"
-                                    CornerRadius="16"
-                                    Background="#FFFFFF">
+                                    CornerRadius="10"
+                                    Background="{StaticResource SurfaceBrush}">
                                 <Border.Effect>
                                     <DropShadowEffect BlurRadius="22"
-                                                      ShadowDepth="8"
-                                                      Opacity="0.16" />
+                                                      ShadowDepth="2"
+                                                      Opacity="0.06" />
                                 </Border.Effect>
                                 <Calendar x:Name="PART_Calendar"
                                           BorderThickness="0" />
@@ -347,7 +347,7 @@
         <Setter Property="AcceptsReturn" Value="True" />
         <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
         <Setter Property="VerticalContentAlignment" Value="Top" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBox}">
@@ -380,7 +380,7 @@
     <Style x:Key="BorderlessAttachmentDropZoneStyle" TargetType="{x:Type controls:AttachmentDropZoneControl}">
         <Setter Property="Margin" Value="0,0,0,8" />
         <Setter Property="MinHeight" Value="64" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
     </Style>
 
     <Style x:Key="DrawerAttachmentDropZoneStyle"
@@ -398,7 +398,7 @@
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -412,7 +412,7 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#F3F6FA" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DrawerStrongSurfaceBrush}" />
@@ -438,9 +438,9 @@
     <Style x:Key="DrawerDangerButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DrawerGhostButtonStyle}">
-        <Setter Property="Background" Value="#FFF1F2" />
-        <Setter Property="BorderBrush" Value="#FECDD3" />
-        <Setter Property="Foreground" Value="#BE123C" />
+        <Setter Property="Background" Value="{StaticResource DangerTintBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DangerBorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
@@ -454,10 +454,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#FFE4E6" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DangerTintBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#FECDD3" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DangerBorderBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.55" />
@@ -476,8 +476,8 @@
     <Style x:Key="DrawerPrimaryButtonStyle"
            TargetType="{x:Type Button}"
            BasedOn="{StaticResource DrawerGhostButtonStyle}">
-        <Setter Property="Background" Value="#1F2937" />
-        <Setter Property="BorderBrush" Value="#1F2937" />
+        <Setter Property="Background" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="MinWidth" Value="86" />
         <Setter Property="Template">
@@ -493,16 +493,16 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#334155" />
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#334155" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource TextPrimaryBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="Chrome" Property="Background" Value="#111827" />
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#111827" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource TextPrimaryBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Chrome" Property="Background" Value="#94A3B8" />
-                            <Setter TargetName="Chrome" Property="BorderBrush" Value="#94A3B8" />
+                            <Setter TargetName="Chrome" Property="Background" Value="{StaticResource BrandTealBrush}" />
+                            <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
                             <Setter Property="Opacity" Value="0.44" />
                             <Setter Property="Cursor" Value="Arrow" />
                         </Trigger>
@@ -525,7 +525,7 @@
         <Setter Property="Foreground" Value="{StaticResource DrawerTextSecondaryBrush}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">

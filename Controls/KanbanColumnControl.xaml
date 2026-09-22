@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:KanbanForOne.Controls"
              xmlns:models="clr-namespace:KanbanForOne.Models"
-             MinWidth="232"
-             MaxWidth="360">
+             MinWidth="232" Style="{StaticResource {x:Type UserControl}}">
     <Border x:Name="ColumnBorder"
             AllowDrop="True"
             DragEnter="OnDragEnter"
@@ -14,9 +13,9 @@
             Drop="OnDrop"
             MouseEnter="OnColumnMouseEnter"
             MouseLeave="OnColumnMouseLeave"
-            BorderBrush="#55FFFFFF"
+            BorderBrush="{StaticResource BorderBrushSoft}"
             BorderThickness="1"
-            CornerRadius="18"
+            CornerRadius="10"
             Padding="10,10,10,12">
         <Border.Style>
             <Style TargetType="{x:Type Border}">
@@ -41,7 +40,7 @@
 
                 <StackPanel>
                     <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                               FontSize="21"
+                               FontSize="16"
                                FontWeight="SemiBold"
                                Foreground="{StaticResource TextPrimaryBrush}" />
                     <TextBlock Text="{Binding Subtitle, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -144,6 +143,7 @@
                 </ListBox>
 
                     <local:EmptyStateControl x:Name="ColumnEmptyState"
+                                             VerticalAlignment="Top"
                                              Title="暂无卡片"
                                              Message="点击右上角 + 添加一张卡片。"
                                              Visibility="Collapsed"
@@ -155,17 +155,17 @@
                             Height="4"
                             Margin="6,2,6,0"
                             CornerRadius="2"
-                            Background="#3B82F6"
-                            BorderBrush="#3B82F6"
+                            Background="{StaticResource BrandTealBrush}"
+                            BorderBrush="{StaticResource BrandTealBrush}"
                             BorderThickness="0"
                             IsHitTestVisible="False"
                             Opacity="0.9"
                             VerticalAlignment="Top">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="8"
-                                              ShadowDepth="1"
+                                              ShadowDepth="2"
                                               Direction="270"
-                                              Opacity="0.16" />
+                                              Opacity="0.06" />
                         </Border.Effect>
                     </Border>
 

@@ -14,11 +14,11 @@ public sealed class TaskStatusBrushConverter : IValueConverter
     {
         return value switch
         {
-            TaskStatus.Todo => BrushFrom("#A8A29E"),
-            TaskStatus.Doing => BrushFrom("#2F80ED"),
-            TaskStatus.Blocked => BrushFrom("#F97316"),
-            TaskStatus.Done => BrushFrom("#4AA568"),
-            _ => BrushFrom("#A8A29E")
+            TaskStatus.Todo => BrushFrom("#8D9289"),
+            TaskStatus.Doing => BrushFrom("#5C8190"),
+            TaskStatus.Blocked => BrushFrom("#AF8055"),
+            TaskStatus.Done => BrushFrom("#5F8871"),
+            _ => BrushFrom("#8D9289")
         };
     }
 
@@ -39,10 +39,10 @@ public sealed class TaskStatusBackgroundConverter : IValueConverter
     {
         return value switch
         {
-            TaskStatus.Todo => BrushFrom("#FFFDF5"),
-            TaskStatus.Doing => BrushFrom("#EEF6FF"),
-            TaskStatus.Blocked => BrushFrom("#FFF3EC"),
-            TaskStatus.Done => BrushFrom("#F1FAF5"),
+            TaskStatus.Todo => BrushFrom("#FDFCF7"),
+            TaskStatus.Doing => BrushFrom("#F1F6F7"),
+            TaskStatus.Blocked => BrushFrom("#FAF4EB"),
+            TaskStatus.Done => BrushFrom("#F1F6EF"),
             _ => BrushFrom("#FFFFFF")
         };
     }
@@ -64,10 +64,10 @@ public sealed class TaskStatusDrawerBackgroundConverter : IValueConverter
     {
         return value switch
         {
-            TaskStatus.Todo => BrushFrom("#FFFBF0"),
-            TaskStatus.Doing => BrushFrom("#E7F5FF"),
-            TaskStatus.Blocked => BrushFrom("#FFF4E6"),
-            TaskStatus.Done => BrushFrom("#EBFBEE"),
+            TaskStatus.Todo => BrushFrom("#F9F8F1"),
+            TaskStatus.Doing => BrushFrom("#F1F6F7"),
+            TaskStatus.Blocked => BrushFrom("#FAF4EB"),
+            TaskStatus.Done => BrushFrom("#F1F6EF"),
             _ => BrushFrom("#FFFFFF")
         };
     }
@@ -109,10 +109,10 @@ public sealed class TaskPriorityBrushConverter : IValueConverter
     {
         return value switch
         {
-            TaskPriority.High => BrushFrom("#EF4444"),
-            TaskPriority.Medium => BrushFrom("#F59E0B"),
-            TaskPriority.Low => BrushFrom("#64748B"),
-            _ => BrushFrom("#64748B")
+            TaskPriority.High => BrushFrom("#A34F59"),
+            TaskPriority.Medium => BrushFrom("#927039"),
+            TaskPriority.Low => BrushFrom("#65716C"),
+            _ => BrushFrom("#65716C")
         };
     }
 
@@ -161,33 +161,33 @@ public sealed class TaskPreviewSegmentBrushConverter : IValueConverter
             },
             TaskStatus.Doing => role switch
             {
-                "Border" => "#BFDBFE",
-                "Foreground" => "#2563EB",
-                _ => "#EFF6FF"
+                "Border" => "#D7E4E8",
+                "Foreground" => "#4D7483",
+                _ => "#EFF4F6"
             },
             TaskStatus.Blocked => role switch
             {
-                "Border" => "#FDBA74",
-                "Foreground" => "#EA580C",
-                _ => "#FFF7ED"
+                "Border" => "#E8DACA",
+                "Foreground" => "#936C42",
+                _ => "#F8F2E9"
             },
             TaskStatus.Done => role switch
             {
-                "Border" => "#A7F3D0",
-                "Foreground" => "#059669",
-                _ => "#ECFDF5"
+                "Border" => "#D9E6D7",
+                "Foreground" => "#4D785E",
+                _ => "#F0F5ED"
             },
             TaskPriority.High => role switch
             {
-                "Border" => "#FECACA",
-                "Foreground" => "#DC2626",
-                _ => "#FEF2F2"
+                "Border" => "#EBD4D3",
+                "Foreground" => "#A34F59",
+                _ => "#F8ECEB"
             },
             TaskPriority.Medium => role switch
             {
-                "Border" => "#FED7AA",
-                "Foreground" => "#EA580C",
-                _ => "#FFF7ED"
+                "Border" => "#E8DACA",
+                "Foreground" => "#936C42",
+                _ => "#F8F2E9"
             },
             TaskPriority.Low => role switch
             {
@@ -198,7 +198,7 @@ public sealed class TaskPreviewSegmentBrushConverter : IValueConverter
             _ => role switch
             {
                 "Border" => "#E5E7EB",
-                "Foreground" => "#64748B",
+                "Foreground" => "#65716C",
                 _ => "#F8FAFC"
             }
         };
@@ -253,7 +253,7 @@ public sealed class DoneForegroundConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is TaskStatus.Done ? BrushFrom("#6B7280") : BrushFrom("#212529");
+        return value is TaskStatus.Done ? BrushFrom("#65716C") : BrushFrom("#283D38");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

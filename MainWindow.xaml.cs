@@ -59,7 +59,7 @@ namespace KanbanForOne
                 return;
             }
 
-            if (e.ChangedButton != MouseButton.Left || e.GetPosition(this).Y > 64)
+            if (e.ChangedButton != MouseButton.Left || e.GetPosition(this).Y > 56)
             {
                 return;
             }
@@ -148,7 +148,7 @@ namespace KanbanForOne
                 return;
             }
 
-            WindowFrame.CornerRadius = new CornerRadius(28);
+            WindowFrame.CornerRadius = new CornerRadius(12);
             var radius = WindowFrame.CornerRadius.TopLeft;
             WindowRoot.Clip = new RectangleGeometry(
                 new Rect(0, 0, WindowRoot.ActualWidth, WindowRoot.ActualHeight),

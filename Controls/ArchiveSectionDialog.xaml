@@ -11,7 +11,7 @@
         ShowInTaskbar="False"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"
-        KeyDown="OnDialogKeyDown">
+        KeyDown="OnDialogKeyDown" Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
         <SolidColorBrush x:Key="DialogSurfaceBrush" Color="#F7F1E5" />
         <SolidColorBrush x:Key="DialogHeaderBrush" Color="#F4EFE6" />
@@ -74,7 +74,7 @@
             <Setter Property="MinWidth" Value="82" />
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
             <Setter Property="BorderBrush" Value="{StaticResource ArchiveModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
@@ -93,13 +93,13 @@
         <Border Background="{StaticResource DialogSurfaceBrush}"
                 BorderBrush="{StaticResource ArchiveModuleBorderBrush}"
                 BorderThickness="1"
-                CornerRadius="16"
+                CornerRadius="10"
                 ClipToBounds="True">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="30"
-                                  ShadowDepth="10"
+                                  ShadowDepth="2"
                                   Direction="270"
-                                  Opacity="0.15" />
+                                  Opacity="0.06" />
             </Border.Effect>
 
             <Grid>

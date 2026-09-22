@@ -1,11 +1,11 @@
 <UserControl x:Class="KanbanForOne.Controls.AboutView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Style="{StaticResource {x:Type UserControl}}">
     <Grid Background="{StaticResource MainContentBackgroundBrush}">
         <ScrollViewer HorizontalContentAlignment="Stretch"
                       HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="32">
+            <StackPanel Margin="{StaticResource PageSpacing}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="64" />
@@ -16,11 +16,11 @@
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"
                            RenderOptions.BitmapScalingMode="HighQuality"
-                           Source="/icon/icon-transparent.png"
+                           Source="/KanbanForOne;component/icon/icon-transparent.png"
                            Stretch="Uniform" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                         <TextBlock Text="关于 Kanban41"
-                                   FontSize="20"
+                                   Style="{StaticResource AppPageTitleTextStyle}"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}" />
                         <TextBlock Margin="0,5,0,0"

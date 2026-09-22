@@ -18,3 +18,4 @@ backups/
 attachments/
 .delete-staging/
 .restore-staging/
+artifacts/ui-refresh/

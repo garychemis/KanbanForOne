@@ -5,12 +5,12 @@
              DragEnter="OnDragEnter"
              DragOver="OnDragOver"
              DragLeave="OnDragLeave"
-             Drop="OnDrop">
+             Drop="OnDrop" Style="{StaticResource {x:Type UserControl}}">
     <Grid>
         <Border x:Name="DropBorder"
                 MinHeight="{Binding MinHeight, RelativeSource={RelativeSource AncestorType=UserControl}}"
                 Padding="14,10"
-                CornerRadius="16"
+                CornerRadius="10"
                 BorderThickness="0"
                 Background="#99FFFFFF">
             <StackPanel HorizontalAlignment="Center"
@@ -33,18 +33,18 @@
         </Border>
 
         <Rectangle x:Name="DropFrame"
-                   RadiusX="16"
-                   RadiusY="16"
-                   Stroke="#CBD5E1"
+                   RadiusX="10"
+                   RadiusY="10"
+                   Stroke="{StaticResource BorderBrushSoft}"
                    StrokeDashArray="5,3"
                    StrokeThickness="1"
                    IsHitTestVisible="False" />
 
         <Border x:Name="DropHint"
                 Visibility="Collapsed"
-                CornerRadius="16"
-                Background="#EFF6FF"
-                BorderBrush="#93C5FD"
+                CornerRadius="10"
+                Background="{StaticResource SelectedBackgroundBrush}"
+                BorderBrush="{StaticResource BrandTealBrush}"
                 BorderThickness="1"
                 IsHitTestVisible="False">
             <TextBlock Text="{Binding DropHintText, RelativeSource={RelativeSource AncestorType=UserControl}}"

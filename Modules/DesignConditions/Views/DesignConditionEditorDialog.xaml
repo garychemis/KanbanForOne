@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:KanbanForOne.Controls"
         Title="设计条件详情" Width="780" Height="700" MinHeight="620"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        ResizeMode="NoResize" ShowInTaskbar="False">
+        ResizeMode="NoResize" ShowInTaskbar="False" Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,10 +21,10 @@
         </ResourceDictionary>
     </Window.Resources>
 
-    <Border x:Name="DialogChrome" Margin="14" CornerRadius="18"
+    <Border x:Name="DialogChrome" Margin="14" CornerRadius="10"
             Background="{StaticResource ConditionDialogSurfaceBrush}"
             BorderBrush="{StaticResource ConditionFieldBorderBrush}" BorderThickness="1">
-        <Border.Effect><DropShadowEffect BlurRadius="28" ShadowDepth="8" Opacity="0.18" /></Border.Effect>
+        <Border.Effect><DropShadowEffect BlurRadius="28" ShadowDepth="2" Opacity="0.06" /></Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -210,7 +210,7 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="{Binding ValidationMessage}" Foreground="#BE123C" FontSize="12" Margin="2,10,0,0"
+                    <TextBlock Text="{Binding ValidationMessage}" Foreground="{StaticResource DangerBrush}" FontSize="12" Margin="2,10,0,0"
                                Visibility="{Binding HasValidationMessage, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                 </StackPanel>
             </ScrollViewer>

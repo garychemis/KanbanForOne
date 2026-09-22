@@ -18,7 +18,7 @@
         ResizeMode="CanResize"
         Background="Transparent"
         UseLayoutRounding="True"
-        SnapsToDevicePixels="True">
+        SnapsToDevicePixels="True" Style="{StaticResource {x:Type Window}}">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0"
                             ResizeBorderThickness="6"
@@ -28,7 +28,7 @@
     </shell:WindowChrome.WindowChrome>
 
     <Border x:Name="WindowFrame"
-            CornerRadius="28"
+            CornerRadius="12"
             Background="{StaticResource AppBackgroundBrush}"
             BorderBrush="Transparent"
             BorderThickness="0"
@@ -38,7 +38,7 @@
               ClipToBounds="True">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="204" />
+                    <ColumnDefinition Width="200" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -46,7 +46,7 @@
 
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="64" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 

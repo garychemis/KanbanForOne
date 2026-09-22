@@ -11,7 +11,7 @@
              DragEnter="OnFileDragEnter"
              DragOver="OnFileDragOver"
              DragLeave="OnFileDragLeave"
-             Drop="OnFileDrop">
+             Drop="OnFileDrop" Style="{StaticResource {x:Type UserControl}}">
     <Grid>
         <Grid.Style>
             <Style TargetType="{x:Type Grid}">
@@ -55,7 +55,7 @@
                     <Setter Property="CornerRadius" Value="8" />
                     <Setter Property="Background"
                             Value="{Binding Status, Converter={StaticResource TaskStatusBackgroundConverter}}" />
-                    <Setter Property="BorderBrush" Value="#EEF0F2" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
                 </Style>
             </Border.Style>
             <Border.RenderTransform>
@@ -190,7 +190,7 @@
                                    FontWeight="SemiBold">
                             <TextBlock.Style>
                                 <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="Foreground" Value="#BE185D" />
+                                    <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
                                     <Setter Property="Visibility"
                                             Value="{Binding IsOverdue, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                                     <Style.Triggers>
@@ -233,7 +233,7 @@
                                     <Border Padding="7,3"
                                             Margin="0,0,6,4"
                                             CornerRadius="8"
-                                            Background="#F3F5F7">
+                                            Background="{StaticResource HoverBrush}">
                                         <TextBlock Text="{Binding Converter={StaticResource TagDisplayConverter}}"
                                                    FontSize="10"
                                                    FontWeight="SemiBold"
@@ -270,7 +270,7 @@
                 Visibility="Collapsed"
                 CornerRadius="8"
                 Background="#CCEFF6FF"
-                BorderBrush="#3B82F6"
+                BorderBrush="{StaticResource BrandTealBrush}"
                 BorderThickness="1"
                 IsHitTestVisible="False">
             <TextBlock Text="释放文件以保存为附件"
@@ -278,7 +278,7 @@
                        VerticalAlignment="Center"
                        FontSize="12"
                        FontWeight="SemiBold"
-                       Foreground="#1D4ED8" />
+                       Foreground="{StaticResource AccentBrush}" />
         </Border>
     </Grid>
 </UserControl>
