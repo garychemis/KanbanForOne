@@ -14,8 +14,8 @@
                 <Setter Property="Margin" Value="0,0,0,6" />
                 <Setter Property="Padding" Value="10,7" />
                 <Setter Property="CornerRadius" Value="8" />
-                <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
-                <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
+                <Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
             </Style>
         </ResourceDictionary>
@@ -23,8 +23,7 @@
 
     <Border x:Name="DialogChrome" Margin="14" CornerRadius="10"
             Background="{StaticResource ConditionDialogSurfaceBrush}"
-            BorderBrush="{StaticResource ConditionFieldBorderBrush}" BorderThickness="1">
-        <Border.Effect><DropShadowEffect BlurRadius="28" ShadowDepth="2" Opacity="0.06" /></Border.Effect>
+            BorderBrush="{StaticResource DesignConditionModuleBorderBrush}" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -178,7 +177,7 @@
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Content="打开" Click="OnOpenAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="8,0,0,0" MinWidth="48" />
                                                 <Button Grid.Column="2" Content="定位" Click="OnRevealAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" />
-                                                <Button Grid.Column="3" Content="移除" Click="OnRemoveAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" Foreground="#9F1239" />
+                                                <Button Grid.Column="3" Content="移除" Click="OnRemoveAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" Foreground="{StaticResource DangerBrush}" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -219,7 +218,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="10" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Button Content="删除记录" Click="OnDeleteClick" Visibility="{Binding Source, Converter={StaticResource NullToVisibilityConverter}}"
-                            Style="{StaticResource ConditionGhostButtonStyle}" Foreground="#9F1239" />
+                            Style="{StaticResource ConditionGhostButtonStyle}" Foreground="{StaticResource DangerBrush}" />
                     <Button Grid.Column="2" Content="取消" Click="OnCloseClick" Style="{StaticResource ConditionGhostButtonStyle}" />
                     <Button Grid.Column="4" Content="保存" Click="OnSaveClick" Style="{StaticResource ConditionDialogPrimaryButtonStyle}" />
                 </Grid>

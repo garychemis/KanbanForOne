@@ -27,6 +27,9 @@
     <Color x:Key="BrandNavyPressedColor">#294B42</Color>
     <Color x:Key="BrandTealColor">#527D70</Color>
     <Color x:Key="BrandPaperColor">#F7F8F5</Color>
+    <Color x:Key="CardSurfaceColor">#F3F4F2</Color>
+    <Color x:Key="WorkHourModuleTintColor">#F8F5EF</Color>
+    <Color x:Key="DesignConditionModuleTintColor">#F1F7F5</Color>
     <Color x:Key="NoteCardBackgroundColor">#FFF5CF</Color>
     <Color x:Key="BlockedCardBackgroundColor">#FAEEEC</Color>
     <Color x:Key="BlockedCardBorderColor">#E4D3CF</Color>
@@ -37,14 +40,23 @@
     <SolidColorBrush x:Key="BrandTealBrush" Color="{StaticResource BrandTealColor}" />
     <SolidColorBrush x:Key="BrandPaperBrush" Color="{StaticResource BrandPaperColor}" />
     <SolidColorBrush x:Key="BrandTealTintBrush" Color="#E3EDE9" />
-    <SolidColorBrush x:Key="WorkHourModuleTintBrush" Color="#F8F5EF" />
-    <SolidColorBrush x:Key="WorkHourModuleHoverBrush" Color="#F3EDE3" />
-    <SolidColorBrush x:Key="WorkHourModuleBorderBrush" Color="#E5DAC9" />
-    <SolidColorBrush x:Key="WorkHourModuleTextBrush" Color="#6D604C" />
-    <SolidColorBrush x:Key="DesignConditionModuleTintBrush" Color="#F1F7F5" />
-    <SolidColorBrush x:Key="DesignConditionModuleHoverBrush" Color="#EAF3F0" />
-    <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#D0E1DC" />
-    <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#4B7068" />
+    <SolidColorBrush x:Key="CardSurfaceBrush" Color="{StaticResource CardSurfaceColor}" />
+    <SolidColorBrush x:Key="WorkHourModuleTintBrush" Color="{StaticResource WorkHourModuleTintColor}" />
+    <SolidColorBrush x:Key="WorkHourModuleHoverBrush" Color="{StaticResource WorkHourModuleTintColor}" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentBrush" Color="#9A7848" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentHoverBrush" Color="#82633B" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentPressedBrush" Color="#6E5332" />
+    <SolidColorBrush x:Key="WorkHourModuleBorderBrush" Color="#C5B08D" />
+    <SolidColorBrush x:Key="WorkHourModuleHoverBorderBrush" Color="#9A7848" />
+    <SolidColorBrush x:Key="WorkHourModuleTextBrush" Color="#705B38" />
+    <SolidColorBrush x:Key="DesignConditionModuleTintBrush" Color="{StaticResource DesignConditionModuleTintColor}" />
+    <SolidColorBrush x:Key="DesignConditionModuleHoverBrush" Color="{StaticResource DesignConditionModuleTintColor}" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentBrush" Color="#4F8781" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentHoverBrush" Color="#416F6A" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentPressedBrush" Color="#365D59" />
+    <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#9DBEBA" />
+    <SolidColorBrush x:Key="DesignConditionModuleHoverBorderBrush" Color="#4F8781" />
+    <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#3D6D68" />
     <SolidColorBrush x:Key="ArchiveModuleTintBrush" Color="#F4EFE6" />
     <SolidColorBrush x:Key="ArchiveModuleHoverBrush" Color="#EFE7D9" />
     <SolidColorBrush x:Key="ArchiveModuleBorderBrush" Color="#E0D5C0" />

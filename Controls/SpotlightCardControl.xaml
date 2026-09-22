@@ -37,14 +37,10 @@
         <Style x:Key="SpotlightTaskShellStyle"
                TargetType="{x:Type Border}"
                BasedOn="{StaticResource SpotlightShellStyle}">
+            <Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush"
-                    Value="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}" />
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding FocusedTask.Status}" Value="{x:Static models:TaskStatus.Blocked}">
-                    <Setter Property="Background" Value="{StaticResource BlockedCardBackgroundBrush}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource BlockedCardBorderBrush}" />
-                </DataTrigger>
-            </Style.Triggers>
+                    Value="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}" />
         </Style>
 
         <Style x:Key="SpotlightTitleTextStyle" TargetType="{x:Type TextBlock}">

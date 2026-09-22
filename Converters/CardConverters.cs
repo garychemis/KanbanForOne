@@ -13,6 +13,17 @@ public sealed class TaskStatusBrushConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var role = parameter as string;
+        if (role == "Border")
+        {
+            return value switch
+            {
+                TaskStatus.Doing => BrushFrom("#9EB9C2"),
+                TaskStatus.Blocked => BrushFrom("#D1A7A1"),
+                TaskStatus.Done => BrushFrom("#A7BFAF"),
+                _ => BrushFrom("#B9BDB7")
+            };
+        }
+
         if (role == "Secondary")
         {
             return BrushFrom(value is TaskStatus.Blocked ? "#626D67" : "#65716C");
@@ -49,7 +60,7 @@ public sealed class TaskStatusBackgroundConverter : IValueConverter
             TaskStatus.Doing => BrushFrom("#EEF6F8"),
             TaskStatus.Blocked => BrushFrom("#FAEEEC"),
             TaskStatus.Done => BrushFrom("#F1F6EF"),
-            _ => BrushFrom("#FFFFFF")
+            _ => BrushFrom("#F3F4F2")
         };
     }
 
@@ -68,14 +79,7 @@ public sealed class TaskStatusDrawerBackgroundConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value switch
-        {
-            TaskStatus.Todo => BrushFrom("#F9F8F1"),
-            TaskStatus.Doing => BrushFrom("#F1F6F7"),
-            TaskStatus.Blocked => BrushFrom("#FAEEEC"),
-            TaskStatus.Done => BrushFrom("#F1F6EF"),
-            _ => BrushFrom("#FFFFFF")
-        };
+        return BrushFrom("#F3F4F2");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

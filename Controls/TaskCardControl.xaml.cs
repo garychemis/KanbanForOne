@@ -242,7 +242,6 @@ public partial class TaskCardControl : UserControl
         e.Effects = DragDropEffects.Copy;
         DropHint.Visibility = Visibility.Visible;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
         e.Handled = true;
     }
 
@@ -271,7 +270,6 @@ public partial class TaskCardControl : UserControl
         CardBorder.Opacity = 0.75;
         CardContent.Opacity = 1;
         CardContent.Effect = null;
-        CardBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 10,

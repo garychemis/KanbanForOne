@@ -96,6 +96,7 @@ public sealed class UiSmokeTests
             VerifyWorkspaceLayout(window, vm, notifications);
             VerifyEditors(window, vm);
             SaveCardPalettePreview();
+            SaveModuleCardPreview(calendarView);
 
             window.Close();
             app.Shutdown();
@@ -323,6 +324,61 @@ public sealed class UiSmokeTests
         preview.Measure(new Size(preview.Width, double.PositiveInfinity));
         preview.Arrange(new Rect(new Point(), preview.DesiredSize));
         SavePreview(preview, "Card-palette");
+    }
+
+    private static void SaveModuleCardPreview(CalendarView calendar)
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("KANBAN_UI_PREVIEW_DIR"))) return;
+
+        // Render the actual calendar templates with in-memory examples only.
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        grid.ColumnDefinitions.Add(new ColumnDefinition());
+        void AddColumn(int column, string heading, string templateKey, object[] samples)
+        {
+            var content = new StackPanel { Margin = new Thickness(column == 0 ? 0 : 16, 0, 0, 0) };
+            content.Children.Add(new TextBlock
+            {
+                Text = heading, FontSize = 16, FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)Application.Current.FindResource("TextPrimaryBrush"),
+                Margin = new Thickness(0, 0, 0, 16)
+            });
+            foreach (var sample in samples)
+            {
+                var card = (FrameworkElement)((DataTemplate)calendar.Resources[templateKey]).LoadContent();
+                card.DataContext = sample;
+                content.Children.Add(card);
+            }
+            Grid.SetColumn(content, column);
+            grid.Children.Add(content);
+        }
+
+        AddColumn(0, "人工时 · 赭金边框", "CalendarWorkHourListTemplate",
+        [
+            new WorkHourEntry { ProjectNumber = "P2026-01", Discipline = "设备", WorkActivity = "图纸校核", HourUnits = 350, Remark = "复核设备基础尺寸与接口条件。" },
+            new WorkHourEntry { ProjectNumber = "P2026-02", Discipline = "管道", WorkActivity = "专业协调", HourUnits = 200, Remark = "汇总本轮接口调整意见。" }
+        ]);
+        AddColumn(1, "设计条件归档 · 青绿边框", "CalendarDesignConditionListTemplate",
+        [
+            new DesignConditionEntry { ProjectNumber = "P2026-01", ConditionName = "设备基础条件", IssuingDiscipline = "设备", ReceivingDiscipline = "土建", DrawingSize = "A1", DrawingCount = 3 },
+            new DesignConditionEntry { ProjectNumber = "P2026-02", ConditionName = "管道接口条件", IssuingDiscipline = "管道", ReceivingDiscipline = "设备", DrawingSize = "A2", DrawingCount = 2 }
+        ]);
+
+        var preview = new UserControl
+        {
+            Width = 960,
+            DataContext = calendar.DataContext,
+            FontFamily = (FontFamily)Application.Current.FindResource("AppFontFamily"),
+            Content = new Border
+            {
+                Background = (Brush)Application.Current.FindResource("MainContentBackgroundBrush"),
+                Padding = new Thickness(24), Child = grid
+            },
+            UseLayoutRounding = true
+        };
+        preview.Measure(new Size(preview.Width, double.PositiveInfinity));
+        preview.Arrange(new Rect(new Point(), preview.DesiredSize));
+        SavePreview(preview, "Module-cards");
     }
 
     private static void VerifyEditors(MainWindow window, MainWindowViewModel vm)

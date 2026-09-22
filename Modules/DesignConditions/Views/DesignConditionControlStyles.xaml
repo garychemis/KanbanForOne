@@ -5,15 +5,14 @@
     <SolidColorBrush x:Key="ConditionFieldBorderBrush" Color="#DEE4DD" />
     <SolidColorBrush x:Key="ConditionFieldHoverBrush" Color="#EBF0EA" />
     <SolidColorBrush x:Key="ConditionFieldSelectedBrush" Color="#E3EDE9" />
-    <SolidColorBrush x:Key="ConditionFieldFocusBrush" Color="#527D70" />
     <SolidColorBrush x:Key="ConditionPrimaryTextBrush" Color="#283D38" />
     <SolidColorBrush x:Key="ConditionSecondaryTextBrush" Color="#65716C" />
     <SolidColorBrush x:Key="ConditionDrawingHeaderBrush" Color="#EEF2EC" />
     <SolidColorBrush x:Key="ConditionDrawingAlternateRowBrush" Color="#F7F9F4" />
-    <SolidColorBrush x:Key="ConditionDrawingDangerBrush" Color="#9F1239" />
-    <SolidColorBrush x:Key="ConditionDrawingDangerSoftBrush" Color="#FCEEF1" />
-    <SolidColorBrush x:Key="ConditionDrawingDangerHoverBrush" Color="#F8DDE4" />
-    <SolidColorBrush x:Key="ConditionDrawingDangerPressedBrush" Color="#F1C8D2" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerBrush" Color="#A34F59" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerSoftBrush" Color="#F8ECEB" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerHoverBrush" Color="#F0DDDA" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerPressedBrush" Color="#E8CDC9" />
     <Style x:Key="ConditionCloseButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
         <Setter Property="Width" Value="30" /><Setter Property="MinWidth" Value="30" /><Setter Property="Height" Value="30" />
         <Setter Property="Padding" Value="0" /><Setter Property="FontSize" Value="18" /><Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" />
@@ -22,7 +21,30 @@
         <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
         <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" /><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" />
     </Style>
-    <Style x:Key="ConditionDialogPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+    <Style x:Key="ConditionModulePrimaryButtonStyle" TargetType="Button">
+        <Setter Property="MinWidth" Value="88" /><Setter Property="Height" Value="36" /><Setter Property="Padding" Value="14,0" />
+        <Setter Property="Background" Value="{StaticResource DesignConditionModuleAccentHoverBrush}" /><Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentHoverBrush}" />
+        <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource DesignConditionModuleAccentPressedBrush}" /></Trigger>
+                        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource DesignConditionModuleAccentPressedBrush}" /><Setter TargetName="Chrome" Property="Opacity" Value="0.88" /></Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" /></Trigger>
+                        <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.48" /><Setter Property="Cursor" Value="Arrow" /></Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ConditionDialogPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ConditionModulePrimaryButtonStyle}">
         <Setter Property="MinWidth" Value="82" />
         <Setter Property="Height" Value="36" />
         <Setter Property="Padding" Value="14,0" />
@@ -33,15 +55,18 @@
         <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource ConditionSecondaryTextBrush}" />
     </Style>
     <Style x:Key="ConditionSurfaceCardStyle" TargetType="Border">
-        <Setter Property="Padding" Value="2,10" /><Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="2,10" /><Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Effect" Value="{x:Null}" />
     </Style>
     <Style x:Key="ConditionDateFieldBorderStyle" TargetType="Border">
         <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="11,0,8,0" />
         <Setter Property="Background" Value="{StaticResource ConditionFieldBackgroundBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldBorderBrush}" /><Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="9" />
-        <Style.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger></Style.Triggers>
+        <Style.Triggers><Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger></Style.Triggers>
     </Style>
     <Style x:Key="ConditionTextBoxStyle" TargetType="TextBox">
         <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="11,0" />
@@ -54,7 +79,7 @@
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="#B9C3BF" /></Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger>
                 <Trigger Property="IsEnabled" Value="False"><Setter TargetName="InputBorder" Property="Background" Value="{StaticResource ConditionFieldHoverBrush}" /><Setter Property="Foreground" Value="#98A19D" /></Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate></Setter.Value></Setter>
@@ -110,8 +135,8 @@
             <ControlTemplate.Triggers>
                 <Trigger Property="IsEditable" Value="True"><Setter TargetName="ContentSite" Property="Visibility" Value="Hidden" /><Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" /></Trigger>
                 <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="#B9C3BF" /></Trigger>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
-                <Trigger Property="IsDropDownOpen" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger>
+                <Trigger Property="IsDropDownOpen" Value="True"><Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate></Setter.Value></Setter>
     </Style>
@@ -144,7 +169,7 @@
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource ConditionDrawingDangerHoverBrush}" /></Trigger>
                 <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource ConditionDrawingDangerPressedBrush}" /></Trigger>
-                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" /></Trigger>
+                <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger>
                 <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45" /><Setter Property="Cursor" Value="Arrow" /></Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate></Setter.Value></Setter>
@@ -164,7 +189,7 @@
         <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
         <Style.Triggers>
             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                <Setter Property="BorderBrush" Value="{StaticResource ConditionFieldFocusBrush}" />
+                <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
             </Trigger>
         </Style.Triggers>

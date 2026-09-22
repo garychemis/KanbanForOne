@@ -152,7 +152,7 @@
             <Setter.Value>
                 <Binding Path="Tag"
                          RelativeSource="{RelativeSource Self}"
-                         Converter="{StaticResource TaskStatusBackgroundConverter}" />
+                         Converter="{StaticResource TaskStatusDrawerBackgroundConverter}" />
             </Setter.Value>
         </Setter>
         <Setter Property="BorderBrush">

@@ -4,25 +4,51 @@
     <UserControl.Resources>
 
         <Style x:Key="SummaryPanelStyle" TargetType="{x:Type Border}">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{StaticResource WorkHourModuleTintBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect BlurRadius="16"
-                                      ShadowDepth="2"
-                                      Direction="270"
-                                      Opacity="0.06" />
-                </Setter.Value>
-            </Setter>
+            <Setter Property="CornerRadius" Value="8" />
         </Style>
 
         <Style x:Key="SummaryPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
-        <Setter Property="MinWidth" Value="82" />
-        <Setter Property="Height" Value="36" />
-        <Setter Property="Padding" Value="14,0" />
-    </Style>
+            <Setter Property="MinWidth" Value="82" />
+            <Setter Property="Height" Value="36" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="Background" Value="{StaticResource WorkHourModuleAccentHoverBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentHoverBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border x:Name="Chrome"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleTextBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DisabledBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
+                                <Setter Property="Opacity" Value="0.72" />
+                                <Setter Property="Cursor" Value="Arrow" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <Style x:Key="SummaryQuietButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="MinWidth" Value="34" />
@@ -85,9 +111,9 @@
                                 <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SurfaceBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource CardSurfaceBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource WorkHourModuleTextBrush}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
@@ -160,7 +186,7 @@
                                                 <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -224,8 +250,8 @@
 
         <Style x:Key="SummaryProgressStyle" TargetType="{x:Type ProgressBar}">
             <Setter Property="Height" Value="8" />
-            <Setter Property="Background" Value="#F2EBDD" />
-            <Setter Property="Foreground" Value="#9A7650" />
+            <Setter Property="Background" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Foreground" Value="{StaticResource WorkHourModuleAccentBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ProgressBar}">
@@ -352,6 +378,7 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Style="{StaticResource AppPageTitleTextStyle}"
+                               Foreground="{StaticResource WorkHourModuleTextBrush}"
                                Text="人工时汇总" />
                     <TextBlock Margin="0,3,0,0"
                                Foreground="{StaticResource TextSecondaryBrush}"
@@ -375,10 +402,7 @@
 
                 <StackPanel Grid.Column="0">
                     <Border Padding="5"
-                            Background="{StaticResource SurfaceBrush}"
-                            BorderBrush="{StaticResource BorderBrushSoft}"
-                            BorderThickness="1"
-                            CornerRadius="10">
+                            Style="{StaticResource SummaryPanelStyle}">
                     <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
@@ -530,10 +554,7 @@
                         Padding="12,3"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Top"
-                        Background="{StaticResource SurfaceBrush}"
-                        BorderBrush="{StaticResource BorderBrushSoft}"
-                        BorderThickness="1"
-                        CornerRadius="10">
+                        Style="{StaticResource SummaryPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -549,6 +570,7 @@
                             <StackPanel Margin="0,1,0,0"
                                         Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource AppMetricValueTextStyle}"
+                                           Foreground="{StaticResource WorkHourModuleTextBrush}"
                                            Text="{Binding TotalHoursValueDisplay}" />
                                 <TextBlock Margin="6,0,0,1"
                                            VerticalAlignment="Bottom"

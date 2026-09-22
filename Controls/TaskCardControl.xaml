@@ -55,23 +55,14 @@
                     <Setter Property="CornerRadius" Value="8" />
                     <Setter Property="Background"
                             Value="{Binding Status, Converter={StaticResource TaskStatusBackgroundConverter}}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource TaskCardBorderBrush}" />
+                    <Setter Property="BorderBrush"
+                            Value="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}" />
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding Status}" Value="Blocked">
-                            <Setter Property="BorderBrush" Value="{StaticResource BlockedCardBorderBrush}" />
-                        </DataTrigger>
                         <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                      Value="True">
                             <Setter Property="BorderBrush"
                                     Value="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}}" />
                         </DataTrigger>
-                        <MultiDataTrigger>
-                            <MultiDataTrigger.Conditions>
-                                <Condition Binding="{Binding Status}" Value="Blocked" />
-                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
-                            </MultiDataTrigger.Conditions>
-                            <Setter Property="BorderBrush" Value="{StaticResource BlockedCardHoverBorderBrush}" />
-                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </Border.Style>
