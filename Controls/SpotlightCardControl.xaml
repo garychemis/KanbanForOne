@@ -34,6 +34,19 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SpotlightTaskShellStyle"
+               TargetType="{x:Type Border}"
+               BasedOn="{StaticResource SpotlightShellStyle}">
+            <Setter Property="BorderBrush"
+                    Value="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding FocusedTask.Status}" Value="{x:Static models:TaskStatus.Blocked}">
+                    <Setter Property="Background" Value="{StaticResource BlockedCardBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource BlockedCardBorderBrush}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="SpotlightTitleTextStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
@@ -263,9 +276,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F8F2E9" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#E8DACA" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#936C42" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{StaticResource BlockedCardBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{StaticResource BlockedCardBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{StaticResource BlockedCardTextColor}" />
             </Style.Resources>
         </Style>
 
@@ -470,13 +483,11 @@
                 Opacity="0" />
         <Canvas ClipToBounds="True">
         <Border x:Name="TaskShell"
-                Style="{StaticResource SpotlightShellStyle}"
+                Style="{StaticResource SpotlightTaskShellStyle}"
                 Canvas.Left="{Binding SpotlightLeft}"
                 Canvas.Top="{Binding SpotlightTop}"
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
-                Background="{StaticResource SpotlightSurfaceDialogBrush}"
-                BorderBrush="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}}"
                 Opacity="0"
                 Visibility="{Binding IsTaskSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="TaskDetailContent"
@@ -829,7 +840,7 @@
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
-                        Background="{StaticResource SpotlightSurfaceDialogBrush}"
+                        Background="{Binding Background, ElementName=TaskShell}"
                         BorderBrush="#55E5E7EB"
                         BorderThickness="0,1,0,0"
                         CornerRadius="0,0,10,10">
@@ -875,7 +886,8 @@
                 Canvas.Top="{Binding SpotlightTop}"
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
-                Background="{StaticResource SpotlightSurfaceDialogBrush}"
+                Background="{StaticResource NoteCardBackgroundBrush}"
+                BorderBrush="{StaticResource NoteCardBorderBrush}"
                 Opacity="0"
                 Visibility="{Binding IsNoteSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="NoteDetailContent"
@@ -901,11 +913,11 @@
                     <StackPanel Orientation="Horizontal"
                                 Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                         <Border Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="#FFF7ED">
+                                Background="{StaticResource NoteCardBackgroundBrush}">
                             <TextBlock Text="&#x5907;&#x5FD8;"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="#9A3412" />
+                                       Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
                         </Border>
                         <Border Margin="8,0,0,0"
                                 Style="{StaticResource SpotlightHeaderChipStyle}"
@@ -914,7 +926,7 @@
                             <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
                         </Border>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center"
@@ -922,11 +934,11 @@
                         <TextBlock Text="&#x7F16;&#x8F91;&#x5907;&#x5FD8;"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource SpotlightTextPrimaryBrush}" />
+                                   Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
                         <TextBlock Text="&#x4FEE;&#x6539;&#x5907;&#x5FD8;&#x5185;&#x5BB9;&#x3001;&#x6807;&#x7B7E;&#x548C;&#x9644;&#x4EF6;"
                                    Margin="0,4,0,0"
                                    FontSize="12"
-                                   Foreground="{StaticResource SpotlightTextMutedBrush}" />
+                                   Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
                     </StackPanel>
                     <Button Grid.Column="1"
                             Content="&#xD7;"
@@ -958,11 +970,15 @@
                               ClipToBounds="True">
                             <TextBlock Text="{Binding FocusedNote.Title}"
                                        Style="{StaticResource SpotlightTitleTextStyle}"
+                                       Foreground="{StaticResource NoteCardTextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             <TextBox Text="{Binding NoteTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      x:Name="NoteTitleEditor"
                                      Style="{StaticResource SpotlightTitleBoxStyle}"
+                                     Foreground="{StaticResource NoteCardTextPrimaryBrush}"
+                                     CaretBrush="{StaticResource NoteCardTextPrimaryBrush}"
+                                     BorderBrush="{StaticResource NoteCardBorderBrush}"
                                      IsVisibleChanged="OnEditorIsVisibleChanged"
                                      Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
@@ -983,13 +999,13 @@
                                     <Border Padding="8,4"
                                             Margin="0,0,7,7"
                                             CornerRadius="8"
-                                            Background="#FFF7ED"
-                                            BorderBrush="#FED7AA"
+                                            Background="{StaticResource NoteCardBackgroundBrush}"
+                                            BorderBrush="{StaticResource NoteCardBorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding Converter={StaticResource TagDisplayConverter}}"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
-                                                   Foreground="#9A3412" />
+                                                   Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -999,23 +1015,25 @@
                                     Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x6807;&#x7B7E;"
                                        Style="{StaticResource SpotlightSectionLabelStyle}"
+                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}"
                                        Margin="0,8,0,5" />
                             <controls:TagChipEditorControl Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                            EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                           EditorBorderBrush="{StaticResource BorderBrushSoft}"
-                                                           ChipBackground="#FFF7ED"
-                                                           ChipForeground="#9A3412" />
+                                                           EditorBorderBrush="{StaticResource NoteCardBorderBrush}"
+                                                           ChipBackground="{StaticResource NoteCardBackgroundBrush}"
+                                                           ChipForeground="{StaticResource NoteCardTextPrimaryBrush}" />
                         </StackPanel>
 
                         <TextBlock Grid.Row="3"
                                    Text="&#x5185;&#x5BB9;"
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
+                                   Foreground="{StaticResource NoteCardTextSecondaryBrush}"
                                    Margin="0,10,0,7" />
                         <controls:MarkdownViewerControl Grid.Row="4"
                                                         Markdown="{Binding FocusedNote.Content}"
                                                         ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                        ViewerBorderBrush="{StaticResource BorderBrushSoft}"
-                                                        ViewerForeground="{StaticResource TextPrimaryBrush}"
+                                                        ViewerBorderBrush="{StaticResource NoteCardBorderBrush}"
+                                                        ViewerForeground="{StaticResource NoteCardTextPrimaryBrush}"
                                                         ForwardMouseWheelToParentScrollViewer="False"
                                                         MinHeight="92"
                                                         MaxHeight="10000"
@@ -1023,16 +1041,19 @@
                         <TextBox Grid.Row="4"
                                  Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
+                                  Foreground="{StaticResource NoteCardTextPrimaryBrush}"
+                                  CaretBrush="{StaticResource NoteCardTextPrimaryBrush}"
                                   MinHeight="92"
                                   MaxHeight="10000"
                                   Background="{StaticResource SpotlightSurfaceBlockBrush}"
-                                  BorderBrush="{StaticResource BorderBrushSoft}"
+                                  BorderBrush="{StaticResource NoteCardBorderBrush}"
                                   Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
 
                         <Grid Grid.Row="5"
                               Margin="0,10,0,8">
                             <TextBlock Text="{Binding FocusedNote.AttachmentCount, StringFormat=&#x9644;&#x4EF6; {0}}"
-                                       Style="{StaticResource SpotlightSectionLabelStyle}" />
+                                       Style="{StaticResource SpotlightSectionLabelStyle}"
+                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
                             <Button Content="+ &#x6DFB;&#x52A0;&#x9644;&#x4EF6;"
                                     Command="{Binding PickFilesCommand}"
                                     CommandParameter="{Binding FocusedNote}"
@@ -1060,11 +1081,11 @@
                                     <TextBlock Text="暂无附件"
                                                FontSize="13"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}" />
+                                               Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
                                     <TextBlock Text="可在编辑模式中添加附件"
                                                Margin="0,3,0,0"
                                                FontSize="11"
-                                               Foreground="{StaticResource SpotlightTextMutedBrush}" />
+                                               Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -1084,8 +1105,8 @@
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
-                        Background="{StaticResource SpotlightSurfaceDialogBrush}"
-                        BorderBrush="#55E5E7EB"
+                        Background="{StaticResource NoteCardBackgroundBrush}"
+                        BorderBrush="{StaticResource NoteCardBorderBrush}"
                         BorderThickness="0,1,0,0"
                         CornerRadius="0,0,10,10">
                     <Grid>

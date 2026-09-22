@@ -27,6 +27,10 @@
     <Color x:Key="BrandNavyPressedColor">#294B42</Color>
     <Color x:Key="BrandTealColor">#527D70</Color>
     <Color x:Key="BrandPaperColor">#F7F8F5</Color>
+    <Color x:Key="NoteCardBackgroundColor">#FFF5CF</Color>
+    <Color x:Key="BlockedCardBackgroundColor">#FAEEEC</Color>
+    <Color x:Key="BlockedCardBorderColor">#E4D3CF</Color>
+    <Color x:Key="BlockedCardTextColor">#8E514B</Color>
 
     <!-- Semantic surfaces and states shared by every workspace and editor. -->
     <SolidColorBrush x:Key="BrandNavyBrush" Color="{StaticResource BrandNavyColor}" />
@@ -54,10 +58,20 @@
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource BrandNavyColor}" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#65716C" />
     <SolidColorBrush x:Key="BorderBrushSoft" Color="#DEE4DD" />
+    <SolidColorBrush x:Key="TaskCardBorderBrush" Color="#D2DCD3" />
     <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#E3EDE9" />
     <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#F6F7F3" />
-    <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#F8F3E3" />
-    <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#E7DFC8" />
+    <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="{StaticResource NoteCardBackgroundColor}" />
+    <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#E5D9A8" />
+    <SolidColorBrush x:Key="NoteCardHoverBorderBrush" Color="#C5B16A" />
+    <SolidColorBrush x:Key="NoteCardTextPrimaryBrush" Color="#514620" />
+    <SolidColorBrush x:Key="NoteCardTextSecondaryBrush" Color="#776A3B" />
+    <SolidColorBrush x:Key="BlockedCardBackgroundBrush" Color="{StaticResource BlockedCardBackgroundColor}" />
+    <SolidColorBrush x:Key="BlockedCardBorderBrush" Color="{StaticResource BlockedCardBorderColor}" />
+    <SolidColorBrush x:Key="BlockedCardHoverBorderBrush" Color="#C2968F" />
+    <SolidColorBrush x:Key="BlockedCardAccentBrush" Color="#AE6D66" />
+    <SolidColorBrush x:Key="BlockedCardTextBrush" Color="{StaticResource BlockedCardTextColor}" />
+    <SolidColorBrush x:Key="BlockedCardSecondaryBrush" Color="#626D67" />
     <SolidColorBrush x:Key="SurfaceBrush" Color="#FDFDF9" />
     <SolidColorBrush x:Key="HoverBrush" Color="#EBF0EA" />
     <SolidColorBrush x:Key="AccentBrush" Color="#426D5E" />

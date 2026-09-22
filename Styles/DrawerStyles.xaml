@@ -3,7 +3,7 @@
                     xmlns:controls="clr-namespace:KanbanForOne.Controls"
                     xmlns:primitives="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework">
     <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#F7F8F4" />
-    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#F8F3E3" />
+    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="{StaticResource NoteCardBackgroundColor}" />
     <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#283D38" />
     <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#4D5F56" />
     <SolidColorBrush x:Key="DrawerMutedBrush" Color="#65716C" />
@@ -144,7 +144,8 @@
             <Setter.Value>
                 <Binding Path="Tag"
                          RelativeSource="{RelativeSource Self}"
-                         Converter="{StaticResource TaskStatusBrushConverter}" />
+                         Converter="{StaticResource TaskStatusBrushConverter}"
+                         ConverterParameter="Foreground" />
             </Setter.Value>
         </Setter>
         <Setter Property="Background">

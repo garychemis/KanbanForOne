@@ -143,6 +143,7 @@
                 </ListBox>
 
                     <local:EmptyStateControl x:Name="ColumnEmptyState"
+                                             IsSubtle="True"
                                              VerticalAlignment="Top"
                                              Title="暂无卡片"
                                              Message="点击右上角 + 添加一张卡片。"

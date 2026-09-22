@@ -12,12 +12,18 @@ public sealed class TaskStatusBrushConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
+        var role = parameter as string;
+        if (role == "Secondary")
+        {
+            return BrushFrom(value is TaskStatus.Blocked ? "#626D67" : "#65716C");
+        }
+
         return value switch
         {
             TaskStatus.Todo => BrushFrom("#8D9289"),
-            TaskStatus.Doing => BrushFrom("#5C8190"),
-            TaskStatus.Blocked => BrushFrom("#AF8055"),
-            TaskStatus.Done => BrushFrom("#5F8871"),
+            TaskStatus.Doing => BrushFrom("#548698"),
+            TaskStatus.Blocked => BrushFrom(role == "Foreground" ? "#8E514B" : "#AE6D66"),
+            TaskStatus.Done => BrushFrom("#58876D"),
             _ => BrushFrom("#8D9289")
         };
     }
@@ -40,8 +46,8 @@ public sealed class TaskStatusBackgroundConverter : IValueConverter
         return value switch
         {
             TaskStatus.Todo => BrushFrom("#FDFCF7"),
-            TaskStatus.Doing => BrushFrom("#F1F6F7"),
-            TaskStatus.Blocked => BrushFrom("#FAF4EB"),
+            TaskStatus.Doing => BrushFrom("#EEF6F8"),
+            TaskStatus.Blocked => BrushFrom("#FAEEEC"),
             TaskStatus.Done => BrushFrom("#F1F6EF"),
             _ => BrushFrom("#FFFFFF")
         };
@@ -66,7 +72,7 @@ public sealed class TaskStatusDrawerBackgroundConverter : IValueConverter
         {
             TaskStatus.Todo => BrushFrom("#F9F8F1"),
             TaskStatus.Doing => BrushFrom("#F1F6F7"),
-            TaskStatus.Blocked => BrushFrom("#FAF4EB"),
+            TaskStatus.Blocked => BrushFrom("#FAEEEC"),
             TaskStatus.Done => BrushFrom("#F1F6EF"),
             _ => BrushFrom("#FFFFFF")
         };
@@ -167,9 +173,9 @@ public sealed class TaskPreviewSegmentBrushConverter : IValueConverter
             },
             TaskStatus.Blocked => role switch
             {
-                "Border" => "#E8DACA",
-                "Foreground" => "#936C42",
-                _ => "#F8F2E9"
+                "Border" => "#E4D3CF",
+                "Foreground" => "#8E514B",
+                _ => "#FAEEEC"
             },
             TaskStatus.Done => role switch
             {

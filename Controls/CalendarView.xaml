@@ -95,7 +95,7 @@
                                Width="14"
                                FontSize="10"
                                FontWeight="SemiBold"
-                               Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}}"
+                               Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Foreground}"
                                VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1"
                                Text="{Binding Title}"
@@ -205,7 +205,7 @@
                         <TextBlock Text="{Binding DateRangeDisplay}"
                                    Margin="0,3,0,0"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
                     </StackPanel>
                     <Border Grid.Column="1"
                             Padding="7,3"
@@ -349,7 +349,7 @@
                         <TextBlock Text="任务日期"
                                    Margin="0,4,0,0"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
                     </StackPanel>
 
                     <StackPanel Grid.Column="1"
@@ -362,7 +362,7 @@
                         <controls:MarkdownPreviewControl Markdown="{Binding Description}"
                                                          Margin="0,6,0,0"
                                                          PreviewFontSize="12"
-                                                         PreviewForeground="{StaticResource TextSecondaryBrush}"
+                                                         PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}"
                                                          PreviewLineHeight="18"
                                                          PreviewMaxHeight="38" />
                     </StackPanel>

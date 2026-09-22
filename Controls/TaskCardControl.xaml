@@ -55,7 +55,24 @@
                     <Setter Property="CornerRadius" Value="8" />
                     <Setter Property="Background"
                             Value="{Binding Status, Converter={StaticResource TaskStatusBackgroundConverter}}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                    <Setter Property="BorderBrush" Value="{StaticResource TaskCardBorderBrush}" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Status}" Value="Blocked">
+                            <Setter Property="BorderBrush" Value="{StaticResource BlockedCardBorderBrush}" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                     Value="True">
+                            <Setter Property="BorderBrush"
+                                    Value="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}}" />
+                        </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding Status}" Value="Blocked" />
+                                <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=UserControl}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="BorderBrush" Value="{StaticResource BlockedCardHoverBorderBrush}" />
+                        </MultiDataTrigger>
+                    </Style.Triggers>
                 </Style>
             </Border.Style>
             <Border.RenderTransform>
@@ -131,7 +148,7 @@
                                                      Grid.Row="1"
                                                      Margin="0,6,0,0"
                                                      PreviewFontSize="12"
-                                                     PreviewForeground="{StaticResource TextSecondaryBrush}"
+                                                     PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}"
                                                      PreviewLineHeight="17"
                                                      PreviewMaxHeight="36">
                         <controls:MarkdownPreviewControl.Style>
@@ -164,7 +181,7 @@
 
                         <TextBlock FontSize="11"
                                    TextTrimming="CharacterEllipsis"
-                                   Foreground="{StaticResource TextSecondaryBrush}">
+                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}">
                             <Run Text="日期 " />
                             <Run Text="{Binding DateRangeDisplay, Mode=OneWay}" />
                         </TextBlock>
@@ -207,7 +224,7 @@
                                    Margin="10,0,0,0"
                                    HorizontalAlignment="Right"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
                     </Grid>
 
                     <Grid Grid.Row="5"

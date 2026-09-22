@@ -178,7 +178,6 @@ public partial class TaskCardControl : UserControl
 
         Cursor = Cursors.Hand;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)FindResource("BrandTealBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 16,
@@ -258,7 +257,7 @@ public partial class TaskCardControl : UserControl
         CardContent.Opacity = 1;
         CardContent.Effect = null;
         InlineRestoreButton.Opacity = 0;
-        CardBorder.BorderBrush = (Brush)FindResource("BorderBrushSoft");
+        CardBorder.ClearValue(Border.BorderBrushProperty);
         CardBorder.Effect = null;
     }
 

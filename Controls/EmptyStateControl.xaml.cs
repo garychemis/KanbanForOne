@@ -6,6 +6,15 @@ namespace KanbanForOne.Controls;
 
 public partial class EmptyStateControl : UserControl
 {
+    public static readonly DependencyProperty IsSubtleProperty = DependencyProperty.Register(
+        nameof(IsSubtle), typeof(bool), typeof(EmptyStateControl), new PropertyMetadata(false));
+
+    public bool IsSubtle
+    {
+        get => (bool)GetValue(IsSubtleProperty);
+        set => SetValue(IsSubtleProperty, value);
+    }
+
     public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
         nameof(Title),
         typeof(string),

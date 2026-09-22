@@ -95,6 +95,7 @@ public sealed class UiSmokeTests
             VerifyUnifiedBackupRoundTrip();
             VerifyWorkspaceLayout(window, vm, notifications);
             VerifyEditors(window, vm);
+            SaveCardPalettePreview();
 
             window.Close();
             app.Shutdown();
@@ -196,6 +197,132 @@ public sealed class UiSmokeTests
         encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
         using var output = File.Create(Path.Combine(directory, name + ".png"));
         encoder.Save(output);
+    }
+
+    private static void SaveCardPalettePreview()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("KANBAN_UI_PREVIEW_DIR"))) return;
+
+        // These samples only belong to this detached visual tree; no workspace or repository is changed.
+        Brush BrushResource(string key) => (Brush)Application.Current.FindResource(key);
+        TextBlock Label(string text, double size, bool strong = false) => new()
+        {
+            Text = text,
+            FontSize = size,
+            FontWeight = strong ? FontWeights.SemiBold : FontWeights.Normal,
+            Foreground = BrushResource(strong ? "TextPrimaryBrush" : "TextSecondaryBrush")
+        };
+
+        var content = new StackPanel();
+        content.Children.Add(Label("卡片配色 · 实际控件预览", 22, strong: true));
+        var subtitle = Label("五类卡片并列展示，底部为归档紧凑卡片", 12);
+        subtitle.Margin = new Thickness(0, 8, 0, 24);
+        content.Children.Add(subtitle);
+
+        var columns = new Grid();
+        content.Children.Add(columns);
+        var headings = new[] { "待办", "进行中", "卡住", "完成", "备忘录" };
+        var titles = new[,]
+        {
+            { "整理本周工作清单", "补充设备接口资料", "项目资料整理" },
+            { "更新管道布置图", "校核设备基础条件", "方案深化记录" },
+            { "等待供应商确认尺寸", "待补充上游设计条件", "接口协调记录" },
+            { "发布本周设计成果", "完成设备清单复核", "阶段成果交付" },
+            { "周会要点", "现场核对提醒", "会议记录备忘" }
+        };
+        var descriptions = new[,]
+        {
+            { "梳理交付顺序，确认本周需要协调的事项。", "核对接口清单，准备下一轮专业协同。" },
+            { "根据最新设备资料，完善检修与操作空间。", "核对基础标高与定位尺寸，整理校核意见。" },
+            { "已发送尺寸确认单，收到回复后继续布置。", "暂缺工艺参数，待专业确认后补充设计。" },
+            { "图纸与清单已整理完成，并提交项目归档。", "数量与规格已核对，相关修改同步完成。" },
+            { "下次会议确认接口边界，提前汇总待办问题。", "带上最新图纸，重点记录检修通道与净空。" }
+        };
+
+        for (var index = 0; index < headings.Length; index++)
+        {
+            columns.ColumnDefinitions.Add(new ColumnDefinition());
+            var cards = new StackPanel();
+            var heading = Label(headings[index], 16, strong: true);
+            heading.Margin = new Thickness(0, 0, 0, 18);
+            cards.Children.Add(heading);
+
+            for (var row = 0; row < 3; row++)
+            {
+                var compact = row == 2;
+                if (compact)
+                {
+                    var archiveLabel = Label("归档 · 紧凑显示", 11);
+                    archiveLabel.Margin = new Thickness(0, 10, 0, 12);
+                    cards.Children.Add(archiveLabel);
+                }
+
+                FrameworkElement card;
+                if (index == 4)
+                {
+                    card = new NoteCardControl
+                    {
+                        IsCompact = compact,
+                        DataContext = new NoteItem
+                        {
+                            Title = titles[index, row],
+                            Content = compact ? string.Empty : descriptions[index, row],
+                            TagsDisplay = "工作记录",
+                            IsArchived = compact,
+                            UpdatedAt = DateTime.Today
+                        }
+                    };
+                }
+                else
+                {
+                    card = new TaskCardControl
+                    {
+                        IsCompact = compact,
+                        DataContext = new TaskItem
+                        {
+                            Title = titles[index, row],
+                            Description = compact ? string.Empty : descriptions[index, row],
+                            Status = (KanbanForOne.Models.TaskStatus)index,
+                            Priority = TaskPriority.Medium,
+                            StartDate = DateTime.Today,
+                            EndDate = DateTime.Today.AddDays(3),
+                            TagsDisplay = "项目协同",
+                            IsArchived = compact
+                        }
+                    };
+                }
+                // Keep the sample rows aligned while allowing each real card to size naturally.
+                card.VerticalAlignment = VerticalAlignment.Top;
+                cards.Children.Add(new Border { Height = compact ? 110 : 204, Child = card });
+            }
+
+            var column = new Border
+            {
+                Background = BrushResource("ColumnBackgroundBrush"),
+                BorderBrush = BrushResource("BorderBrushSoft"),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(10, 14, 10, 12),
+                Margin = new Thickness(0, 0, index == headings.Length - 1 ? 0 : 12, 0),
+                Child = cards
+            };
+            Grid.SetColumn(column, index);
+            columns.Children.Add(column);
+        }
+
+        var preview = new Border
+        {
+            Width = 1512,
+            Background = BrushResource("MainContentBackgroundBrush"),
+            Padding = new Thickness(24),
+            UseLayoutRounding = true,
+            Child = content
+        };
+        System.Windows.Documents.TextElement.SetFontFamily(preview, (FontFamily)Application.Current.FindResource("AppFontFamily"));
+        TextOptions.SetTextFormattingMode(preview, TextFormattingMode.Display);
+        preview.Measure(new Size(preview.Width, double.PositiveInfinity));
+        preview.Arrange(new Rect(new Point(), preview.DesiredSize));
+        SavePreview(preview, "Card-palette");
     }
 
     private static void VerifyEditors(MainWindow window, MainWindowViewModel vm)
