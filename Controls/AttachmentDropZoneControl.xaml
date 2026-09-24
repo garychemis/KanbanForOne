@@ -12,20 +12,20 @@
                 Padding="14,10"
                 CornerRadius="10"
                 BorderThickness="0"
-                Background="#99FFFFFF">
+                Background="{DynamicResource AttachmentDropSurfaceBrush}">
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center">
                 <TextBlock Text="{Binding TitleText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            FontSize="13"
                            FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            TextWrapping="Wrap" />
                 <TextBlock Text="{Binding HelperText, RelativeSource={RelativeSource AncestorType=UserControl}}"
                            Margin="0,4,0,0"
                            FontSize="11"
-                           Foreground="{StaticResource TextSecondaryBrush}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
                            HorizontalAlignment="Center"
                            TextAlignment="Center"
                            TextWrapping="Wrap" />
@@ -35,7 +35,7 @@
         <Rectangle x:Name="DropFrame"
                    RadiusX="10"
                    RadiusY="10"
-                   Stroke="{StaticResource BorderBrushSoft}"
+                   Stroke="{DynamicResource BorderBrushSoft}"
                    StrokeDashArray="5,3"
                    StrokeThickness="1"
                    IsHitTestVisible="False" />
@@ -43,8 +43,8 @@
         <Border x:Name="DropHint"
                 Visibility="Collapsed"
                 CornerRadius="10"
-                Background="{StaticResource SelectedBackgroundBrush}"
-                BorderBrush="{StaticResource BrandTealBrush}"
+                Background="{DynamicResource SelectedBackgroundBrush}"
+                BorderBrush="{DynamicResource BrandTealBrush}"
                 BorderThickness="1"
                 IsHitTestVisible="False">
             <TextBlock Text="{Binding DropHintText, RelativeSource={RelativeSource AncestorType=UserControl}}"
@@ -52,7 +52,7 @@
                        VerticalAlignment="Center"
                        FontSize="11"
                        FontWeight="SemiBold"
-                       Foreground="#6B5B2E" />
+                       Foreground="{DynamicResource WarningTextBrush}" />
         </Border>
     </Grid>
 </UserControl>

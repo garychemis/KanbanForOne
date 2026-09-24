@@ -6,6 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/LightPalette.xaml" />
                 <ResourceDictionary Source="Styles/KanbanTheme.xaml" />
                 <ResourceDictionary Source="Styles/DrawerStyles.xaml" />
                 <ResourceDictionary Source="Styles/ModernControls.xaml" />

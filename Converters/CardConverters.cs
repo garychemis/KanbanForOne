@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 using KanbanForOne.Models;
+using KanbanForOne.Services;
 using TaskStatus = KanbanForOne.Models.TaskStatus;
 
 namespace KanbanForOne.Converters;
@@ -17,36 +18,35 @@ public sealed class TaskStatusBrushConverter : IValueConverter
         {
             return value switch
             {
-                TaskStatus.Doing => BrushFrom("#9EB9C2"),
-                TaskStatus.Blocked => BrushFrom("#D1A7A1"),
-                TaskStatus.Done => BrushFrom("#A7BFAF"),
-                _ => BrushFrom("#B9BDB7")
+                TaskStatus.Doing => ThemeService.GetBrush("TaskDoingBorderBrush", "#9EB9C2"),
+                TaskStatus.Blocked => ThemeService.GetBrush("TaskBlockedBorderBrush", "#D1A7A1"),
+                TaskStatus.Done => ThemeService.GetBrush("TaskDoneBorderBrush", "#A7BFAF"),
+                _ => ThemeService.GetBrush("TaskTodoBorderBrush", "#B9BDB7")
             };
         }
 
         if (role == "Secondary")
         {
-            return BrushFrom(value is TaskStatus.Blocked ? "#626D67" : "#65716C");
+            return value is TaskStatus.Blocked
+                ? ThemeService.GetBrush("BlockedCardSecondaryBrush", "#626D67")
+                : ThemeService.GetBrush("TextSecondaryBrush", "#65716C");
         }
 
         return value switch
         {
-            TaskStatus.Todo => BrushFrom("#8D9289"),
-            TaskStatus.Doing => BrushFrom("#548698"),
-            TaskStatus.Blocked => BrushFrom(role == "Foreground" ? "#8E514B" : "#AE6D66"),
-            TaskStatus.Done => BrushFrom("#58876D"),
-            _ => BrushFrom("#8D9289")
+            TaskStatus.Todo => ThemeService.GetBrush("TaskTodoAccentBrush", "#8D9289"),
+            TaskStatus.Doing => ThemeService.GetBrush("TaskDoingAccentBrush", "#548698"),
+            TaskStatus.Blocked => role == "Foreground"
+                ? ThemeService.GetBrush("BlockedCardTextBrush", "#8E514B")
+                : ThemeService.GetBrush("BlockedCardAccentBrush", "#AE6D66"),
+            TaskStatus.Done => ThemeService.GetBrush("TaskDoneAccentBrush", "#58876D"),
+            _ => ThemeService.GetBrush("TaskTodoAccentBrush", "#8D9289")
         };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return Binding.DoNothing;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
 
@@ -56,11 +56,11 @@ public sealed class TaskStatusBackgroundConverter : IValueConverter
     {
         return value switch
         {
-            TaskStatus.Todo => BrushFrom("#FDFCF7"),
-            TaskStatus.Doing => BrushFrom("#EEF6F8"),
-            TaskStatus.Blocked => BrushFrom("#FAEEEC"),
-            TaskStatus.Done => BrushFrom("#F1F6EF"),
-            _ => BrushFrom("#F3F4F2")
+            TaskStatus.Todo => ThemeService.GetBrush("TaskTodoBackgroundBrush", "#FDFCF7"),
+            TaskStatus.Doing => ThemeService.GetBrush("TaskDoingBackgroundBrush", "#EEF6F8"),
+            TaskStatus.Blocked => ThemeService.GetBrush("BlockedCardBackgroundBrush", "#FAEEEC"),
+            TaskStatus.Done => ThemeService.GetBrush("TaskDoneBackgroundBrush", "#F1F6EF"),
+            _ => ThemeService.GetBrush("CardSurfaceBrush", "#F3F4F2")
         };
     }
 
@@ -68,28 +68,18 @@ public sealed class TaskStatusBackgroundConverter : IValueConverter
     {
         return Binding.DoNothing;
     }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
-    }
 }
 
 public sealed class TaskStatusDrawerBackgroundConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return BrushFrom("#F3F4F2");
+        return ThemeService.GetBrush("CardSurfaceBrush", "#F3F4F2");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return Binding.DoNothing;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
 
@@ -119,21 +109,16 @@ public sealed class TaskPriorityBrushConverter : IValueConverter
     {
         return value switch
         {
-            TaskPriority.High => BrushFrom("#A34F59"),
-            TaskPriority.Medium => BrushFrom("#927039"),
-            TaskPriority.Low => BrushFrom("#65716C"),
-            _ => BrushFrom("#65716C")
+            TaskPriority.High => ThemeService.GetBrush("DangerBrush", "#A34F59"),
+            TaskPriority.Medium => ThemeService.GetBrush("PriorityMediumBrush", "#927039"),
+            TaskPriority.Low => ThemeService.GetBrush("TextSecondaryBrush", "#65716C"),
+            _ => ThemeService.GetBrush("TextSecondaryBrush", "#65716C")
         };
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return Binding.DoNothing;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
 
@@ -161,69 +146,64 @@ public sealed class TaskPreviewSegmentBrushConverter : IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var role = parameter as string ?? "Background";
-        var hex = value switch
+        var (key, hex) = value switch
         {
             TaskStatus.Todo => role switch
             {
-                "Border" => "#CBD5E1",
-                "Foreground" => "#475569",
-                _ => "#F1F5F9"
+                "Border" => ("SegmentTodoBorderBrush", "#CBD5E1"),
+                "Foreground" => ("SegmentTodoForegroundBrush", "#475569"),
+                _ => ("SegmentTodoBackgroundBrush", "#F1F5F9")
             },
             TaskStatus.Doing => role switch
             {
-                "Border" => "#D7E4E8",
-                "Foreground" => "#4D7483",
-                _ => "#EFF4F6"
+                "Border" => ("SegmentDoingBorderBrush", "#D7E4E8"),
+                "Foreground" => ("SegmentDoingForegroundBrush", "#4D7483"),
+                _ => ("SegmentDoingBackgroundBrush", "#EFF4F6")
             },
             TaskStatus.Blocked => role switch
             {
-                "Border" => "#E4D3CF",
-                "Foreground" => "#8E514B",
-                _ => "#FAEEEC"
+                "Border" => ("BlockedCardBorderBrush", "#E4D3CF"),
+                "Foreground" => ("BlockedCardTextBrush", "#8E514B"),
+                _ => ("BlockedCardBackgroundBrush", "#FAEEEC")
             },
             TaskStatus.Done => role switch
             {
-                "Border" => "#D9E6D7",
-                "Foreground" => "#4D785E",
-                _ => "#F0F5ED"
+                "Border" => ("SegmentDoneBorderBrush", "#D9E6D7"),
+                "Foreground" => ("SegmentDoneForegroundBrush", "#4D785E"),
+                _ => ("SegmentDoneBackgroundBrush", "#F0F5ED")
             },
             TaskPriority.High => role switch
             {
-                "Border" => "#EBD4D3",
-                "Foreground" => "#A34F59",
-                _ => "#F8ECEB"
+                "Border" => ("DangerBorderBrush", "#EBD4D3"),
+                "Foreground" => ("DangerBrush", "#A34F59"),
+                _ => ("DangerTintBrush", "#F8ECEB")
             },
             TaskPriority.Medium => role switch
             {
-                "Border" => "#E8DACA",
-                "Foreground" => "#936C42",
-                _ => "#F8F2E9"
+                "Border" => ("SegmentMediumBorderBrush", "#E8DACA"),
+                "Foreground" => ("SegmentMediumForegroundBrush", "#936C42"),
+                _ => ("SegmentMediumBackgroundBrush", "#F8F2E9")
             },
             TaskPriority.Low => role switch
             {
-                "Border" => "#E2E8F0",
-                "Foreground" => "#475569",
-                _ => "#F8FAFC"
+                "Border" => ("SegmentLowBorderBrush", "#E2E8F0"),
+                "Foreground" => ("SegmentTodoForegroundBrush", "#475569"),
+                _ => ("SegmentLowBackgroundBrush", "#F8FAFC")
             },
             _ => role switch
             {
-                "Border" => "#E5E7EB",
-                "Foreground" => "#65716C",
-                _ => "#F8FAFC"
+                "Border" => ("SegmentDefaultBorderBrush", "#E5E7EB"),
+                "Foreground" => ("TextSecondaryBrush", "#65716C"),
+                _ => ("SegmentLowBackgroundBrush", "#F8FAFC")
             }
         };
 
-        return BrushFrom(hex);
+        return ThemeService.GetBrush(key, hex);
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return Binding.DoNothing;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
 
@@ -263,17 +243,14 @@ public sealed class DoneForegroundConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return value is TaskStatus.Done ? BrushFrom("#65716C") : BrushFrom("#283D38");
+        return value is TaskStatus.Done
+            ? ThemeService.GetBrush("TextSecondaryBrush", "#65716C")
+            : ThemeService.GetBrush("TextPrimaryBrush", "#283D38");
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         return Binding.DoNothing;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }
 
@@ -382,7 +359,14 @@ public sealed class FilterSelectedBackgroundConverter : IMultiValueConverter
 
     private static Brush BrushFrom(string hex)
     {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
+        return hex switch
+        {
+            "#DDE3EB" => ThemeService.GetBrush("FilterSelectedBrush", hex),
+            "#E3EDE9" or "SelectedBackgroundBrush" => ThemeService.GetBrush("SelectedBackgroundBrush", "#E3EDE9"),
+            "#00FFFFFF" or "Transparent" => Brushes.Transparent,
+            _ when !hex.StartsWith('#') => ThemeService.GetBrush(hex, "#00FFFFFF"),
+            _ => (Brush)new BrushConverter().ConvertFromString(hex)!
+        };
     }
 }
 

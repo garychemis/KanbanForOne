@@ -5,6 +5,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using KanbanForOne.Services;
 
 namespace KanbanForOne.Controls;
 
@@ -20,19 +21,19 @@ public partial class MarkdownViewerControl : UserControl
         nameof(ViewerBackground),
         typeof(Brush),
         typeof(MarkdownViewerControl),
-        new PropertyMetadata(BrushFrom("#FFFFFF")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty ViewerBorderBrushProperty = DependencyProperty.Register(
         nameof(ViewerBorderBrush),
         typeof(Brush),
         typeof(MarkdownViewerControl),
-        new PropertyMetadata(BrushFrom("#ECECEC")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty ViewerForegroundProperty = DependencyProperty.Register(
         nameof(ViewerForeground),
         typeof(Brush),
         typeof(MarkdownViewerControl),
-        new PropertyMetadata(BrushFrom("#2B2F33"), OnViewerForegroundChanged));
+        new PropertyMetadata(null, OnViewerForegroundChanged));
 
     public static readonly DependencyProperty ForwardMouseWheelToParentScrollViewerProperty = DependencyProperty.Register(
         nameof(ForwardMouseWheelToParentScrollViewer),
@@ -52,6 +53,10 @@ public partial class MarkdownViewerControl : UserControl
 
     public MarkdownViewerControl()
     {
+        // WPF freezes dependency-property metadata defaults; keep theme brushes on the instance.
+        SetCurrentValue(ViewerBackgroundProperty, ThemeService.GetBrush("EditorSurfaceBrush", "#FFFFFF"));
+        SetCurrentValue(ViewerBorderBrushProperty, ThemeService.GetBrush("EditorBorderBrush", "#ECECEC"));
+        SetCurrentValue(ViewerForegroundProperty, ThemeService.GetBrush("MarkdownForegroundBrush", "#2B2F33"));
         InitializeComponent();
         Loaded += (_, _) => ScheduleRenderMarkdown();
         IsVisibleChanged += (_, e) =>
@@ -157,7 +162,7 @@ public partial class MarkdownViewerControl : UserControl
         {
             document.Blocks.Add(new Paragraph(new Run("暂无描述"))
             {
-                Foreground = BrushFrom("#8A8F98"),
+                Foreground = ThemeService.GetBrush("MarkdownMutedBrush", "#8A8F98"),
                 Margin = new Thickness(0)
             });
 
@@ -194,7 +199,7 @@ public partial class MarkdownViewerControl : UserControl
                 document.Blocks.Add(new BlockUIContainer(new Border
                 {
                     Height = 1,
-                    Background = BrushFrom("#E5E7EB"),
+                    Background = ThemeService.GetBrush("MarkdownDividerBrush", "#E5E7EB"),
                     Margin = new Thickness(0, 8, 0, 8)
                 }));
                 continue;
@@ -368,8 +373,8 @@ public partial class MarkdownViewerControl : UserControl
     {
         var paragraph = CreateParagraph(text);
         paragraph.Margin = new Thickness(10, 0, 0, 8);
-        paragraph.Foreground = BrushFrom("#56616F");
-        paragraph.BorderBrush = BrushFrom("#CBD5E1");
+        paragraph.Foreground = ThemeService.GetBrush("MarkdownQuoteForegroundBrush", "#56616F");
+        paragraph.BorderBrush = ThemeService.GetBrush("MarkdownQuoteBorderBrush", "#CBD5E1");
         paragraph.BorderThickness = new Thickness(3, 0, 0, 0);
         paragraph.Padding = new Thickness(10, 0, 0, 0);
         return paragraph;
@@ -381,8 +386,8 @@ public partial class MarkdownViewerControl : UserControl
         {
             FontFamily = new FontFamily("Cascadia Mono, Consolas"),
             FontSize = 12,
-            Foreground = BrushFrom("#1F2937"),
-            Background = BrushFrom("#F3F4F6"),
+            Foreground = ThemeService.GetBrush("MarkdownCodeForegroundBrush", "#1F2937"),
+            Background = ThemeService.GetBrush("MarkdownCodeBackgroundBrush", "#F3F4F6"),
             Margin = new Thickness(0, 0, 0, 10),
             Padding = new Thickness(10),
             LineHeight = 18
@@ -501,8 +506,8 @@ public partial class MarkdownViewerControl : UserControl
             return new Run(markdown[1..^1])
             {
                 FontFamily = new FontFamily("Cascadia Mono, Consolas"),
-                Background = BrushFrom("#EEF2F7"),
-                Foreground = BrushFrom("#111827")
+                Background = ThemeService.GetBrush("MarkdownInlineCodeBackgroundBrush", "#EEF2F7"),
+                Foreground = ThemeService.GetBrush("MarkdownInlineCodeForegroundBrush", "#111827")
             };
         }
 
@@ -517,7 +522,7 @@ public partial class MarkdownViewerControl : UserControl
         {
             return new Run(linkMatch.Groups[1].Value)
             {
-                Foreground = BrushFrom("#2563EB"),
+                Foreground = ThemeService.GetBrush("MarkdownLinkBrush", "#2563EB"),
                 TextDecorations = TextDecorations.Underline
             };
         }
@@ -532,9 +537,4 @@ public partial class MarkdownViewerControl : UserControl
     }
 
     private readonly record struct ListLine(int Indent, bool IsOrdered, string Text);
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
-    }
 }

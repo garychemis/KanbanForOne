@@ -11,11 +11,14 @@ public sealed class SettingsViewModel : ObservableObject
     private readonly WorkHourOptionsViewModel _workHourOptions;
     private readonly DesignConditionStorageOptions _designConditionPaths;
 
-    public SettingsViewModel(WorkHourOptionsViewModel workHourOptions, DesignConditionStorageOptions designConditionPaths)
+    public SettingsViewModel(WorkHourOptionsViewModel workHourOptions, DesignConditionStorageOptions designConditionPaths, ThemeService theme)
     {
         _workHourOptions = workHourOptions;
         _designConditionPaths = designConditionPaths;
+        Theme = theme;
     }
+
+    public ThemeService Theme { get; }
 
     public string DataDirectory => AppPaths.DataRoot;
 

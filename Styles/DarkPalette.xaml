@@ -1,0 +1,254 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="po">
+    <!-- Graphite surfaces, warm white typography, and muted slate-blue interaction states.
+         Semantic status colors stay restrained; paired Color/Brush values must match. -->
+    <Color x:Key="NativeWindowColor">#24272D</Color>
+    <Color x:Key="NativeMutedTextColor">#B1B5BE</Color>
+    <Color x:Key="BrandNavyColor">#E9E7E2</Color>
+    <Color x:Key="BrandNavyHoverColor">#60738D</Color>
+    <Color x:Key="BrandNavyPressedColor">#4A5B72</Color>
+    <Color x:Key="BrandTealColor">#A2B4CF</Color>
+    <Color x:Key="BrandPaperColor">#202329</Color>
+    <Color x:Key="CardSurfaceColor">#292D34</Color>
+    <Color x:Key="WorkHourModuleTintColor">#33312E</Color>
+    <Color x:Key="DesignConditionModuleTintColor">#293238</Color>
+    <Color x:Key="NoteCardBackgroundColor">#383429</Color>
+    <Color x:Key="BlockedCardBackgroundColor">#382D30</Color>
+    <Color x:Key="BlockedCardBorderColor">#795A60</Color>
+    <Color x:Key="BlockedCardTextColor">#E3B9BB</Color>
+    <Color x:Key="DrawerStrongSurfaceColor">#3B4658</Color>
+    <Color x:Key="DrawerTextPrimaryColor">#E9E7E2</Color>
+    <Color x:Key="DrawerSoftDividerColor">#414650</Color>
+    <Color x:Key="SegmentTodoBackgroundColor">#303742</Color>
+    <Color x:Key="SegmentTodoBorderColor">#697687</Color>
+    <Color x:Key="SegmentTodoForegroundColor">#C3CDDB</Color>
+    <Color x:Key="SegmentDoingBackgroundColor">#2F3B48</Color>
+    <Color x:Key="SegmentDoingBorderColor">#638198</Color>
+    <Color x:Key="SegmentDoingForegroundColor">#B1C7DD</Color>
+    <Color x:Key="SegmentDoneBackgroundColor">#303C36</Color>
+    <Color x:Key="SegmentDoneBorderColor">#6B8877</Color>
+    <Color x:Key="SegmentDoneForegroundColor">#B2CCBC</Color>
+    <Color x:Key="DangerTintColor">#412F36</Color>
+    <Color x:Key="DangerBorderColor">#88636D</Color>
+    <Color x:Key="DangerColor">#E3ACB5</Color>
+    <Color x:Key="SegmentMediumBackgroundColor">#3C362E</Color>
+    <Color x:Key="SegmentMediumBorderColor">#867459</Color>
+    <Color x:Key="SegmentMediumForegroundColor">#DCC7A7</Color>
+    <Color x:Key="SegmentLowBackgroundColor">#303641</Color>
+    <Color x:Key="SegmentLowBorderColor">#626E80</Color>
+    <SolidColorBrush x:Key="DrawerPanelBackgroundBrush" Color="#24272D" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerNoteBackgroundBrush" Color="#383429" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerTextPrimaryBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerTextSecondaryBrush" Color="#C4C6CC" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerMutedBrush" Color="#B1B5BE" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerSoftDividerBrush" Color="#414650" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerSoftSurfaceBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="DrawerStrongSurfaceBrush" Color="#3B4658" po:Freeze="False" />
+    <SolidColorBrush x:Key="BrandNavyBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="BrandTealBrush" Color="#A2B4CF" po:Freeze="False" />
+    <SolidColorBrush x:Key="BrandPaperBrush" Color="#202329" po:Freeze="False" />
+    <SolidColorBrush x:Key="BrandTealTintBrush" Color="#303B4D" po:Freeze="False" />
+    <SolidColorBrush x:Key="CardSurfaceBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleTintBrush" Color="#33312E" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleHoverBrush" Color="#403B34" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentBrush" Color="#C6B18C" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentHoverBrush" Color="#B5A181" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleAccentPressedBrush" Color="#9B886B" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleBorderBrush" Color="#766854" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleHoverBorderBrush" Color="#B8A17A" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourModuleTextBrush" Color="#D8C6A6" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleTintBrush" Color="#293238" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleHoverBrush" Color="#333F48" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentBrush" Color="#A0B9C4" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentHoverBrush" Color="#8CA5B0" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleAccentPressedBrush" Color="#78939F" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#607B86" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleHoverBorderBrush" Color="#A0B9C4" po:Freeze="False" />
+    <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#BBCFD7" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveModuleTintBrush" Color="#33312E" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveModuleHoverBrush" Color="#403B34" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveModuleBorderBrush" Color="#766854" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveModuleTextBrush" Color="#D8C6A6" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveColumnBackgroundBrush" Color="#2E323A" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveCardTintBrush" Color="#33312E" po:Freeze="False" />
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#181A1F" po:Freeze="False" />
+    <SolidColorBrush x:Key="MainContentBackgroundBrush" Color="#181A1F" po:Freeze="False" />
+    <SolidColorBrush x:Key="SideNavBackgroundBrush" Color="#202329" po:Freeze="False" />
+    <SolidColorBrush x:Key="TopNavBackgroundBrush" Color="#22252B" po:Freeze="False" />
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#B1B5BE" po:Freeze="False" />
+    <SolidColorBrush x:Key="BorderBrushSoft" Color="#414650" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskCardBorderBrush" Color="#59616E" po:Freeze="False" />
+    <SolidColorBrush x:Key="SelectedBackgroundBrush" Color="#3B4658" po:Freeze="False" />
+    <SolidColorBrush x:Key="ColumnBackgroundBrush" Color="#202329" po:Freeze="False" />
+    <SolidColorBrush x:Key="NoteCardBackgroundBrush" Color="#383429" po:Freeze="False" />
+    <SolidColorBrush x:Key="NoteCardBorderBrush" Color="#7A6B4B" po:Freeze="False" />
+    <SolidColorBrush x:Key="NoteCardHoverBorderBrush" Color="#C1AA76" po:Freeze="False" />
+    <SolidColorBrush x:Key="NoteCardTextPrimaryBrush" Color="#E4D8B5" po:Freeze="False" />
+    <SolidColorBrush x:Key="NoteCardTextSecondaryBrush" Color="#C4B692" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardBackgroundBrush" Color="#382D30" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardBorderBrush" Color="#795A60" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardHoverBorderBrush" Color="#B88B90" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardAccentBrush" Color="#D3A0A3" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardTextBrush" Color="#E3B9BB" po:Freeze="False" />
+    <SolidColorBrush x:Key="BlockedCardSecondaryBrush" Color="#C2ADB0" po:Freeze="False" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="HoverBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#A2B4CF" po:Freeze="False" />
+    <SolidColorBrush x:Key="PrimaryButtonBrush" Color="#586B85" po:Freeze="False" />
+    <SolidColorBrush x:Key="ButtonHoverBrush" Color="#60738D" po:Freeze="False" />
+    <SolidColorBrush x:Key="ButtonPressedBrush" Color="#4A5B72" po:Freeze="False" />
+    <SolidColorBrush x:Key="DisabledBrush" Color="#525965" po:Freeze="False" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#E3ACB5" po:Freeze="False" />
+    <SolidColorBrush x:Key="DangerTintBrush" Color="#412F36" po:Freeze="False" />
+    <SolidColorBrush x:Key="DangerBorderBrush" Color="#88636D" po:Freeze="False" />
+    <SolidColorBrush x:Key="DialogSurfaceBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="DialogHeaderBrush" Color="#2E323A" po:Freeze="False" />
+    <SolidColorBrush x:Key="DialogSurfaceHoverBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkOptionPanelBrush" Color="#2E323A" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkOptionChipBrush" Color="#303B4D" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkOptionChipBorderBrush" Color="#59616E" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkOptionAccentBrush" Color="#AABBD3" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkOptionAccentStrongBrush" Color="#586B85" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightTextPrimaryBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightTextSecondaryBrush" Color="#B1B5BE" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightTextMutedBrush" Color="#A0A6B1" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightSurfaceDialogBrush" Color="#24272D" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightSurfaceBlockBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightSurfaceInputBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightBorderSoftBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightPrimaryBrush" Color="#586B85" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourDialogSurfaceBrush" Color="#24272D" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourFieldBackgroundBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourBorderBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourHoverBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourSelectedBrush" Color="#3B4658" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourPrimaryTextBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourSecondaryTextBrush" Color="#B1B5BE" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDialogSurfaceBrush" Color="#24272D" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionFieldBackgroundBrush" Color="#292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionFieldBorderBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionFieldHoverBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionFieldSelectedBrush" Color="#3B4658" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionPrimaryTextBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionSecondaryTextBrush" Color="#B1B5BE" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingHeaderBrush" Color="#343B47" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingAlternateRowBrush" Color="#2E323A" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerBrush" Color="#E3ACB5" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerSoftBrush" Color="#412F36" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerHoverBrush" Color="#513841" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionDrawingDangerPressedBrush" Color="#60434D" po:Freeze="False" />
+    <SolidColorBrush x:Key="OnAccentBrush" Color="#FFFFFF" po:Freeze="False" />
+    <SolidColorBrush x:Key="OnWarmAccentBrush" Color="#FFFDF9" po:Freeze="False" />
+    <SolidColorBrush x:Key="ScrollThumbBrush" Color="#626B79" po:Freeze="False" />
+    <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#7C8796" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveDialogBadgeBrush" Color="#553B414B" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveDeleteHoverBrush" Color="#442F33" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveDeleteBorderBrush" Color="#8C6269" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveDeleteTextBrush" Color="#E1AEB0" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveDeletePressedBrush" Color="#543B40" po:Freeze="False" />
+    <SolidColorBrush x:Key="AttachmentDropSurfaceBrush" Color="#99292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="WarningTextBrush" Color="#D8C398" po:Freeze="False" />
+    <SolidColorBrush x:Key="AttachmentErrorBrush" Color="#DDB497" po:Freeze="False" />
+    <SolidColorBrush x:Key="BackupSuccessSurfaceBrush" Color="#2B3631" po:Freeze="False" />
+    <SolidColorBrush x:Key="BackupSuccessBorderBrush" Color="#658171" po:Freeze="False" />
+    <SolidColorBrush x:Key="BackupSuccessTextBrush" Color="#B1CEB9" po:Freeze="False" />
+    <SolidColorBrush x:Key="BackupWarningSurfaceBrush" Color="#39342A" po:Freeze="False" />
+    <SolidColorBrush x:Key="BackupWarningBorderBrush" Color="#8B7959" po:Freeze="False" />
+    <SolidColorBrush x:Key="WarningSurfaceBrush" Color="#3B322A" po:Freeze="False" />
+    <SolidColorBrush x:Key="WarningBorderBrush" Color="#977657" po:Freeze="False" />
+    <SolidColorBrush x:Key="WarningAccentBrush" Color="#DBB28F" po:Freeze="False" />
+    <SolidColorBrush x:Key="ColumnInactiveBrush" Color="#22252B" po:Freeze="False" />
+    <SolidColorBrush x:Key="ArchiveColumnInactiveBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="DropTargetBorderBrush" Color="#806F7E92" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionInputHoverBorderBrush" Color="#7C8796" po:Freeze="False" />
+    <SolidColorBrush x:Key="InputDisabledTextBrush" Color="#969EAA" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionRowHoverBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionTreeSecondaryBrush" Color="#AABBD3" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightFocusBorderBrush" Color="#A2B4CF" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightTranslucentSurfaceBrush" Color="#DF292D34" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightSegmentSurfaceBrush" Color="#BF2E323A" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightHoverSurfaceBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightActionHoverBrush" Color="#EF3A424F" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightActionPressedBrush" Color="#D9455164" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightDisabledTextBrush" Color="#969EAA" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightDangerFocusBrush" Color="#AF7C8B" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightOverlayBrush" Color="#800E1014" po:Freeze="False" />
+    <SolidColorBrush x:Key="SpotlightDividerBrush" Color="#8059616E" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourDisabledTextBrush" Color="#969EAA" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskTodoBorderBrush" Color="#747985" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoingBorderBrush" Color="#68859E" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskBlockedBorderBrush" Color="#98727A" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoneBorderBrush" Color="#6D897B" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskTodoAccentBrush" Color="#B0B3BD" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoingAccentBrush" Color="#A4BBD1" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoneAccentBrush" Color="#AAC5B7" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskTodoBackgroundBrush" Color="#2D3037" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoingBackgroundBrush" Color="#2B3540" po:Freeze="False" />
+    <SolidColorBrush x:Key="TaskDoneBackgroundBrush" Color="#2E3834" po:Freeze="False" />
+    <SolidColorBrush x:Key="PriorityMediumBrush" Color="#D3BB94" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentTodoBorderBrush" Color="#697687" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentTodoForegroundBrush" Color="#C3CDDB" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentTodoBackgroundBrush" Color="#303742" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoingBorderBrush" Color="#638198" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoingForegroundBrush" Color="#B1C7DD" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoingBackgroundBrush" Color="#2F3B48" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoneBorderBrush" Color="#6B8877" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoneForegroundBrush" Color="#B2CCBC" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDoneBackgroundBrush" Color="#303C36" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentMediumBorderBrush" Color="#867459" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentMediumForegroundBrush" Color="#DCC7A7" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentMediumBackgroundBrush" Color="#3C362E" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentLowBorderBrush" Color="#626E80" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentLowBackgroundBrush" Color="#303641" po:Freeze="False" />
+    <SolidColorBrush x:Key="SegmentDefaultBorderBrush" Color="#59616E" po:Freeze="False" />
+    <SolidColorBrush x:Key="FilterSelectedBrush" Color="#3B4658" po:Freeze="False" />
+    <SolidColorBrush x:Key="EditorSurfaceBrush" Color="#24272D" po:Freeze="False" />
+    <SolidColorBrush x:Key="EditorBorderBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="EditorForegroundBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownForegroundBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownMutedBrush" Color="#A0A6B1" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownDividerBrush" Color="#59616E" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownQuoteForegroundBrush" Color="#C4C6CC" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownQuoteBorderBrush" Color="#7C8796" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownCodeForegroundBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownCodeBackgroundBrush" Color="#181A1F" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownInlineCodeBackgroundBrush" Color="#39414F" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownInlineCodeForegroundBrush" Color="#E9E7E2" po:Freeze="False" />
+    <SolidColorBrush x:Key="MarkdownLinkBrush" Color="#ACC7E8" po:Freeze="False" />
+    <SolidColorBrush x:Key="TagPlaceholderBrush" Color="#A0A6B1" po:Freeze="False" />
+    <SolidColorBrush x:Key="TagEditorBorderBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="TagChipBackgroundBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="TagChipForegroundBrush" Color="#D9DCE3" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsInputBorderBrush" Color="#6E7889" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsActionHoverBrush" Color="#60738D" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsActionPressedBrush" Color="#4A5B72" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsActionFocusBrush" Color="#A2B4CF" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsDisabledSurfaceBrush" Color="#343943" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsDisabledTextBrush" Color="#969EAA" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsMutedTextBrush" Color="#A0A6B1" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsRemoveHoverBrush" Color="#442F33" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsRemoveTextBrush" Color="#E1AEB0" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsRemovePressedBrush" Color="#543B40" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsRemoveFocusBrush" Color="#AF7C8B" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsHintSurfaceBrush" Color="#303B4D" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsHintBorderBrush" Color="#687C97" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsHintTextBrush" Color="#B9C8DD" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsGroupBorderBrush" Color="#414650" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsGroupBadgeBrush" Color="#303B4D" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsGroupBadgeTextBrush" Color="#B9C8DD" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsPlaceholderBrush" Color="#A0A6B1" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsChipTextBrush" Color="#D9DCE3" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsReleaseSurfaceBrush" Color="#39342A" po:Freeze="False" />
+    <SolidColorBrush x:Key="SettingsReleaseBorderBrush" Color="#8B7959" po:Freeze="False" />
+    <SolidColorBrush x:Key="TopNavCloseBrush" Color="#E1AEB0" po:Freeze="False" />
+    <SolidColorBrush x:Key="SolidActionBrush" Color="#586B85" po:Freeze="False" />
+    <SolidColorBrush x:Key="DangerButtonBrush" Color="#925361" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourButtonBrush" Color="#786247" po:Freeze="False" />
+    <SolidColorBrush x:Key="WorkHourButtonPressedBrush" Color="#66533D" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionButtonBrush" Color="#526D73" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionButtonPressedBrush" Color="#445B62" po:Freeze="False" />
+    <SolidColorBrush x:Key="ConditionButtonForegroundBrush" Color="#FFFFFF" po:Freeze="False" />
+</ResourceDictionary>

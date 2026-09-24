@@ -13,9 +13,6 @@
         SnapsToDevicePixels="True"
         KeyDown="OnDialogKeyDown" Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
-        <SolidColorBrush x:Key="DialogSurfaceBrush" Color="#F7F1E5" />
-        <SolidColorBrush x:Key="DialogHeaderBrush" Color="#F4EFE6" />
-        <SolidColorBrush x:Key="DialogSurfaceHoverBrush" Color="#EFE7D9" />
 
         <Style x:Key="PickerCloseButtonStyle"
                BasedOn="{StaticResource IconButtonStyle}"
@@ -25,7 +22,7 @@
             <Setter Property="Height" Value="28" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="FontSize" Value="17" />
-            <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ArchiveModuleTextBrush}" />
         </Style>
 
         <Style x:Key="PickerSectionListBoxStyle" TargetType="{x:Type ListBox}">
@@ -39,7 +36,7 @@
         <Style x:Key="PickerSectionItemStyle" TargetType="{x:Type ListBoxItem}">
             <Setter Property="Margin" Value="0,0,0,2" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ArchiveModuleTextBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
@@ -47,7 +44,7 @@
                     <ControlTemplate TargetType="{x:Type ListBoxItem}">
                         <Border x:Name="Chrome"
                                 Background="Transparent"
-                                BorderBrush="{StaticResource ArchiveModuleBorderBrush}"
+                                BorderBrush="{DynamicResource ArchiveModuleBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="7"
                                 Padding="8,3">
@@ -56,11 +53,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DialogSurfaceHoverBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DialogSurfaceHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BrandTealBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -74,20 +71,20 @@
             <Setter Property="MinWidth" Value="82" />
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource ArchiveModuleBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ArchiveModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ArchiveModuleTextBrush}" />
         </Style>
 
         <Style x:Key="PickerDangerButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="MinWidth" Value="26" />
             <Setter Property="Height" Value="26" />
             <Setter Property="Padding" Value="6,0" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource ArchiveModuleBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ArchiveModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource ArchiveModuleTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource ArchiveModuleTextBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
@@ -104,12 +101,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#FCE9E4" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#E8B7AA" />
-                                <Setter Property="Foreground" Value="#B3422E" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource ArchiveDeleteHoverBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource ArchiveDeleteBorderBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource ArchiveDeleteTextBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#F7D8CF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource ArchiveDeletePressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -127,8 +124,8 @@
                             ScaleY="0.96" />
         </Grid.RenderTransform>
 
-        <Border Background="{StaticResource DialogSurfaceBrush}"
-                BorderBrush="{StaticResource ArchiveModuleBorderBrush}"
+        <Border Background="{DynamicResource DialogSurfaceBrush}"
+                BorderBrush="{DynamicResource ArchiveModuleBorderBrush}"
                 BorderThickness="1"
                 CornerRadius="10"
                 ClipToBounds="True">
@@ -148,7 +145,7 @@
                 <!-- 标题栏（无下横线） -->
                 <Grid Grid.Row="0"
                       Margin="20,14,16,12"
-                      Background="{StaticResource DialogHeaderBrush}"
+                      Background="{DynamicResource DialogHeaderBrush}"
                       MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -160,19 +157,19 @@
                             <TextBlock Text="&#xE7B8;"
                                        FontFamily="{StaticResource AppIconFontFamily}"
                                        FontSize="14"
-                                       Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                       Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                        VerticalAlignment="Center" />
                             <TextBlock Text="选择归档分区"
                                        Margin="8,0,0,0"
                                        FontSize="16"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                       Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                         <TextBlock Text="搜索、新建或删除分区"
                                    Margin="0,2,0,0"
                                    FontSize="11"
-                                   Foreground="{StaticResource ArchiveModuleTextBrush}" />
+                                   Foreground="{DynamicResource ArchiveModuleTextBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
@@ -190,8 +187,8 @@
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Margin="0,0,16,0">
-                        <Border Background="#55FFFFFF"
-                                BorderBrush="{StaticResource ArchiveModuleBorderBrush}"
+                        <Border Background="{DynamicResource ArchiveDialogBadgeBrush}"
+                                BorderBrush="{DynamicResource ArchiveModuleBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="6">
@@ -222,27 +219,27 @@
                                                 <Border Margin="6,0,0,0"
                                                         Padding="5,1"
                                                         CornerRadius="5"
-                                                        Background="{StaticResource BrandTealTintBrush}"
+                                                        Background="{DynamicResource BrandTealTintBrush}"
                                                         VerticalAlignment="Center"
                                                         Visibility="{Binding IsDefault, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                                     <TextBlock Text="默认"
                                                                FontSize="10"
                                                                FontWeight="SemiBold"
-                                                               Foreground="{StaticResource BrandTealBrush}" />
+                                                               Foreground="{DynamicResource BrandTealBrush}" />
                                                 </Border>
                                                 <Border MinWidth="36"
                                                         Height="18"
                                                         Margin="6,0,0,0"
                                                         Padding="6,0"
                                                         CornerRadius="6"
-                                                        Background="{StaticResource ArchiveModuleHoverBrush}"
+                                                        Background="{DynamicResource ArchiveModuleHoverBrush}"
                                                         VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding TotalCount, StringFormat={}{0} 项}"
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center"
                                                                FontSize="11"
                                                                FontWeight="SemiBold"
-                                                               Foreground="{StaticResource ArchiveModuleTextBrush}" />
+                                                               Foreground="{DynamicResource ArchiveModuleTextBrush}" />
                                                 </Border>
                                             </StackPanel>
                                             <Button Grid.Column="2"
@@ -268,12 +265,12 @@
                             <TextBlock Text="&#xE721;"
                                        FontFamily="{StaticResource AppIconFontFamily}"
                                        FontSize="12"
-                                       Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                       Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                        VerticalAlignment="Center" />
                             <TextBlock Text="没有匹配的分区"
                                        Margin="6,0,0,0"
                                        FontSize="12"
-                                       Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                       Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                     </StackPanel>
@@ -282,7 +279,7 @@
                         <TextBlock Text="搜索"
                                    FontSize="12"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                   Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                    Margin="0,0,0,6" />
                         <TextBox x:Name="SearchTextBox"
                                  Margin="0,0,0,14"
@@ -291,7 +288,7 @@
                         <TextBlock Text="新建分区"
                                    FontSize="12"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource ArchiveModuleTextBrush}"
+                                   Foreground="{DynamicResource ArchiveModuleTextBrush}"
                                    Margin="0,0,0,6" />
                         <TextBox x:Name="NewSectionText"
                                  Margin="0,0,0,14"

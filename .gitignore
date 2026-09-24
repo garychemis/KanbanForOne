@@ -7,6 +7,7 @@ obj/
 
 data/*.db
 data/*.db-*
+data/ui-settings.json
 data/backups/
 data/attachments/
 data/.delete-staging/

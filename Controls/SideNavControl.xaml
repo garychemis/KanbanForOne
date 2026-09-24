@@ -7,12 +7,12 @@
             <Setter Property="FontFamily" Value="{StaticResource AppIconFontFamily}" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="TextAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
         </Style>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource SideNavBackgroundBrush}"
-            BorderBrush="{StaticResource BorderBrushSoft}"
+    <Border Background="{DynamicResource SideNavBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrushSoft}"
             BorderThickness="0,0,1,0">
         <DockPanel Margin="12,16">
             <StackPanel DockPanel.Dock="Top">
@@ -35,12 +35,12 @@
                                 VerticalAlignment="Center">
                         <TextBlock Text="Kanban41"
                                    Style="{StaticResource AppBrandTextStyle}"
-                                   Foreground="{StaticResource BrandNavyBrush}" />
+                                   Foreground="{DynamicResource BrandNavyBrush}" />
                         <TextBlock Text="{Binding AppVersion}"
                                    Margin="0,3,0,0"
                                    FontWeight="SemiBold"
                                    Style="{StaticResource AppMetaTextStyle}"
-                                   Foreground="{StaticResource BrandTealBrush}" />
+                                   Foreground="{DynamicResource BrandTealBrush}" />
                     </StackPanel>
                 </Grid>
                 <TextBlock Text="{Binding CopyrightText}"
@@ -48,7 +48,7 @@
                            LineHeight="16"
                            Style="{StaticResource AppMetaTextStyle}"
                            TextWrapping="Wrap"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
                 <StackPanel Margin="0,28,0,0">
                     <Button Command="{Binding ChangeFilterCommand}"
                             CommandParameter="Board"
@@ -83,7 +83,7 @@
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="&#xE7BA;"
                                        Style="{StaticResource SideNavIconStyle}"
-                                       Foreground="{StaticResource DangerBrush}" />
+                                       Foreground="{DynamicResource DangerBrush}" />
                             <TextBlock Text="超期未完成" />
                         </StackPanel>
                     </Button>

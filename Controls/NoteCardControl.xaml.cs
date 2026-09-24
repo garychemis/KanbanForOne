@@ -178,7 +178,7 @@ public partial class NoteCardControl : UserControl
 
         Cursor = Cursors.Hand;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)FindResource("NoteCardHoverBorderBrush");
+        CardBorder.SetResourceReference(Border.BorderBrushProperty, "NoteCardHoverBorderBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 16,
@@ -243,7 +243,7 @@ public partial class NoteCardControl : UserControl
         e.Effects = DragDropEffects.Copy;
         DropHint.Visibility = Visibility.Visible;
         LiftTransform.Y = -2;
-        CardBorder.BorderBrush = (Brush)FindResource("NoteCardHoverBorderBrush");
+        CardBorder.SetResourceReference(Border.BorderBrushProperty, "NoteCardHoverBorderBrush");
         e.Handled = true;
     }
 
@@ -258,7 +258,7 @@ public partial class NoteCardControl : UserControl
         CardContent.Opacity = 1;
         CardContent.Effect = null;
         InlineRestoreButton.Opacity = 0;
-        CardBorder.BorderBrush = (Brush)FindResource("NoteCardBorderBrush");
+        CardBorder.SetResourceReference(Border.BorderBrushProperty, "NoteCardBorderBrush");
         CardBorder.Effect = null;
     }
 
@@ -272,7 +272,7 @@ public partial class NoteCardControl : UserControl
         CardBorder.Opacity = 0.75;
         CardContent.Opacity = 1;
         CardContent.Effect = null;
-        CardBorder.BorderBrush = (Brush)FindResource("NoteCardHoverBorderBrush");
+        CardBorder.SetResourceReference(Border.BorderBrushProperty, "NoteCardHoverBorderBrush");
         CardBorder.Effect = new DropShadowEffect
         {
             BlurRadius = 10,

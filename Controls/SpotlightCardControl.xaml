@@ -8,18 +8,10 @@
              PreviewKeyDown="OnPreviewKeyDown"
              IsVisibleChanged="OnIsVisibleChanged" Style="{StaticResource {x:Type UserControl}}">
     <UserControl.Resources>
-        <SolidColorBrush x:Key="SpotlightTextPrimaryBrush" Color="#283D38" />
-        <SolidColorBrush x:Key="SpotlightTextSecondaryBrush" Color="#65716C" />
-        <SolidColorBrush x:Key="SpotlightTextMutedBrush" Color="#748279" />
-        <SolidColorBrush x:Key="SpotlightSurfaceDialogBrush" Color="#F7F8F4" />
-        <SolidColorBrush x:Key="SpotlightSurfaceBlockBrush" Color="#FDFDF9" />
-        <SolidColorBrush x:Key="SpotlightSurfaceInputBrush" Color="#FDFDF9" />
-        <SolidColorBrush x:Key="SpotlightBorderSoftBrush" Color="#DEE4DD" />
-        <SolidColorBrush x:Key="SpotlightPrimaryBrush" Color="#283D38" />
 
         <Style x:Key="SpotlightShellStyle" TargetType="{x:Type Border}">
             <Setter Property="CornerRadius" Value="10" />
-            <Setter Property="Background" Value="{StaticResource SpotlightSurfaceDialogBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightSurfaceDialogBrush}" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="ClipToBounds" Value="True" />
@@ -37,7 +29,7 @@
         <Style x:Key="SpotlightTaskShellStyle"
                TargetType="{x:Type Border}"
                BasedOn="{StaticResource SpotlightShellStyle}">
-            <Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardSurfaceBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="BorderBrush"
                     Value="{Binding FocusedTask.Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}" />
@@ -46,7 +38,7 @@
         <Style x:Key="SpotlightTitleTextStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource SpotlightTextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SpotlightTextPrimaryBrush}" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="LineHeight" Value="32" />
         </Style>
@@ -55,10 +47,10 @@
             <Setter Property="MinHeight" Value="46" />
             <Setter Property="FontSize" Value="24" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource SpotlightTextPrimaryBrush}" />
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SpotlightTextPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
             <Setter Property="Padding" Value="0,4,0,7" />
             <Setter Property="TextWrapping" Value="Wrap" />
@@ -78,11 +70,11 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="Transparent" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="Transparent" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -93,7 +85,7 @@
         <Style x:Key="SpotlightSectionLabelStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource SpotlightTextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SpotlightTextSecondaryBrush}" />
             <Setter Property="Margin" Value="0,0,0,7" />
         </Style>
 
@@ -101,13 +93,13 @@
             <Setter Property="Height" Value="64" />
             <Setter Property="Padding" Value="14,10" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightSurfaceBlockBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="#BFDBFE" />
-                    <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource SpotlightFocusBorderBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource SpotlightSurfaceBlockBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -115,8 +107,8 @@
         <Style x:Key="SpotlightPropertyPanelStyle" TargetType="{x:Type Border}">
             <Setter Property="Padding" Value="14" />
             <Setter Property="CornerRadius" Value="12" />
-            <Setter Property="Background" Value="{StaticResource SpotlightSurfaceBlockBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightSurfaceBlockBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
 
@@ -125,7 +117,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource SpotlightTextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource SpotlightTextSecondaryBrush}" />
         </Style>
 
         <Style x:Key="SpotlightPanelRowStyle" TargetType="{x:Type Grid}">
@@ -136,8 +128,8 @@
             <Setter Property="Padding" Value="9,4" />
             <Setter Property="Margin" Value="0,0,7,7" />
             <Setter Property="CornerRadius" Value="7" />
-            <Setter Property="Background" Value="#DFFFFFFF" />
-            <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightTranslucentSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
 
@@ -153,11 +145,11 @@
             <Setter Property="MinHeight" Value="160" />
             <Setter Property="MaxHeight" Value="240" />
             <Setter Property="Padding" Value="16,14" />
-            <Setter Property="Background" Value="{StaticResource SpotlightSurfaceInputBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource SpotlightBorderSoftBrush}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightSurfaceInputBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SpotlightBorderSoftBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="CaretBrush" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontSize" Value="14" />
             <Setter Property="TextWrapping" Value="Wrap" />
             <Setter Property="AcceptsReturn" Value="True" />
@@ -181,8 +173,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#BFDBFE" />
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SpotlightSurfaceInputBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource SpotlightFocusBorderBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightSurfaceInputBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -213,15 +205,15 @@
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type RadioButton}">
                         <Border x:Name="Chrome"
                                 Padding="{TemplateBinding Padding}"
-                                Background="#BFFFFFFF"
-                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                Background="{DynamicResource SpotlightSegmentSurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderBrushSoft}"
                                 BorderThickness="1"
                                 CornerRadius="6">
                             <ContentPresenter HorizontalAlignment="Center"
@@ -229,8 +221,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#FFFFFFFF" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightHoverSurfaceBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SegmentSelectedBackground}" />
@@ -252,9 +244,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F1F5F9" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#CBD5E1" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#475569" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource SegmentTodoBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource SegmentTodoBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource SegmentTodoForegroundColor}" />
             </Style.Resources>
         </Style>
 
@@ -262,9 +254,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#EFF4F6" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#D7E4E8" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#4D7483" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource SegmentDoingBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource SegmentDoingBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource SegmentDoingForegroundColor}" />
             </Style.Resources>
         </Style>
 
@@ -272,9 +264,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{StaticResource BlockedCardBackgroundColor}" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{StaticResource BlockedCardBorderColor}" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{StaticResource BlockedCardTextColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource BlockedCardBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource BlockedCardBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource BlockedCardTextColor}" />
             </Style.Resources>
         </Style>
 
@@ -282,9 +274,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F0F5ED" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#D9E6D7" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#4D785E" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource SegmentDoneBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource SegmentDoneBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource SegmentDoneForegroundColor}" />
             </Style.Resources>
         </Style>
 
@@ -292,9 +284,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F8ECEB" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#EBD4D3" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#A34F59" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource DangerTintColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource DangerBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource DangerColor}" />
             </Style.Resources>
         </Style>
 
@@ -302,9 +294,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F8F2E9" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#E8DACA" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#936C42" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource SegmentMediumBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource SegmentMediumBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource SegmentMediumForegroundColor}" />
             </Style.Resources>
         </Style>
 
@@ -312,9 +304,9 @@
                BasedOn="{StaticResource SpotlightSegmentButtonStyle}"
                TargetType="{x:Type RadioButton}">
             <Style.Resources>
-                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="#F8FAFC" />
-                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="#E2E8F0" />
-                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="#475569" />
+                <SolidColorBrush x:Key="SegmentSelectedBackground" Color="{DynamicResource SegmentLowBackgroundColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedBorderBrush" Color="{DynamicResource SegmentLowBorderColor}" />
+                <SolidColorBrush x:Key="SegmentSelectedForeground" Color="{DynamicResource SegmentTodoForegroundColor}" />
             </Style.Resources>
         </Style>
 
@@ -322,10 +314,10 @@
             <Setter Property="Height" Value="36" />
             <Setter Property="MinWidth" Value="76" />
             <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="#DFFFFFFF" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{DynamicResource SpotlightTranslucentSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
@@ -343,15 +335,15 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#EFFFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightActionHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#D9FFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightActionPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-                                <Setter Property="Foreground" Value="#9CA3AF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
+                                <Setter Property="Foreground" Value="{DynamicResource SpotlightDisabledTextBrush}" />
                                 <Setter Property="Opacity" Value="1" />
                                 <Setter Property="Cursor" Value="Arrow" />
                             </Trigger>
@@ -364,9 +356,9 @@
         <Style x:Key="SpotlightPrimaryActionButtonStyle"
                TargetType="{x:Type Button}"
                BasedOn="{StaticResource SpotlightActionButtonStyle}">
-            <Setter Property="Background" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Background" Value="{DynamicResource SolidActionBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SolidActionBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -380,17 +372,17 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource TextPrimaryBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SolidActionBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource SolidActionBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource TextPrimaryBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SolidActionBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource SolidActionBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource BorderBrushSoft}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
-                                <Setter Property="Foreground" Value="#9CA3AF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource BorderBrushSoft}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
+                                <Setter Property="Foreground" Value="{DynamicResource SpotlightDisabledTextBrush}" />
                                 <Setter Property="Opacity" Value="1" />
                                 <Setter Property="Cursor" Value="Arrow" />
                             </Trigger>
@@ -403,9 +395,9 @@
         <Style x:Key="SpotlightDangerActionButtonStyle"
                TargetType="{x:Type Button}"
                BasedOn="{StaticResource SpotlightActionButtonStyle}">
-            <Setter Property="Background" Value="{StaticResource DangerTintBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DangerBorderBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+            <Setter Property="Background" Value="{DynamicResource DangerTintBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -419,11 +411,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DangerTintBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="#FDA4AF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DangerTintBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource SpotlightDangerFocusBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DangerBorderBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DangerBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -441,7 +433,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontSize" Value="16" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" />
@@ -459,10 +451,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#EFFFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightActionHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="#D9FFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SpotlightActionPressedBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -475,7 +467,7 @@
           Background="Transparent"
           MouseLeftButtonDown="OnOverlayMouseLeftButtonDown">
         <Border x:Name="Backdrop"
-                Background="#1F0F172A"
+                Background="{DynamicResource SpotlightOverlayBrush}"
                 Opacity="0" />
         <Canvas ClipToBounds="True">
         <Border x:Name="TaskShell"
@@ -533,12 +525,12 @@
                         </Border>
 
                         <Border Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="{StaticResource HoverBrush}"
+                                Background="{DynamicResource HoverBrush}"
                                 Visibility="{Binding HasUnsavedTaskChanges, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
                         </Border>
                     </StackPanel>
 
@@ -547,11 +539,11 @@
                         <TextBlock Text="&#x7F16;&#x8F91;&#x4EFB;&#x52A1;"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource SpotlightTextPrimaryBrush}" />
+                                   Foreground="{DynamicResource SpotlightTextPrimaryBrush}" />
                         <TextBlock Text="&#x4FEE;&#x6539;&#x4EFB;&#x52A1;&#x5185;&#x5BB9;&#x3001;&#x72B6;&#x6001;&#x3001;&#x65E5;&#x671F;&#x548C;&#x9644;&#x4EF6;"
                                    Margin="0,4,0,0"
                                    FontSize="12"
-                                   Foreground="{StaticResource SpotlightTextMutedBrush}" />
+                                   Foreground="{DynamicResource SpotlightTextMutedBrush}" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
@@ -611,7 +603,7 @@
                                         <TextBlock Text="{Binding Converter={StaticResource TagDisplayConverter}}"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -681,10 +673,10 @@
                                                    Style="{StaticResource SpotlightPropertyLabelStyle}" />
                                         <controls:TagChipEditorControl Grid.Column="1"
                                                                        Text="{Binding TaskTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                       EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                                       EditorBorderBrush="{StaticResource BorderBrushSoft}"
-                                                                       ChipBackground="{StaticResource HoverBrush}"
-                                                                       ChipForeground="{StaticResource TextPrimaryBrush}" />
+                                                                       EditorBackground="{DynamicResource SpotlightSurfaceBlockBrush}"
+                                                                       EditorBorderBrush="{DynamicResource BorderBrushSoft}"
+                                                                       ChipBackground="{DynamicResource HoverBrush}"
+                                                                       ChipForeground="{DynamicResource TextPrimaryBrush}" />
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -710,7 +702,7 @@
                                     <TextBlock Text="&#x8D77;&#x59CB;"
                                                FontSize="11"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}"
+                                               Foreground="{DynamicResource SpotlightTextSecondaryBrush}"
                                                VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="2"
                                                Text="{Binding FocusedTask.StartDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
@@ -741,7 +733,7 @@
                                     <TextBlock Text="&#x622A;&#x6B62;"
                                                FontSize="11"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}"
+                                               Foreground="{DynamicResource SpotlightTextSecondaryBrush}"
                                                VerticalAlignment="Center" />
                                     <TextBlock Grid.Column="2"
                                                Text="{Binding FocusedTask.EndDate, StringFormat={}{0:yyyy/M/d}, TargetNullValue=&#x672A;&#x8BBE;&#x7F6E;}"
@@ -766,9 +758,9 @@
                                    Margin="0,8,0,5" />
                         <controls:MarkdownViewerControl Grid.Row="5"
                                                         Markdown="{Binding FocusedTask.Description}"
-                                                        ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                        ViewerBorderBrush="{StaticResource BorderBrushSoft}"
-                                                        ViewerForeground="{StaticResource TextPrimaryBrush}"
+                                                        ViewerBackground="{DynamicResource SpotlightSurfaceBlockBrush}"
+                                                        ViewerBorderBrush="{DynamicResource BorderBrushSoft}"
+                                                        ViewerForeground="{DynamicResource TextPrimaryBrush}"
                                                         ForwardMouseWheelToParentScrollViewer="False"
                                                         MinHeight="48"
                                                         MaxHeight="10000"
@@ -805,17 +797,17 @@
                                     Visibility="{Binding IsTaskSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
-                                    Background="{StaticResource SpotlightSurfaceBlockBrush}"
+                                    Background="{DynamicResource SpotlightSurfaceBlockBrush}"
                                     Visibility="{Binding IsFocusedTaskAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <StackPanel>
                                     <TextBlock Text="暂无附件"
                                                FontSize="13"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource SpotlightTextSecondaryBrush}" />
+                                               Foreground="{DynamicResource SpotlightTextSecondaryBrush}" />
                                     <TextBlock Text="可在编辑模式中添加附件"
                                                Margin="0,3,0,0"
                                                FontSize="11"
-                                               Foreground="{StaticResource SpotlightTextMutedBrush}" />
+                                               Foreground="{DynamicResource SpotlightTextMutedBrush}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -837,7 +829,7 @@
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
                         Background="{Binding Background, ElementName=TaskShell}"
-                        BorderBrush="#55E5E7EB"
+                        BorderBrush="{DynamicResource SpotlightDividerBrush}"
                         BorderThickness="0,1,0,0"
                         CornerRadius="0,0,10,10">
                     <Grid>
@@ -882,8 +874,8 @@
                 Canvas.Top="{Binding SpotlightTop}"
                 Width="{Binding SpotlightWidth}"
                 Height="{Binding SpotlightHeight}"
-                Background="{StaticResource NoteCardBackgroundBrush}"
-                BorderBrush="{StaticResource NoteCardBorderBrush}"
+                Background="{DynamicResource NoteCardBackgroundBrush}"
+                BorderBrush="{DynamicResource NoteCardBorderBrush}"
                 Opacity="0"
                 Visibility="{Binding IsNoteSpotlightOpen, Converter={StaticResource BooleanToVisibilityConverterEx}}">
             <Grid x:Name="NoteDetailContent"
@@ -909,20 +901,20 @@
                     <StackPanel Orientation="Horizontal"
                                 Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                         <Border Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="{StaticResource NoteCardBackgroundBrush}">
+                                Background="{DynamicResource NoteCardBackgroundBrush}">
                             <TextBlock Text="&#x5907;&#x5FD8;"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
+                                       Foreground="{DynamicResource NoteCardTextPrimaryBrush}" />
                         </Border>
                         <Border Margin="8,0,0,0"
                                 Style="{StaticResource SpotlightHeaderChipStyle}"
-                                Background="{StaticResource HoverBrush}"
+                                Background="{DynamicResource HoverBrush}"
                                 Visibility="{Binding HasUnsavedNoteChanges, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x672A;&#x4FDD;&#x5B58;"
                                        FontSize="12"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
+                                       Foreground="{DynamicResource NoteCardTextSecondaryBrush}" />
                         </Border>
                     </StackPanel>
                     <StackPanel VerticalAlignment="Center"
@@ -930,11 +922,11 @@
                         <TextBlock Text="&#x7F16;&#x8F91;&#x5907;&#x5FD8;"
                                    FontSize="18"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
+                                   Foreground="{DynamicResource NoteCardTextPrimaryBrush}" />
                         <TextBlock Text="&#x4FEE;&#x6539;&#x5907;&#x5FD8;&#x5185;&#x5BB9;&#x3001;&#x6807;&#x7B7E;&#x548C;&#x9644;&#x4EF6;"
                                    Margin="0,4,0,0"
                                    FontSize="12"
-                                   Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
+                                   Foreground="{DynamicResource NoteCardTextSecondaryBrush}" />
                     </StackPanel>
                     <Button Grid.Column="1"
                             Content="&#xD7;"
@@ -966,15 +958,15 @@
                               ClipToBounds="True">
                             <TextBlock Text="{Binding FocusedNote.Title}"
                                        Style="{StaticResource SpotlightTitleTextStyle}"
-                                       Foreground="{StaticResource NoteCardTextPrimaryBrush}"
+                                       Foreground="{DynamicResource NoteCardTextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             <TextBox Text="{Binding NoteTitleDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      x:Name="NoteTitleEditor"
                                      Style="{StaticResource SpotlightTitleBoxStyle}"
-                                     Foreground="{StaticResource NoteCardTextPrimaryBrush}"
-                                     CaretBrush="{StaticResource NoteCardTextPrimaryBrush}"
-                                     BorderBrush="{StaticResource NoteCardBorderBrush}"
+                                     Foreground="{DynamicResource NoteCardTextPrimaryBrush}"
+                                     CaretBrush="{DynamicResource NoteCardTextPrimaryBrush}"
+                                     BorderBrush="{DynamicResource NoteCardBorderBrush}"
                                      IsVisibleChanged="OnEditorIsVisibleChanged"
                                      Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </Grid>
@@ -995,13 +987,13 @@
                                     <Border Padding="8,4"
                                             Margin="0,0,7,7"
                                             CornerRadius="8"
-                                            Background="{StaticResource NoteCardBackgroundBrush}"
-                                            BorderBrush="{StaticResource NoteCardBorderBrush}"
+                                            Background="{DynamicResource NoteCardBackgroundBrush}"
+                                            BorderBrush="{DynamicResource NoteCardBorderBrush}"
                                             BorderThickness="1">
                                         <TextBlock Text="{Binding Converter={StaticResource TagDisplayConverter}}"
                                                    FontSize="11"
                                                    FontWeight="SemiBold"
-                                                   Foreground="{StaticResource NoteCardTextPrimaryBrush}" />
+                                                   Foreground="{DynamicResource NoteCardTextPrimaryBrush}" />
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -1011,25 +1003,25 @@
                                     Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="&#x6807;&#x7B7E;"
                                        Style="{StaticResource SpotlightSectionLabelStyle}"
-                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}"
+                                       Foreground="{DynamicResource NoteCardTextSecondaryBrush}"
                                        Margin="0,8,0,5" />
                             <controls:TagChipEditorControl Text="{Binding NoteTagsDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                           EditorBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                           EditorBorderBrush="{StaticResource NoteCardBorderBrush}"
-                                                           ChipBackground="{StaticResource NoteCardBackgroundBrush}"
-                                                           ChipForeground="{StaticResource NoteCardTextPrimaryBrush}" />
+                                                           EditorBackground="{DynamicResource SpotlightSurfaceBlockBrush}"
+                                                           EditorBorderBrush="{DynamicResource NoteCardBorderBrush}"
+                                                           ChipBackground="{DynamicResource NoteCardBackgroundBrush}"
+                                                           ChipForeground="{DynamicResource NoteCardTextPrimaryBrush}" />
                         </StackPanel>
 
                         <TextBlock Grid.Row="3"
                                    Text="&#x5185;&#x5BB9;"
                                    Style="{StaticResource SpotlightSectionLabelStyle}"
-                                   Foreground="{StaticResource NoteCardTextSecondaryBrush}"
+                                   Foreground="{DynamicResource NoteCardTextSecondaryBrush}"
                                    Margin="0,10,0,7" />
                         <controls:MarkdownViewerControl Grid.Row="4"
                                                         Markdown="{Binding FocusedNote.Content}"
-                                                        ViewerBackground="{StaticResource SpotlightSurfaceBlockBrush}"
-                                                        ViewerBorderBrush="{StaticResource NoteCardBorderBrush}"
-                                                        ViewerForeground="{StaticResource NoteCardTextPrimaryBrush}"
+                                                        ViewerBackground="{DynamicResource SpotlightSurfaceBlockBrush}"
+                                                        ViewerBorderBrush="{DynamicResource NoteCardBorderBrush}"
+                                                        ViewerForeground="{DynamicResource NoteCardTextPrimaryBrush}"
                                                         ForwardMouseWheelToParentScrollViewer="False"
                                                         MinHeight="92"
                                                         MaxHeight="10000"
@@ -1037,19 +1029,19 @@
                         <TextBox Grid.Row="4"
                                  Text="{Binding NoteContentDraft, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                   Style="{StaticResource SpotlightDescriptionTextBoxStyle}"
-                                  Foreground="{StaticResource NoteCardTextPrimaryBrush}"
-                                  CaretBrush="{StaticResource NoteCardTextPrimaryBrush}"
+                                  Foreground="{DynamicResource NoteCardTextPrimaryBrush}"
+                                  CaretBrush="{DynamicResource NoteCardTextPrimaryBrush}"
                                   MinHeight="92"
                                   MaxHeight="10000"
-                                  Background="{StaticResource SpotlightSurfaceBlockBrush}"
-                                  BorderBrush="{StaticResource NoteCardBorderBrush}"
+                                  Background="{DynamicResource SpotlightSurfaceBlockBrush}"
+                                  BorderBrush="{DynamicResource NoteCardBorderBrush}"
                                   Visibility="{Binding IsNoteSpotlightEditing, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
 
                         <Grid Grid.Row="5"
                               Margin="0,10,0,8">
                             <TextBlock Text="{Binding FocusedNote.AttachmentCount, StringFormat=&#x9644;&#x4EF6; {0}}"
                                        Style="{StaticResource SpotlightSectionLabelStyle}"
-                                       Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
+                                       Foreground="{DynamicResource NoteCardTextSecondaryBrush}" />
                             <Button Content="+ &#x6DFB;&#x52A0;&#x9644;&#x4EF6;"
                                     Command="{Binding PickFilesCommand}"
                                     CommandParameter="{Binding FocusedNote}"
@@ -1071,17 +1063,17 @@
                                     Visibility="{Binding IsNoteSpotlightPreviewing, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <Border Padding="10,8"
                                     CornerRadius="12"
-                                    Background="{StaticResource SpotlightSurfaceBlockBrush}"
+                                    Background="{DynamicResource SpotlightSurfaceBlockBrush}"
                                     Visibility="{Binding IsFocusedNoteAttachmentEmpty, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <StackPanel>
                                     <TextBlock Text="暂无附件"
                                                FontSize="13"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
+                                               Foreground="{DynamicResource NoteCardTextSecondaryBrush}" />
                                     <TextBlock Text="可在编辑模式中添加附件"
                                                Margin="0,3,0,0"
                                                FontSize="11"
-                                               Foreground="{StaticResource NoteCardTextSecondaryBrush}" />
+                                               Foreground="{DynamicResource NoteCardTextSecondaryBrush}" />
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -1101,8 +1093,8 @@
 
                 <Border Grid.Row="2"
                         Padding="34,10,24,18"
-                        Background="{StaticResource NoteCardBackgroundBrush}"
-                        BorderBrush="{StaticResource NoteCardBorderBrush}"
+                        Background="{DynamicResource NoteCardBackgroundBrush}"
+                        BorderBrush="{DynamicResource NoteCardBorderBrush}"
                         BorderThickness="0,1,0,0"
                         CornerRadius="0,0,10,10">
                     <Grid>

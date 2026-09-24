@@ -41,7 +41,7 @@
                                 <Setter TargetName="Chrome" Property="Opacity" Value="0.78" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource BrandTealBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Chrome" Property="Opacity" Value="0.55" />
@@ -55,26 +55,26 @@
         <Style x:Key="DialogGhostButtonStyle"
                BasedOn="{StaticResource DialogButtonBaseStyle}"
                TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
 
         <Style x:Key="DialogDangerButtonStyle"
                BasedOn="{StaticResource DialogButtonBaseStyle}"
                TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="{StaticResource DangerBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}" />
+            <Setter Property="Background" Value="{DynamicResource DangerButtonBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DangerButtonBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#FFFFFF" />
+            <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}" />
         </Style>
 
         <Style x:Key="DialogCloseButtonStyle" TargetType="{x:Type Button}">
             <Setter Property="Width" Value="30" />
             <Setter Property="Height" Value="30" />
             <Setter Property="FontSize" Value="18" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -90,11 +90,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource BorderBrushSoft}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource BorderBrushSoft}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -111,8 +111,8 @@
             <ScaleTransform ScaleX="0.96"
                             ScaleY="0.96" />
         </Grid.RenderTransform>
-        <Border Background="{StaticResource TopNavBackgroundBrush}"
-                BorderBrush="{StaticResource BorderBrushSoft}"
+        <Border Background="{DynamicResource TopNavBackgroundBrush}"
+                BorderBrush="{DynamicResource BorderBrushSoft}"
                 BorderThickness="1"
                 CornerRadius="10">
             <Border.Effect>
@@ -129,8 +129,8 @@
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0"
-                    Background="{StaticResource SurfaceBrush}"
-                    BorderBrush="{StaticResource BorderBrushSoft}"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrushSoft}"
                     BorderThickness="0,0,0,1"
                     CornerRadius="10,10,0,0"
                     MouseLeftButtonDown="OnHeaderMouseLeftButtonDown"
@@ -144,7 +144,7 @@
                                VerticalAlignment="Center"
                                FontSize="14"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
                     <Button Grid.Column="1"
                             Content="&#x00D7;"
                             Click="OnCancelClick"
@@ -161,8 +161,8 @@
 
                 <Border Width="46"
                         Height="46"
-                        Background="#FFF7ED"
-                        BorderBrush="#FDBA74"
+                        Background="{DynamicResource WarningSurfaceBrush}"
+                        BorderBrush="{DynamicResource WarningBorderBrush}"
                         BorderThickness="1"
                         CornerRadius="23">
                     <TextBlock Text="!"
@@ -170,7 +170,7 @@
                                VerticalAlignment="Center"
                                FontSize="24"
                                FontWeight="Bold"
-                               Foreground="#C2410C" />
+                               Foreground="{DynamicResource WarningAccentBrush}" />
                 </Border>
 
                 <StackPanel Grid.Column="1"
@@ -178,19 +178,19 @@
                     <TextBlock Text="请确认此操作"
                                FontSize="16"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
                     <TextBlock x:Name="DialogMessageText"
                                Margin="0,8,0,0"
                                FontSize="13"
                                LineHeight="22"
                                TextWrapping="Wrap"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
             </Grid>
 
             <Border Grid.Row="2"
-                    Background="{StaticResource SurfaceBrush}"
-                    BorderBrush="{StaticResource BorderBrushSoft}"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrushSoft}"
                     BorderThickness="0,1,0,0"
                     CornerRadius="0,0,10,10"
                     Padding="18,14">

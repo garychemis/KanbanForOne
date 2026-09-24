@@ -18,8 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace KanbanForOne.Tests;
 
 /// <summary>
-/// 归档页与人工时汇总页 UI 冒烟测试（STA）。
-/// 单测试类单方法：WPF Application 在同一 AppDomain 只能实例化一次，因此两个页面验证
+/// 工作区、编辑弹窗、亮暗切换与卡片悬停的 UI 冒烟测试（STA）。
+/// WPF Application 在同一 AppDomain 只能实例化一次，各项验证
 /// 必须在同一条 STA 线程、同一个窗口实例中依次完成。
 /// 依赖桌面会话（WPF 渲染），在无头 CI 中会失败。
 /// </summary>
@@ -27,6 +27,7 @@ public sealed class UiSmokeTests
 {
     private static Exception? _threadException;
     private static string _result = string.Empty;
+    private static string _previewPrefix = string.Empty;
 
     [Fact]
     public void Archive_and_summary_pages_render()
@@ -34,7 +35,7 @@ public sealed class UiSmokeTests
         var thread = new Thread(Run) { IsBackground = true };
         thread.SetApartmentState(ApartmentState.STA);
         thread.Start();
-        Assert.True(thread.Join(TimeSpan.FromSeconds(40)), "STA thread timed out");
+        Assert.True(thread.Join(TimeSpan.FromSeconds(90)), "STA thread timed out");
         if (_threadException is not null)
         {
             throw new Exception("STA thread failed", _threadException);
@@ -64,12 +65,21 @@ public sealed class UiSmokeTests
             }
 
             App.BuildServiceProvider();
-            var app = new App();
-            app.InitializeComponent();
+            // This suite constructs its own window. Running App.OnStartup here as
+            // well would create a second window and take the production mutex.
+            // The real startup path is tested in the isolated cold-start probe.
+            var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+            foreach (var dictionary in new[] { "LightPalette", "KanbanTheme", "DrawerStyles", "ModernControls" })
+                app.Resources.MergedDictionaries.Add(new ResourceDictionary
+                {
+                    Source = new Uri($"/KanbanForOne;component/Styles/{dictionary}.xaml", UriKind.RelativeOrAbsolute)
+                });
+            App.Services.GetRequiredService<ThemeService>().Initialize(app);
+            App.Services.GetRequiredService<ThemeService>().SetTheme(AppTheme.Light, persist: false);
+            CardHoverAssertions.Verify();
             VerifyDesignConditionDrawingGridStyles();
 
-            // Capture the same container as this window: App startup can replace
-            // the static provider when the test subsequently pumps the dispatcher.
+            // The theme, notifications and window share the initialized container.
             var notifications = App.Services.GetRequiredService<NotificationService>();
             var window = new MainWindow();
             window.Show();
@@ -97,6 +107,7 @@ public sealed class UiSmokeTests
             VerifyEditors(window, vm);
             SaveCardPalettePreview();
             SaveModuleCardPreview(calendarView);
+            VerifyThemeSwitching(window, vm, calendarView);
 
             window.Close();
             app.Shutdown();
@@ -126,7 +137,7 @@ public sealed class UiSmokeTests
                 UriKind.RelativeOrAbsolute)
         };
 
-        Assert.IsType<SolidColorBrush>(resources["ConditionDrawingAlternateRowBrush"]);
+        Assert.IsType<SolidColorBrush>(Application.Current.FindResource("ConditionDrawingAlternateRowBrush"));
         Assert.IsType<Style>(resources["ConditionDrawingGridChromeStyle"]);
         Assert.IsType<Style>(resources["ConditionDrawingDeleteButtonStyle"]);
     }
@@ -186,9 +197,9 @@ public sealed class UiSmokeTests
     {
         var directory = Environment.GetEnvironmentVariable("KANBAN_UI_PREVIEW_DIR");
         if (string.IsNullOrWhiteSpace(directory)) return;
-        // Let popup layouts and the existing 150–220 ms editor animation settle.
-        var renderAt = Environment.TickCount64 + 300;
-        WaitUntil(() => Environment.TickCount64 >= renderAt);
+        // Callers wait for their actual ready state (including animated details).
+        // A fixed delay can capture an empty shell while still letting tests pass.
+        DoEvents();
         element.UpdateLayout();
         Directory.CreateDirectory(directory);
         var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(
@@ -196,8 +207,56 @@ public sealed class UiSmokeTests
         bitmap.Render(element);
         var encoder = new System.Windows.Media.Imaging.PngBitmapEncoder();
         encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
-        using var output = File.Create(Path.Combine(directory, name + ".png"));
+        using var output = File.Create(Path.Combine(directory, _previewPrefix + name + ".png"));
         encoder.Save(output);
+    }
+
+    private static void VerifyThemeSwitching(MainWindow window, MainWindowViewModel vm, CalendarView calendar)
+    {
+        var theme = App.Services.GetRequiredService<ThemeService>();
+        var light = new ResourceDictionary { Source = new Uri("/KanbanForOne;component/Styles/LightPalette.xaml", UriKind.RelativeOrAbsolute) };
+        var dark = new ResourceDictionary { Source = new Uri("/KanbanForOne;component/Styles/DarkPalette.xaml", UriKind.RelativeOrAbsolute) };
+        Assert.Equal(light.Count, dark.Count);
+        var originals = light.Keys.Cast<object>().Where(key => light[key] is SolidColorBrush)
+            .ToDictionary(key => key, key => (SolidColorBrush)Application.Current.FindResource(key));
+        var existingStatusBrush = new KanbanForOne.Converters.TaskStatusBackgroundConverter().Convert(
+            KanbanForOne.Models.TaskStatus.Doing, typeof(Brush), null!, System.Globalization.CultureInfo.InvariantCulture);
+
+        theme.SetTheme(AppTheme.Dark, persist: false);
+        DoEvents();
+        foreach (var (key, brush) in originals)
+        {
+            Assert.True(dark.Contains(key), $"Dark theme is missing {key}");
+            Assert.Same(brush, Application.Current.FindResource(key));
+            Assert.Equal(((SolidColorBrush)dark[key]).Color, brush.Color);
+        }
+        Assert.Same(existingStatusBrush, new KanbanForOne.Converters.TaskStatusBackgroundConverter().Convert(
+            KanbanForOne.Models.TaskStatus.Doing, typeof(Brush), null!, System.Globalization.CultureInfo.InvariantCulture));
+        var background = (SolidColorBrush)((Border)window.FindName("WindowFrame")).Background;
+        Assert.True(background.Color.R < 80 && background.Color.G < 80 && background.Color.B < 80);
+        Assert.True(vm.Settings.Theme.IsDarkTheme);
+        CardHoverAssertions.Verify();
+        _previewPrefix = "Dark-";
+        foreach (var page in new[] { "Board", "Calendar", "WorkHourSummary", "DesignConditions", "Archived", "Backup", "Settings", "About" })
+        {
+            vm.ChangeFilterCommand.Execute(page);
+            DoEvents();
+            window.UpdateLayout();
+            SavePreview(window, page);
+        }
+        VerifyEditors(window, vm);
+        SaveCardPalettePreview();
+        SaveModuleCardPreview(calendar);
+        _previewPrefix = string.Empty;
+
+        theme.SetTheme(AppTheme.Light, persist: false);
+        DoEvents();
+        foreach (var (key, brush) in originals)
+        {
+            Assert.Same(brush, Application.Current.FindResource(key));
+            Assert.Equal(((SolidColorBrush)light[key]).Color, brush.Color);
+        }
+        Assert.True(vm.Settings.Theme.IsLightTheme);
     }
 
     private static void SaveCardPalettePreview()
@@ -387,14 +446,44 @@ public sealed class UiSmokeTests
         window.Height = 900;
         vm.ChangeFilterCommand.Execute("Board");
         DoEvents();
-        vm.Board.OpenTaskCommand.Execute(vm.Board.AllTasks.First());
-        WaitUntil(() => vm.Board.IsSpotlightOpen);
+        vm.Board.CloseSpotlightCommand.Execute(null);
         DoEvents();
+        var task = new TaskItem
+        {
+            Title = "确认设计方案与接口约定",
+            Description = "## 评审要点\n核对 **设备接口**，记录变更原因。\n- 确认管口与支架位置\n- 补充校核说明\n接口编号：`P-102`\n[项目资料](https://example.com/project)",
+            Status = KanbanForOne.Models.TaskStatus.Doing,
+            Priority = TaskPriority.High,
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(3)
+        };
+        task.Tags.Add("设计评审");
+        task.Tags.Add("接口确认");
+        task.Attachments.Add(new AttachmentItem
+        {
+            OriginalFileName = "接口核对清单.pdf", FileExtension = ".pdf", FileSizeBytes = 24680,
+            OwnerId = task.Id, OwnerType = AttachmentOwnerType.Task
+        });
+        vm.Board.OpenTaskCommand.Execute(task);
+        WaitForSpotlightContent(window, vm.Board, "TaskDetailContent", task.Title,
+            "评审要点", "设计评审", "接口核对清单.pdf");
         SavePreview(window, "Task-details");
         vm.Board.CloseSpotlightCommand.Execute(null);
         DoEvents();
-        vm.Board.CreateNoteCommand.Execute(KanbanColumnKind.Notes);
-        WaitUntil(() => vm.Board.IsSpotlightOpen);
+        var note = new NoteItem
+        {
+            Title = "本周评审备忘",
+            Content = "## 会议记录\n本周优先完成 **接口确认**。\n- 汇总各专业反馈\n- 周五前完成复核\n约定编号：`REVIEW-01`"
+        };
+        note.Tags.Add("项目备忘");
+        note.Attachments.Add(new AttachmentItem
+        {
+            OriginalFileName = "评审记录.txt", FileExtension = ".txt", FileSizeBytes = 1024,
+            OwnerId = note.Id, OwnerType = AttachmentOwnerType.Note
+        });
+        vm.Board.OpenNoteCommand.Execute(note);
+        WaitForSpotlightContent(window, vm.Board, "NoteDetailContent", note.Title,
+            "会议记录", "项目备忘", "评审记录.txt");
         SavePreview(window, "Note-details");
         vm.Board.CloseSpotlightCommand.Execute(null);
         DoEvents();
@@ -430,6 +519,31 @@ public sealed class UiSmokeTests
         date.IsDropDownOpen = true;
         DoEvents();
         Assert.True(date.IsDropDownOpen);
+        var datePopup = (Popup)date.Template.FindName("PART_Popup", date);
+        var popupCalendar = datePopup.Child as System.Windows.Controls.Calendar
+            ?? FindVisualChild<System.Windows.Controls.Calendar>(datePopup.Child)!;
+        Assert.NotNull(popupCalendar);
+        CalendarFocusAssertions.Verify(popupCalendar, DoEvents,
+            state => SavePreview(popupCalendar, $"Date-picker-{state}-focus"));
+        Assert.Equal(((SolidColorBrush)Application.Current.FindResource("SurfaceBrush")).Color,
+            ((SolidColorBrush)popupCalendar.Background).Color);
+        SavePreview(popupCalendar, "Date-picker-month");
+        var calendarItem = FindVisualChild<CalendarItem>(popupCalendar)!;
+        var monthGrid = (Grid)calendarItem.Template.FindName("PART_MonthView", calendarItem);
+        Assert.Equal(7, monthGrid.Children.OfType<FrameworkElement>().Count(element =>
+            Grid.GetRow(element) == 0 && !string.IsNullOrWhiteSpace(
+                (element as TextBlock ?? FindVisualChild<TextBlock>(element))?.Text)));
+        var monthHeader = (Button)calendarItem.Template.FindName("PART_HeaderButton", calendarItem);
+        monthHeader.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+        DoEvents();
+        Assert.Equal(CalendarMode.Year, popupCalendar.DisplayMode);
+        SavePreview(popupCalendar, "Date-picker-year");
+        monthHeader.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+        DoEvents();
+        Assert.Equal(CalendarMode.Decade, popupCalendar.DisplayMode);
+        popupCalendar.DisplayMode = CalendarMode.Month;
+        popupCalendar.SelectedDate = DateTime.Today.AddDays(1);
+        Assert.Equal(DateTime.Today.AddDays(1), date.SelectedDate);
         date.IsDropDownOpen = false;
         SavePreview(hours, "Work-hour-editor");
         hours.Close();
@@ -439,6 +553,29 @@ public sealed class UiSmokeTests
         Assert.Equal(WindowStyle.None, confirm.WindowStyle);
         SavePreview(confirm, "Confirmation");
         confirm.Close();
+    }
+
+    private static void WaitForSpotlightContent(MainWindow window, BoardViewModel board,
+        string detailName, string title, string bodyText, string tagText, string attachmentName)
+    {
+        var spotlight = FindVisualChild<SpotlightCardControl>(window)!;
+        Assert.NotNull(spotlight);
+        var detail = (FrameworkElement)spotlight.FindName(detailName);
+        WaitUntil(() => board.IsSpotlightOpen && ReferenceEquals(detail.DataContext, board)
+            && detail.IsVisible && detail.Opacity >= 0.999 && !detail.HasAnimatedProperties);
+        window.UpdateLayout();
+        Assert.True(detail.ActualWidth > 0 && detail.ActualHeight > 0);
+        Assert.True(IsVisibleText(detail, title), "详情标题必须真正显示，不能只截取弹窗外壳");
+        Assert.True(IsVisibleText(detail, tagText), "详情标签必须显示");
+        Assert.True(IsVisibleText(detail, attachmentName), "详情附件必须显示");
+        foreach (var action in new[] { "编辑", "删除" })
+            Assert.True(IsVisibleText(detail, action), $"详情操作 {action} 必须显示");
+        var markdown = FindVisualChild<MarkdownViewerControl>(detail)!;
+        Assert.NotNull(markdown);
+        var viewer = (FlowDocumentScrollViewer)markdown.FindName("Viewer");
+        WaitUntil(() => viewer.Document is not null && new System.Windows.Documents.TextRange(
+            viewer.Document.ContentStart, viewer.Document.ContentEnd).Text.Contains(bodyText));
+        Assert.True(markdown.IsVisible && markdown.ActualHeight > 0, "Markdown 正文必须完成渲染");
     }
 
     private static void VerifyArchivePage(MainWindowViewModel vm, BoardView boardView)

@@ -31,7 +31,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Opacity" Value="0.82" />
@@ -56,53 +56,85 @@
             <Setter Property="Margin" Value="2" />
             <Setter Property="Padding" Value="7" />
             <Setter Property="ClipToBounds" Value="True" />
-            <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsCurrentMonth}" Value="False">
-                    <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
                     <Setter Property="Opacity" Value="0.72" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsToday}" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                     <Setter Property="BorderThickness" Value="1.5" />
                 </DataTrigger>
                 <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="Background" Value="{StaticResource TopNavBackgroundBrush}" />
-                    <Setter Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource TopNavBackgroundBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource BrandTealBrush}" />
                     <Setter Property="BorderThickness" Value="2" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="CalendarActiveTaskContentStyle" TargetType="{x:Type FrameworkElement}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Done">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="CalendarCompletedTaskContentStyle" TargetType="{x:Type FrameworkElement}">
+            <Setter Property="Visibility" Value="Collapsed" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Done">
+                    <Setter Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <DataTemplate x:Key="CalendarChipTemplate">
-            <Border Margin="0,0,0,4"
+            <Border x:Name="MonthTaskCard"
+                    Margin="0,0,0,4"
                     Padding="7,3"
                     CornerRadius="5"
-                    Background="{Binding Status, Converter={StaticResource TaskStatusBackgroundConverter}}"
-                    BorderBrush="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}"
+                    Background="{Binding Task.Status, Converter={StaticResource TaskStatusBackgroundConverter}}"
+                    BorderBrush="{Binding Task.Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}"
                     BorderThickness="1"
-                    IsHitTestVisible="False"
                     ToolTip="{Binding Task.DateRangeDisplay}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding RangeMarker}"
-                               Width="14"
-                               FontSize="10"
-                               FontWeight="SemiBold"
-                               Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Foreground}"
-                               VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding Title}"
-                               FontSize="11"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"
-                               TextTrimming="CharacterEllipsis" />
+                <Grid DataContext="{Binding Task}">
+                    <Grid x:Name="FullTaskContent" Style="{StaticResource CalendarActiveTaskContentStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding DataContext.RangeMarker, ElementName=MonthTaskCard}"
+                                   Width="14"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Foreground}"
+                                   VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding Title}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                    <StackPanel x:Name="CompletedTaskContent" Style="{StaticResource CalendarCompletedTaskContentStyle}">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <controls:MarkdownPreviewControl Markdown="{Binding Description}"
+                                                         IsPreviewExpanded="{Binding IsMouseOver, ElementName=MonthTaskCard}"
+                                                         Margin="0,5,0,0"
+                                                         PreviewFontSize="11"
+                                                         PreviewLineHeight="16"
+                                                         PreviewMaxHeight="64"
+                                                         PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
+                    </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -125,16 +157,16 @@
                         <TextBlock Text="{Binding DayNumber}"
                                    FontSize="13"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
+                                   Foreground="{DynamicResource TextPrimaryBrush}" />
                         <Border HorizontalAlignment="Right"
                                 Padding="6,2"
                                 CornerRadius="5"
-                                Background="{StaticResource SelectedBackgroundBrush}"
+                                Background="{DynamicResource SelectedBackgroundBrush}"
                                 Visibility="{Binding IsToday, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="今天"
                                        FontSize="10"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource AccentBrush}" />
+                                       Foreground="{DynamicResource AccentBrush}" />
                         </Border>
                     </Grid>
 
@@ -144,25 +176,25 @@
                                       ItemTemplate="{StaticResource CalendarChipTemplate}" />
                         <Border Padding="6,2"
                                 CornerRadius="5"
-                                Background="#EEF1F4"
+                                Background="{DynamicResource HoverBrush}"
                                 HorizontalAlignment="Left"
                                 Visibility="{Binding HasOverflow, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="{Binding OverflowText}"
                                        FontSize="10"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
                         </Border>
                         <Border Margin="0,5,0,0"
                                 Padding="7,3"
                                 CornerRadius="6"
-                                Background="{StaticResource TopNavBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                Background="{DynamicResource TopNavBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrushSoft}"
                                 BorderThickness="1"
                                 HorizontalAlignment="Left"
                                 Visibility="{Binding HasDesignConditions, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                             <TextBlock Text="{Binding DesignConditionSummaryText}"
                                        FontSize="10"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
                         </Border>
                     </StackPanel>
                     </Grid>
@@ -170,10 +202,10 @@
                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,3,0,0">
                         <TextBlock Text="{Binding TotalTaskCount, StringFormat=任 {0}}" FontSize="9"
                                    ToolTip="{Binding TotalTaskCount, StringFormat=任务 {0} 项，点击日期查看详情}"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Visibility="{Binding HasTasks, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         <TextBlock Text="{Binding DesignConditionCount, StringFormat=条 {0}}" FontSize="9" Margin="5,0,0,0"
-                                   ToolTip="{Binding DesignConditionSummaryText}" Foreground="{StaticResource AccentBrush}"
+                                   ToolTip="{Binding DesignConditionSummaryText}" Foreground="{DynamicResource AccentBrush}"
                                    Visibility="{Binding HasDesignConditions, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                     </StackPanel>
                 </Grid>
@@ -181,7 +213,8 @@
         </DataTemplate>
 
         <DataTemplate x:Key="CalendarTaskListTemplate">
-            <Border Margin="0,0,0,8"
+            <Border x:Name="DayTaskCard"
+                    Margin="0,0,0,8"
                     Padding="10"
                     CornerRadius="7"
                     Background="{Binding Status, Converter={StaticResource TaskStatusBackgroundConverter}}"
@@ -192,38 +225,53 @@
                     MouseMove="OnTaskMouseMove"
                     MouseLeftButtonUp="OnTaskMouseLeftButtonUp">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="{Binding Title}"
-                                   FontSize="13"
-                                   FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="{Binding DateRangeDisplay}"
-                                   Margin="0,3,0,0"
-                                   FontSize="11"
-                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
+                    <Grid x:Name="FullTaskContent" Style="{StaticResource CalendarActiveTaskContentStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="{Binding DateRangeDisplay}"
+                                       Margin="0,3,0,0"
+                                       FontSize="11"
+                                       Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                Padding="7,3"
+                                CornerRadius="5"
+                                Background="{DynamicResource SurfaceBrush}"
+                                BorderBrush="{DynamicResource BorderBrushSoft}"
+                                BorderThickness="1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Status, Converter={StaticResource TaskStatusNameConverter}}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                        </Border>
+                    </Grid>
+                    <StackPanel x:Name="CompletedTaskContent" Style="{StaticResource CalendarCompletedTaskContentStyle}">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       TextTrimming="CharacterEllipsis"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <controls:MarkdownPreviewControl Markdown="{Binding Description}"
+                                                             IsPreviewExpanded="{Binding IsMouseOver, ElementName=DayTaskCard}"
+                                                             Margin="0,7,0,0"
+                                                             PreviewLineHeight="17"
+                                                             PreviewMaxHeight="68"
+                                                             PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
                     </StackPanel>
-                    <Border Grid.Column="1"
-                            Padding="7,3"
-                            CornerRadius="5"
-                            Background="{StaticResource SurfaceBrush}"
-                            BorderBrush="{StaticResource BorderBrushSoft}"
-                            BorderThickness="1"
-                            VerticalAlignment="Center">
-                        <TextBlock Text="{Binding Status, Converter={StaticResource TaskStatusNameConverter}}"
-                                   FontSize="10"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
-                    </Border>
                 </Grid>
             </Border>
         </DataTemplate>
 
         <DataTemplate x:Key="CalendarWorkHourListTemplate">
-            <Button Command="{Binding DataContext.OpenWorkHourCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            <Button x:Name="WorkHourCard" Command="{Binding DataContext.OpenWorkHourCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}"
                     Style="{StaticResource ListCardButtonStyle}"
                     Margin="0,0,0,8">
@@ -232,13 +280,13 @@
                         BorderThickness="1">
                     <Border.Style>
                         <Style TargetType="{x:Type Border}">
-                            <Setter Property="Background" Value="{StaticResource WorkHourModuleTintBrush}" />
-                            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource WorkHourModuleTintBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}"
                                              Value="True">
-                                    <Setter Property="Background" Value="{StaticResource WorkHourModuleHoverBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource WorkHourModuleHoverBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -252,11 +300,11 @@
                             <TextBlock Text="{Binding ProjectNumber}"
                                        FontSize="13"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis" />
                             <TextBlock Margin="0,4,0,0"
                                        FontSize="11"
-                                       Foreground="{StaticResource TextSecondaryBrush}">
+                                       Foreground="{DynamicResource TextSecondaryBrush}">
                                 <Run Text="{Binding Discipline, Mode=OneWay}" />
                                 <Run Text=" · " />
                                 <Run Text="{Binding WorkActivity, Mode=OneWay}" />
@@ -264,7 +312,7 @@
                             <TextBlock Text="{Binding Remark}"
                                        Margin="0,4,0,0"
                                        FontSize="10"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        TextTrimming="CharacterEllipsis"
                                        Visibility="{Binding HasRemark, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                         </StackPanel>
@@ -272,14 +320,14 @@
                                 Margin="8,0,0,0"
                                 Padding="7,3"
                                 CornerRadius="5"
-                                Background="{StaticResource CardSurfaceBrush}"
-                                BorderBrush="{StaticResource WorkHourModuleBorderBrush}"
+                                Background="{DynamicResource CardSurfaceBrush}"
+                                BorderBrush="{DynamicResource WorkHourModuleBorderBrush}"
                                 BorderThickness="1"
                                 VerticalAlignment="Center">
                             <TextBlock Text="{Binding HoursDisplay}"
                                        FontSize="10"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                                       Foreground="{DynamicResource WorkHourModuleTextBrush}" />
                         </Border>
                     </Grid>
                 </Border>
@@ -287,19 +335,19 @@
         </DataTemplate>
 
         <DataTemplate x:Key="CalendarDesignConditionListTemplate">
-            <Button Command="{Binding DataContext.DesignConditions.OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            <Button x:Name="DesignConditionCard" Command="{Binding DataContext.DesignConditions.OpenCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     CommandParameter="{Binding}"
                     Style="{StaticResource ListCardButtonStyle}"
                     Margin="0,0,0,8">
                 <Border Padding="10" CornerRadius="8" BorderThickness="1">
                     <Border.Style>
                         <Style TargetType="{x:Type Border}">
-                            <Setter Property="Background" Value="{StaticResource DesignConditionModuleTintBrush}" />
-                            <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+                            <Setter Property="Background" Value="{DynamicResource DesignConditionModuleTintBrush}" />
+                            <Setter Property="BorderBrush" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=Button}}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource DesignConditionModuleHoverBrush}" />
-                                    <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleHoverBorderBrush}" />
+                                    <Setter Property="Background" Value="{DynamicResource DesignConditionModuleHoverBrush}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource DesignConditionModuleHoverBorderBrush}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -307,14 +355,14 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="{Binding ConditionName}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                            <TextBlock Text="{Binding ConditionName}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Margin="0,4,0,0" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}">
                                 <Run Text="{Binding ProjectNumber, Mode=OneWay}"/><Run Text=" · "/><Run Text="{Binding DisciplineRouteDisplay, Mode=OneWay}"/>
                             </TextBlock>
                         </StackPanel>
                         <Border Grid.Column="1" Margin="8,0,0,0" Padding="7,3" VerticalAlignment="Center" CornerRadius="5"
-                                Background="{StaticResource CardSurfaceBrush}" BorderBrush="{StaticResource DesignConditionModuleBorderBrush}" BorderThickness="1">
-                            <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource DesignConditionModuleTextBrush}">
+                                Background="{DynamicResource CardSurfaceBrush}" BorderBrush="{DynamicResource DesignConditionModuleBorderBrush}" BorderThickness="1">
+                            <TextBlock FontSize="10" FontWeight="SemiBold" Foreground="{DynamicResource DesignConditionModuleTextBrush}">
                                 <Run Text="{Binding DrawingCount, Mode=OneWay}"/><Run Text=" 张"/>
                             </TextBlock>
                         </Border>
@@ -324,7 +372,8 @@
         </DataTemplate>
 
         <DataTemplate x:Key="CalendarListTemplate">
-            <Border Margin="0,0,0,10"
+            <Border x:Name="ListTaskCard"
+                    Margin="0,0,0,10"
                     Padding="14"
                     CornerRadius="8"
                     BorderBrush="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Border}"
@@ -335,57 +384,73 @@
                     MouseMove="OnTaskMouseMove"
                     MouseLeftButtonUp="OnTaskMouseLeftButtonUp">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+                    <Grid x:Name="FullTaskContent" Style="{StaticResource CalendarActiveTaskContentStyle}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                    <StackPanel>
-                        <TextBlock Text="{Binding DateRangeDisplay}"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" />
-                        <TextBlock Text="任务日期"
-                                   Margin="0,4,0,0"
-                                   FontSize="11"
-                                   Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
-                    </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="{Binding DateRangeDisplay}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
+                            <TextBlock Text="任务日期"
+                                       Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}" />
+                        </StackPanel>
 
-                    <StackPanel Grid.Column="1"
-                                Margin="14,0,22,0">
-                        <TextBlock Text="{Binding Title}"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                   TextWrapping="Wrap" />
-                        <controls:MarkdownPreviewControl Markdown="{Binding Description}"
-                                                         Margin="0,6,0,0"
-                                                         PreviewFontSize="12"
-                                                         PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}"
-                                                         PreviewLineHeight="18"
-                                                         PreviewMaxHeight="38" />
-                    </StackPanel>
+                        <StackPanel Grid.Column="1"
+                                    Margin="14,0,22,0">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextWrapping="Wrap" />
+                            <controls:MarkdownPreviewControl Markdown="{Binding Description}"
+                                                             Margin="0,6,0,0"
+                                                             PreviewFontSize="12"
+                                                             PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}"
+                                                             PreviewLineHeight="18"
+                                                             PreviewMaxHeight="38" />
+                        </StackPanel>
 
-                    <StackPanel Grid.Column="2"
-                                MinWidth="90"
-                                HorizontalAlignment="Right">
-                        <TextBlock Text="{Binding Status, Converter={StaticResource TaskStatusNameConverter}}"
-                                   FontSize="11"
-                                   TextAlignment="Right"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
-                        <TextBlock Text="{Binding Priority, Converter={StaticResource TaskPriorityNameConverter}, StringFormat=优先级 {0}}"
-                                   Margin="0,8,0,0"
-                                   FontSize="11"
-                                   TextAlignment="Right"
-                                   Foreground="{Binding Priority, Converter={StaticResource TaskPriorityBrushConverter}}" />
+                        <StackPanel Grid.Column="2"
+                                    MinWidth="90"
+                                    HorizontalAlignment="Right">
+                            <TextBlock Text="{Binding Status, Converter={StaticResource TaskStatusNameConverter}}"
+                                       FontSize="11"
+                                       TextAlignment="Right"
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
+                            <TextBlock Text="{Binding Priority, Converter={StaticResource TaskPriorityNameConverter}, StringFormat=优先级 {0}}"
+                                       Margin="0,8,0,0"
+                                       FontSize="11"
+                                       TextAlignment="Right"
+                                       Foreground="{Binding Priority, Converter={StaticResource TaskPriorityBrushConverter}}" />
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel x:Name="CompletedTaskContent" Style="{StaticResource CalendarCompletedTaskContentStyle}">
+                            <TextBlock Text="{Binding Title}"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextWrapping="Wrap" />
+                            <controls:MarkdownPreviewControl Markdown="{Binding Description}"
+                                                             IsPreviewExpanded="{Binding IsMouseOver, ElementName=ListTaskCard}"
+                                                             Margin="0,6,0,0"
+                                                             PreviewFontSize="12"
+                                                             PreviewForeground="{Binding Status, Converter={StaticResource TaskStatusBrushConverter}, ConverterParameter=Secondary}"
+                                                             PreviewLineHeight="18"
+                                                             PreviewMaxHeight="72" />
                     </StackPanel>
                 </Grid>
             </Border>
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource MainContentBackgroundBrush}">
+    <Grid Background="{DynamicResource MainContentBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -404,7 +469,7 @@
                 <TextBlock Text="{Binding CalendarTaskCount, Mode=OneWay, StringFormat=有日期任务 {0}}"
                            Margin="0,5,0,0"
                            FontSize="12"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
+                           Foreground="{DynamicResource TextSecondaryBrush}" />
             </StackPanel>
 
             <StackPanel Grid.Column="1"
@@ -432,7 +497,7 @@
                                FontSize="15"
                                FontWeight="SemiBold"
                                TextAlignment="Center"
-                               Foreground="{StaticResource TextPrimaryBrush}" />
+                               Foreground="{DynamicResource TextPrimaryBrush}" />
                 </Border>
                 <Button Content="›"
                         Command="{Binding NextCalendarMonthCommand}"
@@ -465,7 +530,7 @@
                     </Grid.RowDefinitions>
 
                     <ItemsControl ItemsSource="{Binding CalendarWeekdayHeaders}"
-                                  Margin="0,0,0,8">
+                                  Margin="0,0,12,8">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <primitives:UniformGrid Columns="7" />
@@ -476,29 +541,31 @@
                                 <TextBlock Text="{Binding}"
                                            FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            TextAlignment="Center" />
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <ItemsControl Grid.Row="1"
-                                  ItemsSource="{Binding CalendarDays}"
-                                  ItemTemplate="{StaticResource CalendarDayTemplate}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <primitives:UniformGrid Columns="7"
-                                                        Rows="6" />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                    </ItemsControl>
+                    <ScrollViewer Grid.Row="1"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  VerticalScrollBarVisibility="Visible">
+                        <ItemsControl ItemsSource="{Binding CalendarDays}"
+                                      ItemTemplate="{StaticResource CalendarDayTemplate}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <controls:CalendarMonthPanel ViewportHeight="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType=ScrollViewer}}" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
 
                 <Border Grid.Column="2"
                         Padding="14"
                         CornerRadius="8"
-                        Background="{StaticResource SurfaceBrush}"
-                        BorderBrush="{StaticResource BorderBrushSoft}"
+                        Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrushSoft}"
                         BorderThickness="1">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -514,11 +581,11 @@
                             <TextBlock Text="{Binding SelectedCalendarDateDisplay}"
                                        FontSize="17"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}" />
+                                       Foreground="{DynamicResource TextPrimaryBrush}" />
                             <TextBlock Text="{Binding SelectedCalendarTaskCount, StringFormat=当天任务 {0}}"
                                        Margin="0,4,0,0"
                                        FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}" />
+                                       Foreground="{DynamicResource TextSecondaryBrush}" />
                         </StackPanel>
 
                         <Grid Grid.Row="1" Margin="0,12,0,10">
@@ -528,8 +595,8 @@
                             </Grid.RowDefinitions>
                             <Grid Margin="0,0,0,8">
                                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                    <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Text="任务" />
-                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                    <TextBlock FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}" Text="任务" />
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}"
                                                Text="{Binding SelectedCalendarTaskCount, StringFormat={}{0} 条}" />
                                 </StackPanel>
                                 <Button AutomationProperties.Name="在所选日期新建任务" Content="+ 新建任务"
@@ -548,7 +615,7 @@
                             </ScrollViewer>
                         </Grid>
 
-                        <Border Grid.Row="2" Background="{StaticResource BorderBrushSoft}" />
+                        <Border Grid.Row="2" Background="{DynamicResource BorderBrushSoft}" />
 
                         <Grid Grid.Row="3" Margin="0,10,0,12">
                             <Grid.RowDefinitions>
@@ -558,13 +625,13 @@
                             <Grid Margin="0,0,0,8">
                                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                     <Border Padding="8,3"
-                                            Background="{StaticResource WorkHourModuleTintBrush}"
-                                            BorderBrush="{StaticResource WorkHourModuleBorderBrush}"
+                                            Background="{DynamicResource WorkHourModuleTintBrush}"
+                                            BorderBrush="{DynamicResource WorkHourModuleBorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="6">
-                                        <TextBlock Text="人工时" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                                        <TextBlock Text="人工时" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource WorkHourModuleTextBrush}" />
                                     </Border>
-                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}">
                                     <Run Text="{Binding SelectedCalendarWorkHourCount, Mode=OneWay}" />
                                     <Run Text=" 条 · " />
                                     <Run Text="{Binding SelectedCalendarWorkHourTotalDisplay, Mode=OneWay}" />
@@ -585,20 +652,20 @@
                             </ScrollViewer>
                         </Grid>
 
-                        <Border Grid.Row="4" Background="{StaticResource BorderBrushSoft}" />
+                        <Border Grid.Row="4" Background="{DynamicResource BorderBrushSoft}" />
 
                         <Grid Grid.Row="5" Margin="0,10,0,12">
                             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                             <Grid Margin="0,0,0,8">
                                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
                                     <Border Padding="8,3"
-                                            Background="{StaticResource DesignConditionModuleTintBrush}"
-                                            BorderBrush="{StaticResource DesignConditionModuleBorderBrush}"
+                                            Background="{DynamicResource DesignConditionModuleTintBrush}"
+                                            BorderBrush="{DynamicResource DesignConditionModuleBorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="6">
-                                        <TextBlock Text="设计条件" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource DesignConditionModuleTextBrush}"/>
+                                        <TextBlock Text="设计条件" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource DesignConditionModuleTextBrush}"/>
                                     </Border>
-                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <TextBlock Margin="7,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondaryBrush}">
                                         <Run Text="{Binding DesignConditions.SelectedRecordCount, Mode=OneWay}"/><Run Text=" 条 · "/><Run Text="{Binding DesignConditions.SelectedDrawingCount, Mode=OneWay}"/><Run Text=" 张"/>
                                     </TextBlock>
                                 </StackPanel>

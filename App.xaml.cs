@@ -36,6 +36,7 @@ namespace KanbanForOne
             services.AddSingleton<UnifiedBackupService>();
             services.AddSingleton<WorkHourOptionsService>();
             services.AddSingleton<WorkHourExportService>();
+            services.AddSingleton<ThemeService>();
 
             // 独立设计条件模块
             services.AddSingleton<DesignConditionStorageOptions>();
@@ -95,7 +96,8 @@ namespace KanbanForOne
                 return;
             }
 
-            BuildServiceProvider();
+            var services = Services ?? BuildServiceProvider();
+            services.GetRequiredService<ThemeService>().Initialize(this);
             base.OnStartup(e);
         }
 

@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using KanbanForOne.Services;
 
 namespace KanbanForOne.Controls;
 
@@ -20,19 +21,19 @@ public partial class MarkdownEditorControl : UserControl
         nameof(EditorBackground),
         typeof(Brush),
         typeof(MarkdownEditorControl),
-        new PropertyMetadata(BrushFrom("#FFFFFF")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty EditorBorderBrushProperty = DependencyProperty.Register(
         nameof(EditorBorderBrush),
         typeof(Brush),
         typeof(MarkdownEditorControl),
-        new PropertyMetadata(BrushFrom("#ECECEC")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty EditorForegroundProperty = DependencyProperty.Register(
         nameof(EditorForeground),
         typeof(Brush),
         typeof(MarkdownEditorControl),
-        new PropertyMetadata(BrushFrom("#242424")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty EditorMinHeightProperty = DependencyProperty.Register(
         nameof(EditorMinHeight),
@@ -60,6 +61,9 @@ public partial class MarkdownEditorControl : UserControl
 
     public MarkdownEditorControl()
     {
+        SetCurrentValue(EditorBackgroundProperty, ThemeService.GetBrush("EditorSurfaceBrush", "#FFFFFF"));
+        SetCurrentValue(EditorBorderBrushProperty, ThemeService.GetBrush("EditorBorderBrush", "#ECECEC"));
+        SetCurrentValue(EditorForegroundProperty, ThemeService.GetBrush("EditorForegroundBrush", "#242424"));
         InitializeComponent();
     }
 
@@ -162,10 +166,5 @@ public partial class MarkdownEditorControl : UserControl
     {
         Editor.Visibility = Visibility.Collapsed;
         RenderedView.Visibility = Visibility.Visible;
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }

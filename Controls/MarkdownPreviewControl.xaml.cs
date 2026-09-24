@@ -8,6 +8,14 @@ namespace KanbanForOne.Controls;
 
 public partial class MarkdownPreviewControl : UserControl
 {
+    public static readonly DependencyProperty IsPreviewExpandedProperty = DependencyProperty.Register(
+        nameof(IsPreviewExpanded), typeof(bool), typeof(MarkdownPreviewControl), new PropertyMetadata(true));
+
+    private static readonly DependencyPropertyKey HasPreviewContentPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasPreviewContent), typeof(bool), typeof(MarkdownPreviewControl), new PropertyMetadata(false));
+
+    public static readonly DependencyProperty HasPreviewContentProperty = HasPreviewContentPropertyKey.DependencyProperty;
+
     public static readonly DependencyProperty MarkdownProperty = DependencyProperty.Register(
         nameof(Markdown),
         typeof(string),
@@ -18,7 +26,7 @@ public partial class MarkdownPreviewControl : UserControl
         nameof(PreviewForeground),
         typeof(Brush),
         typeof(MarkdownPreviewControl),
-        new PropertyMetadata(BrushFrom("#56616F"), OnMarkdownChanged));
+        new PropertyMetadata(Brushes.Gray));
 
     public static readonly DependencyProperty PreviewFontSizeProperty = DependencyProperty.Register(
         nameof(PreviewFontSize),
@@ -36,7 +44,7 @@ public partial class MarkdownPreviewControl : UserControl
         nameof(PreviewMaxHeight),
         typeof(double),
         typeof(MarkdownPreviewControl),
-        new PropertyMetadata(36d));
+        new PropertyMetadata(68d));
 
     private static readonly Regex HeadingRegex = new(@"^(#{1,6})\s+(.+)$", RegexOptions.Compiled);
     private static readonly Regex OrderedListRegex = new(@"^(?<indent>\s*)(?<number>\d+)\.\s+(?<text>.+)$", RegexOptions.Compiled);
@@ -46,8 +54,17 @@ public partial class MarkdownPreviewControl : UserControl
     public MarkdownPreviewControl()
     {
         InitializeComponent();
+        SetResourceReference(PreviewForegroundProperty, "MarkdownQuoteForegroundBrush");
         RenderMarkdown();
     }
+
+    public bool IsPreviewExpanded
+    {
+        get => (bool)GetValue(IsPreviewExpandedProperty);
+        set => SetValue(IsPreviewExpandedProperty, value);
+    }
+
+    public bool HasPreviewContent => (bool)GetValue(HasPreviewContentProperty);
 
     public string Markdown
     {
@@ -88,14 +105,18 @@ public partial class MarkdownPreviewControl : UserControl
     {
         PreviewText.Inlines.Clear();
 
-        foreach (var previewLine in CreatePreviewLines(Markdown ?? string.Empty))
+        // Logical lines cap work for long descriptions; the TextBlock height also
+        // caps wrapped text to four complete visual lines.
+        var lines = CreatePreviewLines(Markdown ?? string.Empty).Take(4).ToArray();
+        SetValue(HasPreviewContentPropertyKey, lines.Any(line => !string.IsNullOrWhiteSpace(line)));
+        for (var lineIndex = 0; lineIndex < lines.Length; lineIndex++)
         {
-            if (PreviewText.Inlines.Count > 0)
+            if (lineIndex > 0)
             {
                 PreviewText.Inlines.Add(new LineBreak());
             }
 
-            foreach (var inline in CreatePreviewInlines(previewLine))
+            foreach (var inline in CreatePreviewInlines(lines[lineIndex]))
             {
                 PreviewText.Inlines.Add(inline);
             }
@@ -104,7 +125,7 @@ public partial class MarkdownPreviewControl : UserControl
 
     private static IEnumerable<string> CreatePreviewLines(string markdown)
     {
-        var lines = markdown.Replace("\r\n", "\n").Split('\n');
+        var lines = markdown.Replace("\r\n", "\n").Replace('\r', '\n').Trim().Split('\n');
         var inCodeBlock = false;
 
         foreach (var rawLine in lines)
@@ -114,6 +135,7 @@ public partial class MarkdownPreviewControl : UserControl
 
             if (trimmedLine.Length == 0)
             {
+                yield return string.Empty;
                 continue;
             }
 
@@ -208,12 +230,13 @@ public partial class MarkdownPreviewControl : UserControl
 
         if (markdown.StartsWith('`') && markdown.EndsWith('`'))
         {
-            return new Run(markdown[1..^1])
+            var code = new Run(markdown[1..^1])
             {
-                FontFamily = new FontFamily("Cascadia Mono, Consolas"),
-                Background = BrushFrom("#EEF2F7"),
-                Foreground = BrushFrom("#111827")
+                FontFamily = new FontFamily("Cascadia Mono, Consolas")
             };
+            code.SetResourceReference(TextElement.BackgroundProperty, "MarkdownInlineCodeBackgroundBrush");
+            code.SetResourceReference(TextElement.ForegroundProperty, "MarkdownInlineCodeForegroundBrush");
+            return code;
         }
 
         var imageMatch = Regex.Match(markdown, @"^!\[(.*?)\]\((.*?)\)$");
@@ -225,11 +248,12 @@ public partial class MarkdownPreviewControl : UserControl
         var linkMatch = Regex.Match(markdown, @"^\[(.*?)\]\((.*?)\)$");
         if (linkMatch.Success)
         {
-            return new Run(linkMatch.Groups[1].Value)
+            var link = new Run(linkMatch.Groups[1].Value)
             {
-                Foreground = BrushFrom("#2563EB"),
                 TextDecorations = TextDecorations.Underline
             };
+            link.SetResourceReference(TextElement.ForegroundProperty, "MarkdownLinkBrush");
+            return link;
         }
 
         if ((markdown.StartsWith('*') && markdown.EndsWith('*')) ||
@@ -239,10 +263,5 @@ public partial class MarkdownPreviewControl : UserControl
         }
 
         return new Run(markdown);
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 }

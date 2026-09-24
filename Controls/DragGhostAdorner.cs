@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Controls;
+using KanbanForOne.Services;
 
 namespace KanbanForOne.Controls;
 
@@ -80,7 +81,7 @@ internal sealed class DragGhostAdorner : Adorner
             Width = size.Width,
             Height = size.Height,
             CornerRadius = new CornerRadius(8),
-            Background = Brushes.White,
+            Background = ThemeService.GetBrush("EditorSurfaceBrush", "#FFFFFF"),
             Opacity = 0.34,
             Effect = new DropShadowEffect
             {

@@ -14,16 +14,16 @@
                 <Setter Property="Margin" Value="0,0,0,6" />
                 <Setter Property="Padding" Value="10,7" />
                 <Setter Property="CornerRadius" Value="8" />
-                <Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
-                <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+                <Setter Property="Background" Value="{DynamicResource CardSurfaceBrush}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
                 <Setter Property="BorderThickness" Value="1" />
             </Style>
         </ResourceDictionary>
     </Window.Resources>
 
     <Border x:Name="DialogChrome" Margin="14" CornerRadius="10"
-            Background="{StaticResource ConditionDialogSurfaceBrush}"
-            BorderBrush="{StaticResource DesignConditionModuleBorderBrush}" BorderThickness="1">
+            Background="{DynamicResource ConditionDialogSurfaceBrush}"
+            BorderBrush="{DynamicResource DesignConditionModuleBorderBrush}" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -35,8 +35,8 @@
                 <Grid MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="设计条件详情" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource ConditionPrimaryTextBrush}" />
-                        <TextBlock Text="记录不同专业之间提交和接收的设计条件" Margin="0,3,0,0" FontSize="11" Foreground="{StaticResource ConditionSecondaryTextBrush}" />
+                        <TextBlock Text="设计条件详情" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource ConditionPrimaryTextBrush}" />
+                        <TextBlock Text="记录不同专业之间提交和接收的设计条件" Margin="0,3,0,0" FontSize="11" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
                     </StackPanel>
                     <Button Grid.Column="1" Content="×" Click="OnCloseClick" Style="{StaticResource ConditionCloseButtonStyle}" />
                 </Grid>
@@ -93,7 +93,7 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="条件图纸 *" FontSize="13" FontWeight="SemiBold" />
-                                    <TextBlock Margin="8,0,0,0" FontSize="11" Foreground="{StaticResource ConditionSecondaryTextBrush}">
+                                    <TextBlock Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource ConditionSecondaryTextBrush}">
                                         <Run Text="共 " /><Run Text="{Binding DrawingSpecificationCount, Mode=OneWay}" /><Run Text=" 种规格  ·  " />
                                         <Run Text="{Binding TotalDrawingCount, Mode=OneWay}" /><Run Text=" 张" />
                                     </TextBlock>
@@ -157,7 +157,7 @@
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="附件" FontSize="13" FontWeight="SemiBold" />
-                                    <TextBlock Margin="6,0,0,0" Foreground="{StaticResource ConditionSecondaryTextBrush}" FontSize="11">
+                                    <TextBlock Margin="6,0,0,0" Foreground="{DynamicResource ConditionSecondaryTextBrush}" FontSize="11">
                                         <Run Text="{Binding Attachments.Count, Mode=OneWay}" /><Run Text=" 个已归档" />
                                         <Run Text="  ·  " /><Run Text="{Binding PendingFilePaths.Count, Mode=OneWay}" /><Run Text=" 个待添加" />
                                     </TextBlock>
@@ -173,11 +173,11 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding OriginalFileName}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
-                                                    <TextBlock Text="已归档附件" Margin="0,2,0,0" FontSize="10" Foreground="{StaticResource ConditionSecondaryTextBrush}" />
+                                                    <TextBlock Text="已归档附件" Margin="0,2,0,0" FontSize="10" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Content="打开" Click="OnOpenAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="8,0,0,0" MinWidth="48" />
                                                 <Button Grid.Column="2" Content="定位" Click="OnRevealAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" />
-                                                <Button Grid.Column="3" Content="移除" Click="OnRemoveAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" Foreground="{StaticResource DangerBrush}" />
+                                                <Button Grid.Column="3" Content="移除" Click="OnRemoveAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="4,0,0,0" MinWidth="48" Foreground="{DynamicResource DangerBrush}" />
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -192,7 +192,7 @@
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Text="{Binding}" FontSize="12" TextTrimming="CharacterEllipsis" ToolTip="{Binding}" />
-                                                    <TextBlock Text="保存记录后归档" Margin="0,2,0,0" FontSize="10" Foreground="{StaticResource ConditionSecondaryTextBrush}" />
+                                                    <TextBlock Text="保存记录后归档" Margin="0,2,0,0" FontSize="10" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Content="取消添加" Click="OnRemovePendingClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="8,0,0,0" />
                                             </Grid>
@@ -209,7 +209,7 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="{Binding ValidationMessage}" Foreground="{StaticResource DangerBrush}" FontSize="12" Margin="2,10,0,0"
+                    <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="12" Margin="2,10,0,0"
                                Visibility="{Binding HasValidationMessage, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                 </StackPanel>
             </ScrollViewer>
@@ -218,7 +218,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="10" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <Button Content="删除记录" Click="OnDeleteClick" Visibility="{Binding Source, Converter={StaticResource NullToVisibilityConverter}}"
-                            Style="{StaticResource ConditionGhostButtonStyle}" Foreground="{StaticResource DangerBrush}" />
+                            Style="{StaticResource ConditionGhostButtonStyle}" Foreground="{DynamicResource DangerBrush}" />
                     <Button Grid.Column="2" Content="取消" Click="OnCloseClick" Style="{StaticResource ConditionGhostButtonStyle}" />
                     <Button Grid.Column="4" Content="保存" Click="OnSaveClick" Style="{StaticResource ConditionDialogPrimaryButtonStyle}" />
                 </Grid>

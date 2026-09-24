@@ -25,12 +25,15 @@ public sealed class ReleaseNotesServiceTests
     {
         var releases = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        Assert.Equal(12, releases.Count);
-        Assert.Equal("v0.5.1", releases[0].Version);
-        Assert.Equal("2026-09-22", releases[0].Date);
-        Assert.Equal("优化了UI", Assert.Single(releases[0].Items));
+        Assert.Equal(13, releases.Count);
+        Assert.Equal("v0.5.2", releases[0].Version);
+        Assert.Equal("2026-09-24", releases[0].Date);
+        Assert.Equal("新增卡片折叠效果，新增暗色模式UI", Assert.Single(releases[0].Items));
+        Assert.Equal("v0.5.1", releases[1].Version);
+        Assert.Equal("2026-09-22", releases[1].Date);
+        Assert.Equal("优化了UI", Assert.Single(releases[1].Items));
 
-        IReadOnlyList<ReleaseNoteEntry> entries = releases.Skip(1).ToArray();
+        IReadOnlyList<ReleaseNoteEntry> entries = releases.Skip(2).ToArray();
 
         Assert.Equal(11, entries.Count);
         Assert.Equal("V0.5.0.5", entries[0].Version);

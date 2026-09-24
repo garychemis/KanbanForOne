@@ -1,7 +1,7 @@
 <UserControl x:Class="KanbanForOne.Controls.BackupView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Style="{StaticResource {x:Type UserControl}}">
-    <Grid Background="{StaticResource MainContentBackgroundBrush}">
+    <Grid Background="{DynamicResource MainContentBackgroundBrush}">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="{StaticResource PageSpacing}"
                         MaxWidth="760"
@@ -12,12 +12,12 @@
             <TextBlock Text="一次备份全部数据：看板、任务、人工时、设计条件及所有附件。完整 zip 文件保存在 data/backups/。"
                        Margin="0,6,0,22"
                        FontSize="12"
-                       Foreground="{StaticResource TextSecondaryBrush}" />
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
 
             <Border Padding="18"
                     CornerRadius="10"
-                    Background="{StaticResource SurfaceBrush}"
-                    BorderBrush="{StaticResource BorderBrushSoft}"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrushSoft}"
                     BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="当前本地数据"
@@ -31,7 +31,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="数据目录"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding DataDirectory}"
                                    FontSize="12"
@@ -45,7 +45,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="数据库"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding DatabasePath}"
                                    FontSize="12"
@@ -59,7 +59,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="附件目录"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding AttachmentDirectory}"
                                    FontSize="12"
@@ -68,19 +68,19 @@
 
                     <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="人工时选项" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="人工时选项" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="{Binding WorkHourOptionsPath}" FontSize="12" TextWrapping="Wrap" />
                     </Grid>
 
                     <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="设计条件库" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="设计条件库" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="{Binding DesignConditionDatabasePath}" FontSize="12" TextWrapping="Wrap" />
                     </Grid>
 
                     <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="120"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="设计条件文件" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <TextBlock Text="设计条件文件" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1" Text="{Binding DesignConditionAttachmentDirectory}" FontSize="12" TextWrapping="Wrap" />
                     </Grid>
 
@@ -91,7 +91,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="备份目录"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                                   Foreground="{DynamicResource TextSecondaryBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding BackupDirectory}"
                                    FontSize="12"
@@ -115,22 +115,22 @@
                                Margin="0,10,0,0"
                                FontSize="12"
                                TextWrapping="Wrap"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                               Foreground="{DynamicResource TextSecondaryBrush}" />
                 </StackPanel>
             </Border>
 
             <Border Padding="14"
                     Margin="0,16,0,0"
                     CornerRadius="10"
-                    Background="#EDF7F0"
-                    BorderBrush="#CDE7D4"
+                    Background="{DynamicResource BackupSuccessSurfaceBrush}"
+                    BorderBrush="{DynamicResource BackupSuccessBorderBrush}"
                     BorderThickness="1"
                     Visibility="{Binding HasLastBackup, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                 <StackPanel>
                     <TextBlock Text="最近备份"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="#2F6B3F" />
+                               Foreground="{DynamicResource BackupSuccessTextBrush}" />
                     <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
@@ -138,12 +138,12 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="备份文件"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastBackupPath}"
                                    FontSize="12"
                                    TextWrapping="Wrap"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -152,11 +152,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="创建时间"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastBackupCreatedAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -165,11 +165,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="全部附件"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastBackupAttachmentCount, StringFormat={}{0} 个}"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -178,11 +178,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="压缩包大小"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastBackupSizeBytes, Converter={StaticResource AttachmentSizeConverter}}"
                                    FontSize="12"
-                                   Foreground="#2F6B3F" />
+                                   Foreground="{DynamicResource BackupSuccessTextBrush}" />
                     </Grid>
                 </StackPanel>
             </Border>
@@ -190,15 +190,15 @@
             <Border Padding="14"
                     Margin="0,16,0,0"
                     CornerRadius="10"
-                    Background="#FFF9DB"
-                    BorderBrush="#F1E5A8"
+                    Background="{DynamicResource BackupWarningSurfaceBrush}"
+                    BorderBrush="{DynamicResource BackupWarningBorderBrush}"
                     BorderThickness="1"
                     Visibility="{Binding HasLastRestore, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                 <StackPanel>
                     <TextBlock Text="最近恢复"
                                FontSize="12"
                                FontWeight="SemiBold"
-                               Foreground="#6B5B2E" />
+                               Foreground="{DynamicResource WarningTextBrush}" />
                     <Grid Margin="0,8,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="120" />
@@ -206,12 +206,12 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="来源备份"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastRestoreSourcePath}"
                                    FontSize="12"
                                    TextWrapping="Wrap"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -220,12 +220,12 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="保护备份"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastRestoreProtectiveBackupPath}"
                                    FontSize="12"
                                    TextWrapping="Wrap"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -234,11 +234,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="恢复时间"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastRestoreAt, StringFormat={}{0:yyyy-MM-dd HH:mm:ss}}"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                     </Grid>
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
@@ -247,11 +247,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="全部附件"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding LastRestoreAttachmentCount, StringFormat={}{0} 个}"
                                    FontSize="12"
-                                   Foreground="#6B5B2E" />
+                                   Foreground="{DynamicResource WarningTextBrush}" />
                     </Grid>
                 </StackPanel>
             </Border>

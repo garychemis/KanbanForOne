@@ -15,13 +15,7 @@
         KeyDown="OnDialogKeyDown"
         Closing="OnDialogClosing" Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
-        <SolidColorBrush x:Key="WorkHourDialogSurfaceBrush" Color="#F7F8F4" />
-        <SolidColorBrush x:Key="WorkHourFieldBackgroundBrush" Color="#FDFDF9" />
-        <SolidColorBrush x:Key="WorkHourBorderBrush" Color="#DEE4DD" />
-        <SolidColorBrush x:Key="WorkHourHoverBrush" Color="#ECEDE9" />
-        <SolidColorBrush x:Key="WorkHourSelectedBrush" Color="#E4E6E0" />
-        <SolidColorBrush x:Key="WorkHourPrimaryTextBrush" Color="#283D38" />
-        <SolidColorBrush x:Key="WorkHourSecondaryTextBrush" Color="#65716C" />
+
         <Style x:Key="DialogCloseButtonStyle"
                TargetType="{x:Type Button}"
                BasedOn="{StaticResource IconButtonStyle}">
@@ -30,7 +24,7 @@
             <Setter Property="Height" Value="30" />
             <Setter Property="Padding" Value="0" />
             <Setter Property="FontSize" Value="18" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourSecondaryTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourSecondaryTextBrush}" />
         </Style>
         <Style x:Key="DialogGhostButtonStyle"
                TargetType="{x:Type Button}"
@@ -38,8 +32,8 @@
             <Setter Property="MinWidth" Value="82" />
             <Setter Property="Height" Value="34" />
             <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourFieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourBorderBrush}" />
         </Style>
         <Style x:Key="DialogDangerButtonStyle"
                TargetType="{x:Type Button}"
@@ -48,21 +42,21 @@
             <Setter Property="MinWidth" Value="64" />
             <Setter Property="Padding" Value="10,0" />
             <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}" />
         </Style>
         <Style x:Key="WorkHourDialogPrimaryButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource PrimaryButtonStyle}">
             <Setter Property="MinWidth" Value="82" /><Setter Property="Height" Value="34" /><Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="{StaticResource WorkHourModuleAccentHoverBrush}" /><Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentHoverBrush}" /><Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="#FFFDF9" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourButtonBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource WorkHourButtonBrush}" /><Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="{DynamicResource OnWarmAccentBrush}" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="{x:Type Button}">
                 <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" /><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentPressedBrush}" /></Trigger>
-                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" /></Trigger>
-                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleTextBrush}" /></Trigger>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WorkHourButtonPressedBrush}" /><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourButtonPressedBrush}" /></Trigger>
+                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WorkHourButtonPressedBrush}" /></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourModuleTextBrush}" /></Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate></Setter.Value></Setter>
         </Style>
@@ -70,36 +64,36 @@
             <Setter Property="Margin" Value="0,0,0,6" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourSecondaryTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourSecondaryTextBrush}" />
         </Style>
         <Style x:Key="PreviewCardStyle" TargetType="{x:Type Border}">
             <Setter Property="Padding" Value="12,11" />
-            <Setter Property="Background" Value="{StaticResource CardSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource CardSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
         </Style>
         <Style x:Key="DialogDateFieldBorderStyle" TargetType="{x:Type Border}">
             <Setter Property="Height" Value="42" />
             <Setter Property="Padding" Value="11,0,8,0" />
-            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourFieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="9" />
             <Style.Triggers>
                 <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="DialogTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Height" Value="42" />
             <Setter Property="Padding" Value="11,0" />
-            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourFieldBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourPrimaryTextBrush}" />
-            <Setter Property="CaretBrush" Value="{StaticResource WorkHourPrimaryTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -115,14 +109,14 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="InputBorder" Property="Background" Value="{StaticResource WorkHourHoverBrush}" />
-                                <Setter Property="Foreground" Value="#98A19D" />
+                                <Setter TargetName="InputBorder" Property="Background" Value="{DynamicResource WorkHourHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource InputDisabledTextBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -132,7 +126,7 @@
         <Style x:Key="DialogComboBoxItemStyle" TargetType="{x:Type ComboBoxItem}">
             <Setter Property="Padding" Value="0" />
             <Setter Property="Margin" Value="0,1" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourPrimaryTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -145,11 +139,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ItemBackground" Property="Background" Value="{StaticResource WorkHourHoverBrush}" />
+                                <Setter TargetName="ItemBackground" Property="Background" Value="{DynamicResource WorkHourHoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="ItemBackground" Property="Background" Value="{StaticResource WorkHourSelectedBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource WorkHourPrimaryTextBrush}" />
+                                <Setter TargetName="ItemBackground" Property="Background" Value="{DynamicResource WorkHourSelectedBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -173,14 +167,14 @@
                                 <Border Width="1"
                                         Height="18"
                                         HorizontalAlignment="Left"
-                                        Background="{StaticResource WorkHourBorderBrush}" />
+                                        Background="{DynamicResource WorkHourBorderBrush}" />
                                 <Path x:Name="Arrow"
                                       Width="9"
                                       Height="5"
                                       HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       Data="M 0 0 L 4.5 4.5 L 9 0"
-                                      Stroke="{StaticResource WorkHourSecondaryTextBrush}"
+                                      Stroke="{DynamicResource WorkHourSecondaryTextBrush}"
                                       StrokeThickness="1.6"
                                       StrokeStartLineCap="Round"
                                       StrokeEndLineCap="Round" />
@@ -188,12 +182,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ToggleBackground" Property="Background" Value="{StaticResource WorkHourHoverBrush}" />
-                                <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource WorkHourPrimaryTextBrush}" />
+                                <Setter TargetName="ToggleBackground" Property="Background" Value="{DynamicResource WorkHourHoverBrush}" />
+                                <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ToggleBackground" Property="Background" Value="{StaticResource WorkHourSelectedBrush}" />
-                                <Setter TargetName="Arrow" Property="Stroke" Value="{StaticResource WorkHourPrimaryTextBrush}" />
+                                <Setter TargetName="ToggleBackground" Property="Background" Value="{DynamicResource WorkHourSelectedBrush}" />
+                                <Setter TargetName="Arrow" Property="Stroke" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -202,9 +196,9 @@
         </Style>
         <Style x:Key="DialogComboBoxStyle" TargetType="{x:Type ComboBox}">
             <Setter Property="Height" Value="42" />
-            <Setter Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourPrimaryTextBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourFieldBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourPrimaryTextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="IsTextSearchEnabled" Value="True" />
             <Setter Property="StaysOpenOnEdit" Value="True" />
@@ -235,7 +229,7 @@
                                          Background="Transparent"
                                          BorderThickness="0"
                                          Foreground="{TemplateBinding Foreground}"
-                                         CaretBrush="{StaticResource WorkHourPrimaryTextBrush}"
+                                         CaretBrush="{DynamicResource WorkHourPrimaryTextBrush}"
                                          Style="{x:Null}"
                                          Visibility="Hidden" />
                                 <ToggleButton Grid.Column="1"
@@ -258,8 +252,8 @@
                                 <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                         MaxHeight="230"
                                         Padding="5"
-                                        Background="{StaticResource WorkHourFieldBackgroundBrush}"
-                                        BorderBrush="{StaticResource WorkHourBorderBrush}"
+                                        Background="{DynamicResource WorkHourFieldBackgroundBrush}"
+                                        BorderBrush="{DynamicResource WorkHourBorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="6">
                                     <Border.Effect>
@@ -281,18 +275,18 @@
                                 <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
-                                <Setter TargetName="InputBackground" Property="Background" Value="{StaticResource WorkHourFieldBackgroundBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
+                                <Setter TargetName="InputBackground" Property="Background" Value="{DynamicResource WorkHourFieldBackgroundBrush}" />
                             </Trigger>
                             <Trigger Property="IsDropDownOpen" Value="True">
-                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="InputBackground" Property="Background" Value="{StaticResource WorkHourHoverBrush}" />
-                                <Setter Property="Foreground" Value="#9AA4A0" />
+                                <Setter TargetName="InputBackground" Property="Background" Value="{DynamicResource WorkHourHoverBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource WorkHourDisabledTextBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -308,10 +302,10 @@
         <Grid.RenderTransform>
             <ScaleTransform ScaleX="0.96" ScaleY="0.96" />
         </Grid.RenderTransform>
-        <Border Background="{StaticResource WorkHourDialogSurfaceBrush}"
-                BorderBrush="{StaticResource WorkHourModuleBorderBrush}"
+        <Border Background="{DynamicResource WorkHourDialogSurfaceBrush}"
+                BorderBrush="{DynamicResource WorkHourModuleBorderBrush}"
                 BorderThickness="1"
-                TextElement.Foreground="{StaticResource WorkHourPrimaryTextBrush}"
+                TextElement.Foreground="{DynamicResource WorkHourPrimaryTextBrush}"
                 CornerRadius="10">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="30" ShadowDepth="2" Direction="270" Opacity="0.06" />
@@ -325,8 +319,8 @@
 
                 <Border Grid.Row="0"
                         Padding="20,14,16,14"
-                        Background="{StaticResource WorkHourDialogSurfaceBrush}"
-                        BorderBrush="{StaticResource WorkHourBorderBrush}"
+                        Background="{DynamicResource WorkHourDialogSurfaceBrush}"
+                        BorderBrush="{DynamicResource WorkHourBorderBrush}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="10,10,0,0"
                         MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
@@ -340,11 +334,11 @@
                                         Text="人工时详情"
                                         FontSize="16"
                                         FontWeight="SemiBold"
-                                        Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                                        Foreground="{DynamicResource WorkHourModuleTextBrush}" />
                             <TextBlock x:Name="DialogSubtitleText"
                                        Margin="0,3,0,0"
                                        FontSize="11"
-                                        Foreground="{StaticResource WorkHourSecondaryTextBrush}" />
+                                        Foreground="{DynamicResource WorkHourSecondaryTextBrush}" />
                         </StackPanel>
                         <Button Grid.Column="1"
                                 Content="&#x00D7;"
@@ -383,7 +377,7 @@
                                          <TextBlock x:Name="PreviewHoursText"
                                                     FontSize="18"
                                                     FontWeight="SemiBold"
-                                                    Foreground="{StaticResource WorkHourModuleTextBrush}" />
+                                                    Foreground="{DynamicResource WorkHourModuleTextBrush}" />
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -448,7 +442,7 @@
                             <Border Grid.Row="1" Style="{StaticResource DialogDateFieldBorderStyle}">
                                 <DatePicker x:Name="WorkDatePicker"
                                             Style="{StaticResource DrawerDatePickerStyle}"
-                                            Foreground="{StaticResource WorkHourPrimaryTextBrush}" />
+                                            Foreground="{DynamicResource WorkHourPrimaryTextBrush}" />
                             </Border>
 
                             <TextBlock Grid.Row="2"
@@ -507,7 +501,7 @@
                                        x:Name="ValidationText"
                                        Margin="0,10,0,0"
                                        FontSize="12"
-                                       Foreground="{StaticResource DangerBrush}"
+                                       Foreground="{DynamicResource DangerBrush}"
                                        TextWrapping="Wrap"
                                        Visibility="Collapsed" />
                         </Grid>
@@ -516,8 +510,8 @@
 
                 <Border Grid.Row="2"
                         Padding="18,14"
-                        Background="{StaticResource WorkHourDialogSurfaceBrush}"
-                        BorderBrush="{StaticResource WorkHourBorderBrush}"
+                        Background="{DynamicResource WorkHourDialogSurfaceBrush}"
+                        BorderBrush="{DynamicResource WorkHourBorderBrush}"
                         BorderThickness="0,1,0,0"
                         CornerRadius="0,0,10,10">
                     <Grid>

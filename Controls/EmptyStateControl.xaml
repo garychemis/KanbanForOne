@@ -4,9 +4,9 @@
     <Border Padding="20" CornerRadius="10">
         <Border.Style>
             <Style TargetType="Border">
-                <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
                 <Setter Property="BorderThickness" Value="1" />
-                <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+                <Setter Property="Background" Value="{DynamicResource SurfaceBrush}" />
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsSubtle, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                  Value="True">
@@ -20,14 +20,14 @@
             <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        FontSize="14"
                        FontWeight="SemiBold"
-                       Foreground="{StaticResource TextPrimaryBrush}"
+                       Foreground="{DynamicResource TextPrimaryBrush}"
                        HorizontalAlignment="Center" />
             <TextBlock Text="{Binding Message, RelativeSource={RelativeSource AncestorType=UserControl}}"
                        Margin="0,6,0,0"
                        FontSize="12"
                        TextWrapping="Wrap"
                        TextAlignment="Center"
-                       Foreground="{StaticResource TextSecondaryBrush}" />
+                       Foreground="{DynamicResource TextSecondaryBrush}" />
             <Button Margin="0,14,0,0"
                     Command="{Binding ActionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                     Content="{Binding ActionText, RelativeSource={RelativeSource AncestorType=UserControl}}"

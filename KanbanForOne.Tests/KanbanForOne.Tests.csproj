@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Probes\**\*.cs" />
     <Using Include="Xunit" />
   </ItemGroup>
 

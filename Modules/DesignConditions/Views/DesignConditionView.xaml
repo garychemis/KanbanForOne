@@ -8,15 +8,15 @@
             <ResourceDictionary Source="/KanbanForOne;component/Modules/DesignConditions/Views/DesignConditionControlStyles.xaml" />
         </ResourceDictionary.MergedDictionaries>
         <Style x:Key="ConditionPanelStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource DesignConditionModuleTintBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource DesignConditionModuleTintBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="Effect" Value="{x:Null}" />
         </Style>
         <Style x:Key="ConditionPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ConditionModulePrimaryButtonStyle}" />
         <Style x:Key="ConditionMetricValueTextStyle" TargetType="TextBlock" BasedOn="{StaticResource AppMetricValueTextStyle}">
-            <Setter Property="Foreground" Value="{StaticResource DesignConditionModuleTextBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleTextBrush}" />
         </Style>
         <Style x:Key="ConditionCreateButtonStyle" TargetType="Button" BasedOn="{StaticResource ConditionPrimaryButtonStyle}">
             <Setter Property="MinWidth" Value="118" /><Setter Property="Height" Value="38" /><Setter Property="Padding" Value="18,0" />
@@ -26,24 +26,24 @@
         </Style>
         <Style x:Key="ConditionExportButtonStyle" TargetType="Button">
             <Setter Property="Height" Value="38" /><Setter Property="MinWidth" Value="104" /><Setter Property="Padding" Value="18,0" />
-            <Setter Property="Background" Value="{StaticResource DesignConditionModuleTintBrush}" /><Setter Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
-            <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="{StaticResource DesignConditionModuleTextBrush}" /><Setter Property="FontSize" Value="12" />
+            <Setter Property="Background" Value="{DynamicResource DesignConditionModuleTintBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" /><Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleTextBrush}" /><Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
                 <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource DesignConditionModuleHoverBrush}" /><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DesignConditionModuleHoverBorderBrush}" /></Trigger>
-                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource DesignConditionModuleHoverBrush}" /></Trigger>
-                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DesignConditionModuleAccentBrush}" /></Trigger>
+                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DesignConditionModuleHoverBrush}" /><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource DesignConditionModuleHoverBorderBrush}" /></Trigger>
+                    <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DesignConditionModuleHoverBrush}" /></Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource DesignConditionModuleAccentBrush}" /></Trigger>
                     <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.42" /><Setter Property="Cursor" Value="Arrow" /></Trigger>
                 </ControlTemplate.Triggers>
             </ControlTemplate></Setter.Value></Setter>
         </Style>
         <Style x:Key="ConditionModeRadioStyle" TargetType="RadioButton">
             <Setter Property="Height" Value="30" /><Setter Property="MinWidth" Value="76" /><Setter Property="Padding" Value="12,0" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" /><Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" /><Setter Property="FontSize" Value="12" />
             <Setter Property="Cursor" Value="Hand" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -52,11 +52,11 @@
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" /></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" /></Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource CardSurfaceBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DesignConditionModuleBorderBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource DesignConditionModuleTextBrush}" /><Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource CardSurfaceBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleTextBrush}" /><Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -64,12 +64,12 @@
             </Setter>
         </Style>
         <Style x:Key="ConditionFilterLabelStyle" TargetType="TextBlock" BasedOn="{StaticResource AppLabelTextStyle}">
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" /><Setter Property="Margin" Value="2,0,0,5" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" /><Setter Property="Margin" Value="2,0,0,5" />
         </Style>
         <Style x:Key="ConditionColumnHeaderStyle" TargetType="DataGridColumnHeader">
-            <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="12,0" /><Setter Property="Background" Value="{StaticResource TopNavBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Height" Value="42" /><Setter Property="Padding" Value="12,0" /><Setter Property="Background" Value="{DynamicResource TopNavBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" /><Setter Property="FontSize" Value="12" /><Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style x:Key="ConditionNumericColumnHeaderStyle" TargetType="DataGridColumnHeader" BasedOn="{StaticResource ConditionColumnHeaderStyle}">
@@ -77,15 +77,15 @@
         </Style>
         <Style x:Key="ConditionCellStyle" TargetType="DataGridCell">
             <Setter Property="Padding" Value="12,0" /><Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" /><Setter Property="BorderThickness" Value="0,0,0,1" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" /><Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" /><Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style x:Key="ConditionRowStyle" TargetType="DataGridRow">
             <Setter Property="Height" Value="60" /><Setter Property="Background" Value="Transparent" /><Setter Property="BorderThickness" Value="0" />
             <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#F2F7F6" /></Trigger>
-                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{StaticResource ConditionFieldSelectedBrush}" /></Trigger>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{DynamicResource ConditionRowHoverBrush}" /></Trigger>
+                <Trigger Property="IsSelected" Value="True"><Setter Property="Background" Value="{DynamicResource ConditionFieldSelectedBrush}" /></Trigger>
             </Style.Triggers>
         </Style>
         <Style x:Key="ConditionDataGridStyle" TargetType="DataGrid">
@@ -98,8 +98,8 @@
         </Style>
         <Style x:Key="ConditionProgressStyle" TargetType="ProgressBar">
             <Setter Property="Height" Value="7" />
-            <Setter Property="Background" Value="{StaticResource AppBackgroundBrush}" />
-            <Setter Property="Foreground" Value="{StaticResource DesignConditionModuleAccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleAccentBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ProgressBar">
@@ -114,8 +114,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource AppBackgroundBrush}" TextElement.FontFamily="{StaticResource AppFontFamily}"
-          TextElement.Foreground="{StaticResource TextPrimaryBrush}" TextOptions.TextFormattingMode="Display">
+    <Grid Background="{DynamicResource AppBackgroundBrush}" TextElement.FontFamily="{StaticResource AppFontFamily}"
+          TextElement.Foreground="{DynamicResource TextPrimaryBrush}" TextOptions.TextFormattingMode="Display">
         <Grid Margin="{StaticResource PageSpacing}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /><RowDefinition Height="16" /><RowDefinition Height="Auto" />
@@ -125,7 +125,7 @@
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="12" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Style="{StaticResource AppPageTitleTextStyle}" Text="设计条件归档" />
-                    <TextBlock Margin="0,3,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppPageSubtitleTextStyle}"
+                    <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppPageSubtitleTextStyle}"
                                Text="专业间设计条件的归档、检索与图纸量统计" />
                 </StackPanel>
                 <Button Grid.Column="1" VerticalAlignment="Center" AutomationProperties.Name="导出设计条件汇总到 Excel"
@@ -139,7 +139,7 @@
                 <Border Height="72" Padding="8" CornerRadius="8" Style="{StaticResource ConditionPanelStyle}">
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <Border VerticalAlignment="Center" Padding="2" Background="{StaticResource TopNavBackgroundBrush}" CornerRadius="9">
+                        <Border VerticalAlignment="Center" Padding="2" Background="{DynamicResource TopNavBackgroundBrush}" CornerRadius="9">
                             <StackPanel Orientation="Horizontal">
                                 <RadioButton AutomationProperties.Name="显示设计条件记录列表" Content="记录列表" IsChecked="{Binding ShowList, Mode=OneWay}"
                                              Command="{Binding SetViewCommand}" CommandParameter="List" Style="{StaticResource ConditionModeRadioStyle}" />
@@ -147,7 +147,7 @@
                                              Command="{Binding SetViewCommand}" CommandParameter="Summary" Style="{StaticResource ConditionModeRadioStyle}" />
                             </StackPanel>
                         </Border>
-                        <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"
+                        <TextBlock Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"
                                    Style="{StaticResource AppMetaTextStyle}" Text="切换归档记录与分级汇总" />
                         <Button Grid.Column="2" VerticalAlignment="Center" AutomationProperties.Name="清除设计条件筛选"
                                 Command="{Binding ClearFiltersCommand}" Content="清除筛选" Style="{StaticResource ConditionQuietButtonStyle}" />
@@ -158,17 +158,17 @@
                     <Grid>
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="条件记录" />
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="条件记录" />
                             <StackPanel Margin="0,2,0,0" Orientation="Horizontal"><TextBlock Style="{StaticResource ConditionMetricValueTextStyle}" Text="{Binding TotalRecordCount}" /><TextBlock Margin="6,0,0,1" VerticalAlignment="Bottom" Style="{StaticResource AppMetaTextStyle}" Text="条" /></StackPanel>
                         </StackPanel>
-                        <Border Grid.Column="1" Margin="0,4" Background="{StaticResource BorderBrushSoft}" />
+                        <Border Grid.Column="1" Margin="0,4" Background="{DynamicResource BorderBrushSoft}" />
                         <StackPanel Grid.Column="2" Margin="14,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="图纸总量" />
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="图纸总量" />
                             <StackPanel Margin="0,2,0,0" Orientation="Horizontal"><TextBlock Style="{StaticResource ConditionMetricValueTextStyle}" Text="{Binding TotalDrawingCount}" /><TextBlock Margin="6,0,0,1" VerticalAlignment="Bottom" Style="{StaticResource AppMetaTextStyle}" Text="张" /></StackPanel>
                         </StackPanel>
-                        <Border Grid.Column="3" Margin="0,4" Background="{StaticResource BorderBrushSoft}" />
+                        <Border Grid.Column="3" Margin="0,4" Background="{DynamicResource BorderBrushSoft}" />
                         <StackPanel Grid.Column="4" Margin="14,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="条件文件" />
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppLabelTextStyle}" Text="条件文件" />
                             <StackPanel Margin="0,2,0,0" Orientation="Horizontal"><TextBlock Style="{StaticResource ConditionMetricValueTextStyle}" Text="{Binding TotalAttachmentCount}" /><TextBlock Margin="6,0,0,1" VerticalAlignment="Bottom" Style="{StaticResource AppMetaTextStyle}" Text="个" /></StackPanel>
                         </StackPanel>
                     </Grid>
@@ -185,11 +185,11 @@
                         <TextBlock Style="{StaticResource ConditionFilterLabelStyle}" Text="提出日期" />
                         <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="24" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Height="34" Padding="8,0,4,0" Background="{StaticResource ConditionFieldBackgroundBrush}" BorderBrush="{StaticResource ConditionFieldBorderBrush}" BorderThickness="1" CornerRadius="8">
+                            <Border Height="34" Padding="8,0,4,0" Background="{DynamicResource ConditionFieldBackgroundBrush}" BorderBrush="{DynamicResource ConditionFieldBorderBrush}" BorderThickness="1" CornerRadius="8">
                                 <DatePicker AutomationProperties.Name="设计条件提出开始日期" SelectedDate="{Binding IssuedStartDate}" Style="{StaticResource DrawerDatePickerStyle}" />
                             </Border>
-                            <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Text="至" />
-                            <Border Grid.Column="2" Height="34" Padding="8,0,4,0" Background="{StaticResource ConditionFieldBackgroundBrush}" BorderBrush="{StaticResource ConditionFieldBorderBrush}" BorderThickness="1" CornerRadius="8">
+                            <TextBlock Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" Text="至" />
+                            <Border Grid.Column="2" Height="34" Padding="8,0,4,0" Background="{DynamicResource ConditionFieldBackgroundBrush}" BorderBrush="{DynamicResource ConditionFieldBorderBrush}" BorderThickness="1" CornerRadius="8">
                                 <DatePicker AutomationProperties.Name="设计条件提出结束日期" SelectedDate="{Binding IssuedEndDate}" Style="{StaticResource DrawerDatePickerStyle}" />
                             </Border>
                         </Grid>
@@ -221,11 +221,11 @@
                     <Grid>
                         <StackPanel>
                             <TextBlock Style="{StaticResource AppSectionTitleTextStyle}" Text="设计条件记录" />
-                            <TextBlock Margin="0,3,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="双击记录可查看详情和管理附件" />
+                            <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="双击记录可查看详情和管理附件" />
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding TotalRecordCount}" />
-                            <TextBlock Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="条" />
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding TotalRecordCount}" />
+                            <TextBlock Margin="4,0,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="条" />
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="2">
@@ -243,8 +243,8 @@
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <TextBlock HorizontalAlignment="Center" FontSize="13" TextAlignment="Center" Style="{StaticResource AppBodyStrongTextStyle}" Text="{Binding ConditionName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding ConditionName}" />
                                                 <StackPanel Margin="0,4,0,0" HorizontalAlignment="Center" Orientation="Horizontal">
-                                                    <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="版次" />
-                                                    <TextBlock Margin="5,0,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding Revision}" />
+                                                    <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="版次" />
+                                                    <TextBlock Margin="5,0,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding Revision}" />
                                                 </StackPanel>
                                             </StackPanel>
                                         </DataTemplate>
@@ -255,7 +255,7 @@
                                         <DataTemplate>
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                                 <TextBlock HorizontalAlignment="Center" FontSize="13" TextAlignment="Center" Style="{StaticResource AppBodyStrongTextStyle}" Text="{Binding ProjectNumber}" />
-                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}">
+                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}">
                                                     <Run Text="{Binding IssuingDiscipline}" /><Run Text="  →  " /><Run Text="{Binding ReceivingDiscipline}" />
                                                 </TextBlock>
                                             </StackPanel>
@@ -275,7 +275,7 @@
                                                     <TextBlock FontSize="13" FontWeight="SemiBold" Style="{StaticResource AppNumericTextStyle}" Text="{Binding DrawingCount}" />
                                                     <TextBlock Margin="4,0,0,0" Style="{StaticResource AppMetaTextStyle}" Text="张" />
                                                 </StackPanel>
-                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"
+                                                <TextBlock Margin="0,4,0,0" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"
                                                            Style="{StaticResource AppMetaTextStyle}" Text="{Binding DrawingSummary}"
                                                            TextTrimming="CharacterEllipsis" ToolTip="{Binding DrawingSummary}" />
                                             </StackPanel>
@@ -292,15 +292,15 @@
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                                     Visibility="{Binding HasEntries, Converter={StaticResource BooleanToVisibilityConverterEx}, ConverterParameter=Invert}">
                             <TextBlock HorizontalAlignment="Center" Style="{StaticResource AppSectionTitleTextStyle}" Text="暂无设计条件" />
-                            <TextBlock Margin="0,6,0,14" HorizontalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Margin="0,6,0,14" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppMetaTextStyle}" Text="创建第一条记录，开始归档专业间设计条件。" />
                             <Button HorizontalAlignment="Center" Content="新建设计条件" Command="{Binding NewCommand}" Style="{StaticResource ConditionPrimaryButtonStyle}" />
                         </StackPanel>
                     </Grid>
-                    <Border Grid.RowSpan="3" Background="{StaticResource DesignConditionModuleTintBrush}" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                    <Border Grid.RowSpan="3" Background="{DynamicResource DesignConditionModuleTintBrush}" Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                             <TextBlock Style="{StaticResource AppSectionTitleTextStyle}" Text="设计条件模块暂不可用" />
-                            <TextBlock Margin="0,8,0,14" MaxWidth="520" Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
+                            <TextBlock Margin="0,8,0,14" MaxWidth="520" Foreground="{DynamicResource TextSecondaryBrush}" Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
                             <Button Content="重试" Command="{Binding RetryCommand}" Style="{StaticResource ConditionPrimaryButtonStyle}" />
                         </StackPanel>
                     </Border>
@@ -316,34 +316,34 @@
                         <Grid>
                             <StackPanel>
                                 <TextBlock Style="{StaticResource AppSectionTitleTextStyle}" Text="图纸量分布" />
-                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}"
+                                <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}"
                                            Text="按项目、提出专业和接收专业分级" />
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding SummaryItemCount}" />
-                                <TextBlock Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="项" />
+                                <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding SummaryItemCount}" />
+                                <TextBlock Margin="4,0,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="项" />
                             </StackPanel>
                         </Grid>
                         <ScrollViewer Grid.Row="2" Padding="0,0,10,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding SummaryItems}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Border BorderBrush="{DynamicResource BorderBrushSoft}" BorderThickness="0,0,0,1">
                                             <Grid Height="52">
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="220" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="70" /></Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
                                                     <TextBlock Style="{StaticResource AppBodyStrongTextStyle}" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}" />
-                                                    <TextBlock Margin="0,2,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="{Binding RecordCount, StringFormat={}{0} 条记录}" />
+                                                    <TextBlock Margin="0,2,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="{Binding RecordCount, StringFormat={}{0} 条记录}" />
                                                 </StackPanel>
                                                 <ProgressBar Grid.Column="2" VerticalAlignment="Center" Maximum="{Binding DataContext.MaxSummaryDrawingCount, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                              Value="{Binding DrawingCount}">
                                                     <ProgressBar.Style>
                                                         <Style TargetType="ProgressBar" BasedOn="{StaticResource ConditionProgressStyle}">
-                                                            <Setter Property="Foreground" Value="{StaticResource DesignConditionModuleBorderBrush}" />
+                                                            <Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleBorderBrush}" />
                                                             <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="0"><Setter Property="Foreground" Value="{StaticResource DesignConditionModuleAccentBrush}" /></DataTrigger>
-                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="1"><Setter Property="Foreground" Value="#729F99" /></DataTrigger>
-                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="2"><Setter Property="Foreground" Value="{StaticResource DesignConditionModuleBorderBrush}" /></DataTrigger>
+                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="0"><Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleAccentBrush}" /></DataTrigger>
+                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="1"><Setter Property="Foreground" Value="{DynamicResource ConditionTreeSecondaryBrush}" /></DataTrigger>
+                                                                <DataTrigger Binding="{Binding LevelDepth}" Value="2"><Setter Property="Foreground" Value="{DynamicResource DesignConditionModuleBorderBrush}" /></DataTrigger>
                                                             </Style.Triggers>
                                                         </Style>
                                                     </ProgressBar.Style>
@@ -369,11 +369,11 @@
                         <Grid>
                             <StackPanel>
                                 <TextBlock Style="{StaticResource AppSectionTitleTextStyle}" Text="汇总明细" />
-                                <TextBlock Margin="0,3,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="当前筛选范围内的原始记录" />
+                                <TextBlock Margin="0,3,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="当前筛选范围内的原始记录" />
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
-                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding TotalRecordCount}" />
-                                <TextBlock Margin="4,0,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="条" />
+                                <TextBlock Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppNumericTextStyle}" Text="{Binding TotalRecordCount}" />
+                                <TextBlock Margin="4,0,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}" Text="条" />
                             </StackPanel>
                         </Grid>
                         <DataGrid Grid.Row="2" ItemsSource="{Binding Entries}" AutoGenerateColumns="False" Style="{StaticResource ConditionDataGridStyle}"
@@ -384,7 +384,7 @@
                                         <DataTemplate>
                                             <StackPanel VerticalAlignment="Center">
                                                 <TextBlock Style="{StaticResource AppBodyStrongTextStyle}" Text="{Binding ConditionName}" TextTrimming="CharacterEllipsis" />
-                                                <TextBlock Margin="0,2,0,0" Foreground="{StaticResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}">
+                                                <TextBlock Margin="0,2,0,0" Foreground="{DynamicResource TextSecondaryBrush}" Style="{StaticResource AppMetaTextStyle}">
                                                     <Run Text="{Binding ProjectNumber}" /><Run Text=" · " /><Run Text="{Binding IssuingDiscipline}" /><Run Text=" → " /><Run Text="{Binding ReceivingDiscipline}" />
                                                 </TextBlock>
                                             </StackPanel>
@@ -405,7 +405,7 @@
                         Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                         <TextBlock Style="{StaticResource AppSectionTitleTextStyle}" Text="设计条件模块暂不可用" />
-                        <TextBlock Margin="0,8,0,14" MaxWidth="520" Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
+                        <TextBlock Margin="0,8,0,14" MaxWidth="520" Foreground="{DynamicResource TextSecondaryBrush}" Text="{Binding ErrorMessage}" TextWrapping="Wrap" />
                         <Button Content="重试" Command="{Binding RetryCommand}" Style="{StaticResource ConditionPrimaryButtonStyle}" />
                     </StackPanel>
                 </Border>

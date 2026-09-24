@@ -12,7 +12,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -32,13 +32,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabChrome" Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+                                <Setter TargetName="TabChrome" Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="TabChrome" Property="BorderBrush" Value="{StaticResource BrandTealBrush}" />
+                                <Setter TargetName="TabChrome" Property="BorderBrush" Value="{DynamicResource BrandTealBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="TabChrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="TabChrome" Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -47,7 +47,7 @@
         </Style>
 
         <Style x:Key="WindowCloseButtonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource IconButtonStyle}">
-            <Setter Property="Foreground" Value="#7F1D1D" />
+            <Setter Property="Foreground" Value="{DynamicResource TopNavCloseBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -60,11 +60,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource DangerTintBrush}" />
-                                <Setter Property="BorderBrush" Value="{StaticResource DangerBorderBrush}" />
+                                <Setter Property="Background" Value="{DynamicResource DangerTintBrush}" />
+                                <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{StaticResource DangerBorderBrush}" />
+                                <Setter Property="Background" Value="{DynamicResource DangerBorderBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -73,9 +73,9 @@
         </Style>
     </UserControl.Resources>
 
-    <StackPanel Background="{StaticResource TopNavBackgroundBrush}">
-    <Border Background="{StaticResource TopNavBackgroundBrush}"
-            BorderBrush="{StaticResource BorderBrushSoft}"
+    <StackPanel Background="{DynamicResource TopNavBackgroundBrush}">
+    <Border Background="{DynamicResource TopNavBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrushSoft}"
             BorderThickness="0,0,0,1">
         <Grid Height="56" Margin="24,0,12,0">
             <Grid.ColumnDefinitions>
@@ -107,12 +107,21 @@
             </StackPanel>
 
             <Border Grid.Column="1" Margin="12,0" Padding="10,6" CornerRadius="6" MaxWidth="160"
-                    Background="{StaticResource SelectedBackgroundBrush}" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="1"
+                    Background="{DynamicResource SelectedBackgroundBrush}" BorderBrush="{DynamicResource BorderBrushSoft}" BorderThickness="1"
                     VerticalAlignment="Center" ToolTip="{Binding NotificationText}"
                     Visibility="{Binding HasNotification, Converter={StaticResource BooleanToVisibilityConverterEx}}">
-                <TextBlock Text="{Binding NotificationText}" FontSize="12" Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding NotificationText}" FontSize="12" Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
             </Border>
-            <Button Grid.Column="2"
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+            <Button AutomationProperties.Name="{Binding Settings.Theme.ToggleThemeLabel}"
+                    Content="{Binding Settings.Theme.ThemeIcon}"
+                    Command="{Binding Settings.Theme.ToggleThemeCommand}"
+                    FontFamily="{StaticResource AppIconFontFamily}"
+                    FontSize="14"
+                    Margin="0,0,4,0"
+                    Style="{StaticResource IconButtonStyle}"
+                    ToolTip="{Binding Settings.Theme.ToggleThemeLabel}" />
+            <Button
                     AutomationProperties.Name="设置"
                     Content="&#xE713;"
                     Command="{Binding ChangeFilterCommand}"
@@ -121,6 +130,7 @@
                     FontSize="14"
                     Style="{StaticResource IconButtonStyle}"
                     ToolTip="设置" />
+            </StackPanel>
 
             <StackPanel Grid.Column="4"
                         Orientation="Horizontal"
@@ -157,7 +167,7 @@
             </StackPanel>
         </Grid>
     </Border>
-    <Border Padding="24,12" BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1"
+    <Border Padding="24,12" BorderBrush="{DynamicResource BorderBrushSoft}" BorderThickness="0,0,0,1"
             Visibility="{Binding IsWorkspaceFilterVisible, Converter={StaticResource BooleanToVisibilityConverterEx}}">
         <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
             <WrapPanel>

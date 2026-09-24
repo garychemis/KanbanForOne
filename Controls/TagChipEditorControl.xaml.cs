@@ -1,7 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using KanbanForOne.Services;
 
 namespace KanbanForOne.Controls;
 
@@ -12,7 +14,7 @@ public partial class TagChipEditorControl : UserControl
         Text = "+ 添加标签",
         Margin = new Thickness(2, 0, 7, 5),
         FontSize = 12,
-        Foreground = BrushFrom("#94A3B8"),
+        Foreground = ThemeService.GetBrush("TagPlaceholderBrush", "#94A3B8"),
         VerticalAlignment = VerticalAlignment.Center,
         IsHitTestVisible = false
     };
@@ -30,31 +32,35 @@ public partial class TagChipEditorControl : UserControl
         nameof(EditorBackground),
         typeof(Brush),
         typeof(TagChipEditorControl),
-        new PropertyMetadata(BrushFrom("#FFFFFF")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty EditorBorderBrushProperty = DependencyProperty.Register(
         nameof(EditorBorderBrush),
         typeof(Brush),
         typeof(TagChipEditorControl),
-        new PropertyMetadata(BrushFrom("#E5E7EB")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty ChipBackgroundProperty = DependencyProperty.Register(
         nameof(ChipBackground),
         typeof(Brush),
         typeof(TagChipEditorControl),
-        new PropertyMetadata(BrushFrom("#F3F5F7")));
+        new PropertyMetadata(default(Brush)));
 
     public static readonly DependencyProperty ChipForegroundProperty = DependencyProperty.Register(
         nameof(ChipForeground),
         typeof(Brush),
         typeof(TagChipEditorControl),
-        new PropertyMetadata(BrushFrom("#4B5563")));
+        new PropertyMetadata(default(Brush)));
 
     private readonly List<string> _tags = [];
     private bool _isSyncing;
 
     public TagChipEditorControl()
     {
+        SetCurrentValue(EditorBackgroundProperty, ThemeService.GetBrush("EditorSurfaceBrush", "#FFFFFF"));
+        SetCurrentValue(EditorBorderBrushProperty, ThemeService.GetBrush("TagEditorBorderBrush", "#E5E7EB"));
+        SetCurrentValue(ChipBackgroundProperty, ThemeService.GetBrush("TagChipBackgroundBrush", "#F3F5F7"));
+        SetCurrentValue(ChipForegroundProperty, ThemeService.GetBrush("TagChipForegroundBrush", "#4B5563"));
         InitializeComponent();
         SyncTagsFromText(Text);
     }
@@ -210,9 +216,9 @@ public partial class TagChipEditorControl : UserControl
             Text = FormatTagForDisplay(tag),
             FontSize = 10,
             FontWeight = FontWeights.SemiBold,
-            Foreground = ChipForeground,
             VerticalAlignment = VerticalAlignment.Center
         };
+        label.SetBinding(TextBlock.ForegroundProperty, new Binding(nameof(ChipForeground)) { Source = this });
 
         var removeButton = new Button
         {
@@ -223,10 +229,10 @@ public partial class TagChipEditorControl : UserControl
             Margin = new Thickness(4, 0, 0, 0),
             BorderThickness = new Thickness(0),
             Background = Brushes.Transparent,
-            Foreground = ChipForeground,
             Cursor = Cursors.Hand,
             ToolTip = "删除标签"
         };
+        removeButton.SetBinding(Button.ForegroundProperty, new Binding(nameof(ChipForeground)) { Source = this });
         removeButton.Click += (_, _) =>
         {
             _tags.Remove(tag);
@@ -243,14 +249,15 @@ public partial class TagChipEditorControl : UserControl
         content.Children.Add(label);
         content.Children.Add(removeButton);
 
-        return new Border
+        var chip = new Border
         {
             Padding = new Thickness(7, 3, 5, 3),
             Margin = new Thickness(0, 0, 6, 5),
             CornerRadius = new CornerRadius(7),
-            Background = ChipBackground,
             Child = content
         };
+        chip.SetBinding(Border.BackgroundProperty, new Binding(nameof(ChipBackground)) { Source = this });
+        return chip;
     }
 
     private void UpdatePlaceholderVisibility()
@@ -276,11 +283,6 @@ public partial class TagChipEditorControl : UserControl
                 yield return tag;
             }
         }
-    }
-
-    private static Brush BrushFrom(string hex)
-    {
-        return (Brush)new BrushConverter().ConvertFromString(hex)!;
     }
 
     private static string FormatTagForDisplay(string tag)

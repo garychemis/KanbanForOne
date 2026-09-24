@@ -8,16 +8,17 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon\icon-transparent.ico</ApplicationIcon>
-    <Version>0.5.1</Version>
-    <AssemblyVersion>0.5.1.0</AssemblyVersion>
-    <FileVersion>0.5.1.0</FileVersion>
-    <InformationalVersion>v0.5.1</InformationalVersion>
+    <Version>0.5.2</Version>
+    <AssemblyVersion>0.5.2.0</AssemblyVersion>
+    <FileVersion>0.5.2.0</FileVersion>
+    <InformationalVersion>v0.5.2</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>Kanban41</Product>
     <Authors>闫飞</Authors>
     <Copyright>Copyright © 2026 闫飞</Copyright>
     <ReleaseNotes>
-       <![CDATA[v0.5.1|2026-09-22|优化了UI
+       <![CDATA[v0.5.2|2026-09-24|新增卡片折叠效果，新增暗色模式UI
+v0.5.1|2026-09-22|优化了UI
 V0.5.0.5|2026-08-27|重构对话框、文件选择与剪贴板为接口并抽取附件事务编排；修复设计条件加载在数据整体恢复时的版本竞态、附件原始文件名被改写及资源管理器定位参数转义问题；补充相应单元测试
 V0.5.0.4|2026-08-27|优化了输出excel表格中的数据内容及格式
 V0.5.0.3|2026-08-26|设计条件支持在同一记录中维护多种图幅及对应数量；设计条件数据库升级至 V3 并兼容迁移旧数据及备份

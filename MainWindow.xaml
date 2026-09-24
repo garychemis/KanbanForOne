@@ -29,7 +29,7 @@
 
     <Border x:Name="WindowFrame"
             CornerRadius="12"
-            Background="{StaticResource AppBackgroundBrush}"
+            Background="{DynamicResource AppBackgroundBrush}"
             BorderBrush="Transparent"
             BorderThickness="0"
             SnapsToDevicePixels="True">

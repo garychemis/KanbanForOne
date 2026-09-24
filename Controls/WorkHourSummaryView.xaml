@@ -4,8 +4,8 @@
     <UserControl.Resources>
 
         <Style x:Key="SummaryPanelStyle" TargetType="{x:Type Border}">
-            <Setter Property="Background" Value="{StaticResource WorkHourModuleTintBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourModuleTintBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="CornerRadius" Value="8" />
         </Style>
@@ -14,8 +14,8 @@
             <Setter Property="MinWidth" Value="82" />
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="14,0" />
-            <Setter Property="Background" Value="{StaticResource WorkHourModuleAccentHoverBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentHoverBrush}" />
+            <Setter Property="Background" Value="{DynamicResource WorkHourButtonBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource WorkHourButtonBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -29,18 +29,18 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WorkHourButtonPressedBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourButtonPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource WorkHourModuleAccentPressedBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource WorkHourButtonPressedBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleTextBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourModuleTextBrush}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource DisabledBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource DisabledBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource DisabledBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource DisabledBrush}" />
                                 <Setter Property="Opacity" Value="0.72" />
                                 <Setter Property="Cursor" Value="Arrow" />
                             </Trigger>
@@ -57,7 +57,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
@@ -73,13 +73,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -91,7 +91,7 @@
             <Setter Property="Height" Value="30" />
             <Setter Property="MinWidth" Value="58" />
             <Setter Property="Padding" Value="12,0" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
@@ -108,16 +108,16 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource CardSurfaceBrush}" />
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleBorderBrush}" />
-                                <Setter Property="Foreground" Value="{StaticResource WorkHourModuleTextBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource CardSurfaceBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourModuleBorderBrush}" />
+                                <Setter Property="Foreground" Value="{DynamicResource WorkHourModuleTextBrush}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                             <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -131,7 +131,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ComboBoxItem}">
@@ -141,10 +141,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
                             </Trigger>
                             <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
+                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -158,7 +158,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FontFamily" Value="{StaticResource AppNumericFontFamily}" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="ItemContainerStyle" Value="{StaticResource SummaryComboBoxItemStyle}" />
@@ -183,10 +183,10 @@
                                                 CornerRadius="6" />
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="Chrome" Property="Background" Value="{StaticResource HoverBrush}" />
+                                                <Setter TargetName="Chrome" Property="Background" Value="{DynamicResource HoverBrush}" />
                                             </Trigger>
                                             <Trigger Property="IsChecked" Value="True">
-                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{StaticResource WorkHourModuleHoverBorderBrush}" />
+                                                <Setter TargetName="Chrome" Property="BorderBrush" Value="{DynamicResource WorkHourModuleHoverBorderBrush}" />
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
@@ -203,7 +203,7 @@
                                        VerticalAlignment="Center"
                                        FontFamily="{StaticResource AppIconFontFamily}"
                                        FontSize="10"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        IsHitTestVisible="False"
                                        Text="&#xE70D;" />
                             <Popup x:Name="PART_Popup"
@@ -216,8 +216,8 @@
                                         MaxHeight="230"
                                         Margin="0,4,0,0"
                                         Padding="0,4"
-                                        Background="{StaticResource SurfaceBrush}"
-                                        BorderBrush="{StaticResource BorderBrushSoft}"
+                                        Background="{DynamicResource SurfaceBrush}"
+                                        BorderBrush="{DynamicResource BorderBrushSoft}"
                                         BorderThickness="1"
                                         CornerRadius="8">
                                     <Border.Effect>
@@ -231,7 +231,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{StaticResource TextPrimaryBrush}" />
+                                <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{DynamicResource TextPrimaryBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -242,16 +242,16 @@
         <Style x:Key="SummaryFilterComboBoxStyle"
                TargetType="{x:Type ComboBox}"
                BasedOn="{StaticResource SummaryInlineComboBoxStyle}">
-            <Setter Property="Background" Value="{StaticResource TopNavBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{DynamicResource TopNavBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="FontFamily" Value="{StaticResource AppFontFamily}" />
         </Style>
 
         <Style x:Key="SummaryProgressStyle" TargetType="{x:Type ProgressBar}">
             <Setter Property="Height" Value="8" />
-            <Setter Property="Background" Value="{StaticResource BorderBrushSoft}" />
-            <Setter Property="Foreground" Value="{StaticResource WorkHourModuleAccentBrush}" />
+            <Setter Property="Background" Value="{DynamicResource BorderBrushSoft}" />
+            <Setter Property="Foreground" Value="{DynamicResource WorkHourModuleAccentBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ProgressBar}">
@@ -270,10 +270,10 @@
         <Style x:Key="SummaryColumnHeaderStyle" TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Height" Value="36" />
             <Setter Property="Padding" Value="10,0" />
-            <Setter Property="Background" Value="{StaticResource TopNavBackgroundBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="Background" Value="{DynamicResource TopNavBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Setter Property="FontSize" Value="11" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
@@ -302,9 +302,9 @@
             <Setter Property="Padding" Value="10,0" />
             <Setter Property="HorizontalContentAlignment" Value="Stretch" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushSoft}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrushSoft}" />
             <Setter Property="BorderThickness" Value="0,0,0,1" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource KeyboardFocusStyle}" />
             <Setter Property="Template">
                 <Setter.Value>
@@ -324,15 +324,15 @@
         <Style x:Key="SummaryRowStyle" TargetType="{x:Type DataGridRow}">
             <Setter Property="Height" Value="44" />
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
             <Setter Property="BorderThickness" Value="0" />
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource HoverBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
                 </Trigger>
                 <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource SelectedBackgroundBrush}" />
-                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                    <Setter Property="Background" Value="{DynamicResource SelectedBackgroundBrush}" />
+                    <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -357,10 +357,10 @@
     </UserControl.Resources>
 
     <Grid x:Name="SummaryContent"
-          Background="{StaticResource AppBackgroundBrush}"
+          Background="{DynamicResource AppBackgroundBrush}"
           DataContext="{Binding WorkHourSummary}"
           TextElement.FontFamily="{StaticResource AppFontFamily}"
-          TextElement.Foreground="{StaticResource TextPrimaryBrush}"
+          TextElement.Foreground="{DynamicResource TextPrimaryBrush}"
           TextOptions.TextFormattingMode="Display">
         <Grid Margin="{StaticResource PageSpacing}">
             <Grid.RowDefinitions>
@@ -378,10 +378,10 @@
                 </Grid.ColumnDefinitions>
                 <StackPanel>
                     <TextBlock Style="{StaticResource AppPageTitleTextStyle}"
-                               Foreground="{StaticResource WorkHourModuleTextBrush}"
+                               Foreground="{DynamicResource WorkHourModuleTextBrush}"
                                Text="人工时汇总" />
                     <TextBlock Margin="0,3,0,0"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Style="{StaticResource AppPageSubtitleTextStyle}"
                                Text="项目、专业与工作内容的工时构成" />
                 </StackPanel>
@@ -414,7 +414,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <Border Padding="2" Background="{StaticResource TopNavBackgroundBrush}" CornerRadius="8">
+                    <Border Padding="2" Background="{DynamicResource TopNavBackgroundBrush}" CornerRadius="8">
                         <StackPanel Orientation="Horizontal">
                             <RadioButton AutomationProperties.Name="按月汇总"
                                          Command="{Binding SetQueryModeCommand}"
@@ -431,7 +431,7 @@
                         </StackPanel>
                     </Border>
 
-                    <Border Grid.Column="2" Margin="0,7" Background="{StaticResource BorderBrushSoft}" />
+                    <Border Grid.Column="2" Margin="0,7" Background="{DynamicResource BorderBrushSoft}" />
 
                     <Grid Grid.Column="4"
                           Visibility="{Binding IsMonthMode, Converter={StaticResource BooleanToVisibilityConverterEx}}">
@@ -455,8 +455,8 @@
                         <Border Grid.Column="2"
                                 Height="34"
                                 Padding="2,0"
-                                Background="{StaticResource TopNavBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                Background="{DynamicResource TopNavBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrushSoft}"
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <StackPanel Orientation="Horizontal">
@@ -466,10 +466,10 @@
                                           SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
                                           Style="{StaticResource SummaryInlineComboBoxStyle}" />
                                 <TextBlock VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Style="{StaticResource AppMetaTextStyle}"
                                            Text="年" />
-                                <Border Width="1" Margin="6,7" Background="{StaticResource BorderBrushSoft}" />
+                                <Border Width="1" Margin="6,7" Background="{DynamicResource BorderBrushSoft}" />
                                 <ComboBox Width="48"
                                           AutomationProperties.Name="汇总月份"
                                           ItemsSource="{Binding MonthOptions}"
@@ -477,7 +477,7 @@
                                           Style="{StaticResource SummaryInlineComboBoxStyle}" />
                                 <TextBlock Margin="0,0,7,0"
                                            VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Style="{StaticResource AppMetaTextStyle}"
                                            Text="月" />
                             </StackPanel>
@@ -502,8 +502,8 @@
                           Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                         <Border Height="34"
                                 Padding="9,0"
-                                Background="{StaticResource TopNavBackgroundBrush}"
-                                BorderBrush="{StaticResource BorderBrushSoft}"
+                                Background="{DynamicResource TopNavBackgroundBrush}"
+                                BorderBrush="{DynamicResource BorderBrushSoft}"
                                 BorderThickness="1"
                                 CornerRadius="8">
                             <Grid>
@@ -519,7 +519,7 @@
                                 <TextBlock Grid.Column="1"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Style="{StaticResource AppMetaTextStyle}"
                                            Text="至" />
                                 <DatePicker Grid.Column="2"
@@ -542,7 +542,7 @@
 
                     <TextBlock Margin="7,8,0,0"
                                AutomationProperties.Name="当前人工时汇总日期区间"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Style="{StaticResource AppNumericTextStyle}"
                                Text="{Binding CurrentRangeQueryDisplay}"
                                Visibility="{Binding IsRangeMode, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
@@ -564,13 +564,13 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppLabelTextStyle}"
                                        Text="总工时" />
                             <StackPanel Margin="0,1,0,0"
                                         Orientation="Horizontal">
                                 <TextBlock Style="{StaticResource AppMetricValueTextStyle}"
-                                           Foreground="{StaticResource WorkHourModuleTextBrush}"
+                                           Foreground="{DynamicResource WorkHourModuleTextBrush}"
                                            Text="{Binding TotalHoursValueDisplay}" />
                                 <TextBlock Margin="6,0,0,1"
                                            VerticalAlignment="Bottom"
@@ -580,11 +580,11 @@
                         </StackPanel>
                         <Border Grid.Column="1"
                                 Margin="0,3"
-                                Background="{StaticResource BorderBrushSoft}" />
+                                Background="{DynamicResource BorderBrushSoft}" />
                         <StackPanel Grid.Column="2"
                                     Margin="14,0,0,0"
                                     VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppLabelTextStyle}"
                                        Text="原始记录" />
                             <StackPanel Margin="0,1,0,0"
@@ -599,11 +599,11 @@
                         </StackPanel>
                         <Border Grid.Column="3"
                                 Margin="0,3"
-                                Background="{StaticResource BorderBrushSoft}" />
+                                Background="{DynamicResource BorderBrushSoft}" />
                         <StackPanel Grid.Column="4"
                                     Margin="14,0,0,0"
                                     VerticalAlignment="Center">
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                            <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppLabelTextStyle}"
                                        Text="汇总组合" />
                             <StackPanel Margin="0,1,0,0"
@@ -643,7 +643,7 @@
                             <TextBlock HorizontalAlignment="Right"
                                        VerticalAlignment="Center"
                                        FontSize="11"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppNumericTextStyle}"
                                        Text="{Binding CurrentDateRangeDisplay}"
                                        />
@@ -660,7 +660,7 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Margin="8,0">
-                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                                <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Style="{StaticResource AppLabelTextStyle}"
                                            TextAlignment="Center"
@@ -677,7 +677,7 @@
 
                             <StackPanel Grid.Column="2"
                                         Margin="8,0">
-                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                                <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Style="{StaticResource AppLabelTextStyle}"
                                            TextAlignment="Center"
@@ -694,7 +694,7 @@
 
                             <StackPanel Grid.Column="4"
                                         Margin="8,0">
-                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}"
+                                <TextBlock Foreground="{DynamicResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center"
                                            Style="{StaticResource AppLabelTextStyle}"
                                            TextAlignment="Center"
@@ -718,7 +718,7 @@
                                           Visibility="{Binding HasSummaries, Converter={StaticResource BooleanToVisibilityConverterEx}}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="{StaticResource BorderBrushSoft}" BorderThickness="0,0,0,1">
+                                        <Border BorderBrush="{DynamicResource BorderBrushSoft}" BorderThickness="0,0,0,1">
                                             <Grid Height="56">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="176" />
@@ -732,7 +732,7 @@
                                                                TextTrimming="CharacterEllipsis"
                                                                ToolTip="{Binding CombinationDisplay}" />
                                                     <TextBlock Margin="0,2,0,0"
-                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
                                                                Style="{StaticResource AppMetaTextStyle}"
                                                                Text="{Binding EntryCount, StringFormat={}{0} 条记录}" />
                                                 </StackPanel>
@@ -767,7 +767,7 @@
                                        Text="{Binding EmptyStateTitle}" />
                             <TextBlock Margin="0,5,0,0"
                                        HorizontalAlignment="Center"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Style="{StaticResource AppMetaTextStyle}"
                                        Text="{Binding EmptyStateDescription}" />
                         </StackPanel>
@@ -788,11 +788,11 @@
                                         VerticalAlignment="Center"
                                         Orientation="Horizontal">
                                 <TextBlock FontSize="11"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Style="{StaticResource AppNumericTextStyle}"
                                            Text="{Binding CombinationCount}" />
                                 <TextBlock Margin="4,0,0,0"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Style="{StaticResource AppMetaTextStyle}"
                                            Text="项" />
                             </StackPanel>

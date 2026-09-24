@@ -8,8 +8,8 @@
             <Setter Property="Margin" Value="0,0,0,6" />
             <Setter Property="Padding" Value="8" />
             <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Background" Value="{StaticResource DrawerSoftSurfaceBrush}" />
-            <Setter Property="BorderBrush" Value="{StaticResource DrawerSoftDividerBrush}" />
+            <Setter Property="Background" Value="{DynamicResource DrawerSoftSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource DrawerSoftDividerBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
@@ -23,7 +23,7 @@
             <Setter Property="Width" Value="24" />
             <Setter Property="Height" Value="24" />
             <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Background" Value="{StaticResource DrawerStrongSurfaceBrush}" />
+            <Setter Property="Background" Value="{DynamicResource DrawerStrongSurfaceBrush}" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
@@ -50,7 +50,7 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
                     <Setter Property="FontSize" Value="9" />
@@ -60,7 +60,7 @@
 
         <Style x:Key="AttachmentMetadataStyle" TargetType="{x:Type TextBlock}">
             <Setter Property="FontSize" Value="10" />
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsCompact, ElementName=Root}" Value="True">
                     <Setter Property="FontSize" Value="9" />
@@ -147,7 +147,7 @@
                                         Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource AttachmentActionButtonStyle}"
-                                        Foreground="#9A3412"
+                                        Foreground="{DynamicResource AttachmentErrorBrush}"
                                         Margin="4,0,0,0"
                                         Visibility="{Binding ShowManageActions, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                             </StackPanel>
