@@ -27,7 +27,7 @@ public sealed class DesignConditionModuleTests
             await using var connection = database.CreateConnection();
             await connection.OpenAsync(Xunit.TestContext.Current.CancellationToken);
             Assert.Equal("wal", await ScalarAsync(connection, "PRAGMA journal_mode"));
-            Assert.Equal("3", await ScalarAsync(connection, "PRAGMA user_version"));
+            Assert.Equal("4", await ScalarAsync(connection, "PRAGMA user_version"));
             Assert.Equal("1", await ScalarAsync(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='DesignConditions'"));
             Assert.Equal("1", await ScalarAsync(connection, "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='DrawingCounts' AND upper(type)='TEXT'"));
             Assert.Equal("0", await ScalarAsync(connection, "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='Tasks'"));
@@ -83,7 +83,7 @@ public sealed class DesignConditionModuleTests
             await database.InitializeAsync();
             await using var migrated = database.CreateConnection();
             await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
-            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
+            Assert.Equal("4", await ScalarAsync(migrated, "PRAGMA user_version"));
             Assert.Equal("0", await ScalarAsync(migrated, "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='RecordDate'"));
             Assert.Equal("0", await ScalarAsync(migrated, "SELECT COUNT(*) FROM sqlite_master WHERE type='index' AND name='IX_DesignConditions_RecordDate'"));
             Assert.Equal("2026-08-19T00:00:00.0000000", await ScalarAsync(migrated, "SELECT IssuedDate FROM DesignConditions WHERE Id='legacy'"));
@@ -158,7 +158,7 @@ public sealed class DesignConditionModuleTests
             await database.InitializeAsync();
             await using var migrated = database.CreateConnection();
             await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
-            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
+            Assert.Equal("4", await ScalarAsync(migrated, "PRAGMA user_version"));
             Assert.Equal("5", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='v2'"));
             Assert.Equal("5", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='v2'"));
         }
@@ -212,7 +212,7 @@ public sealed class DesignConditionModuleTests
             await database.InitializeAsync();
             await using var migrated = database.CreateConnection();
             await migrated.OpenAsync(Xunit.TestContext.Current.CancellationToken);
-            Assert.Equal("3", await ScalarAsync(migrated, "PRAGMA user_version"));
+            Assert.Equal("4", await ScalarAsync(migrated, "PRAGMA user_version"));
             // 有图幅的 0 数量记录迁移为默认 1 张，避免 codec 拒绝 "0"
             Assert.Equal("1", await ScalarAsync(migrated, "SELECT DrawingCounts FROM DesignConditions WHERE Id='11111111-1111-1111-1111-111111111111'"));
             Assert.Equal("1", await ScalarAsync(migrated, "SELECT DrawingCount FROM DesignConditions WHERE Id='11111111-1111-1111-1111-111111111111'"));

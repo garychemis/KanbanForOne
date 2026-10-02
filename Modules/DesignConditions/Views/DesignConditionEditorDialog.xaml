@@ -2,7 +2,9 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:KanbanForOne.Controls"
-        Title="设计条件详情" Width="780" Height="700" MinHeight="620"
+        xmlns:views="clr-namespace:KanbanForOne.Modules.DesignConditions.Views"
+        views:DesignConditionThemeScope.IsReceived="{Binding IsReceived}"
+        Title="{Binding EditorTitle}" Width="780" Height="700" MinHeight="620"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Style="{StaticResource {x:Type Window}}">
     <Window.Resources>
@@ -35,8 +37,8 @@
                 <Grid MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                     <StackPanel>
-                        <TextBlock Text="设计条件详情" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource ConditionPrimaryTextBrush}" />
-                        <TextBlock Text="记录不同专业之间提交和接收的设计条件" Margin="0,3,0,0" FontSize="11" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
+                        <TextBlock Text="{Binding EditorTitle}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource DesignConditionModuleTextBrush}" />
+                        <TextBlock Text="{Binding EditorDescription}" Margin="0,3,0,0" FontSize="11" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
                     </StackPanel>
                     <Button Grid.Column="1" Content="×" Click="OnCloseClick" Style="{StaticResource ConditionCloseButtonStyle}" />
                 </Grid>
@@ -77,13 +79,20 @@
                         <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,13,0,0">
                             <TextBlock Text="提出日期 *" Style="{StaticResource ConditionFieldLabelStyle}" />
                             <Border Style="{StaticResource ConditionDateFieldBorderStyle}">
-                                <DatePicker SelectedDate="{Binding IssuedDate}" Style="{StaticResource DrawerDatePickerStyle}" />
+                                <DatePicker SelectedDate="{Binding IssuedDate}" AutomationProperties.Name="条件提出日期" Style="{StaticResource DrawerDatePickerStyle}" />
                             </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Row="3" Margin="0,13,0,0">
                             <TextBlock Text="版次" Style="{StaticResource ConditionFieldLabelStyle}" />
                             <TextBox Text="{Binding Revision, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource ConditionTextBoxStyle}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,13,0,0"
+                                    Visibility="{Binding IsReceived, Converter={StaticResource BooleanToVisibilityConverterEx}}">
+                            <TextBlock Text="接受日期 *" Style="{StaticResource ConditionFieldLabelStyle}" />
+                            <Border Style="{StaticResource ConditionDateFieldBorderStyle}">
+                                <DatePicker SelectedDate="{Binding ReceivedDate}" AutomationProperties.Name="条件接受日期" Style="{StaticResource DrawerDatePickerStyle}" />
+                            </Border>
                         </StackPanel>
                     </Grid>
 
@@ -172,7 +181,7 @@
                                             <Grid>
                                                 <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                                 <StackPanel VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding OriginalFileName}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                                                    <TextBlock Text="{Binding OriginalFileName}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" ToolTip="{Binding OriginalFileName}" />
                                                     <TextBlock Text="已归档附件" Margin="0,2,0,0" FontSize="10" Foreground="{DynamicResource ConditionSecondaryTextBrush}" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1" Content="打开" Click="OnOpenAttachmentClick" Style="{StaticResource ConditionGhostButtonStyle}" Margin="8,0,0,0" MinWidth="48" />
@@ -209,18 +218,20 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="{Binding ValidationMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="12" Margin="2,10,0,0"
-                               Visibility="{Binding HasValidationMessage, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
                 </StackPanel>
             </ScrollViewer>
 
             <Border Grid.Row="2" Padding="22,13" BorderThickness="0">
                 <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="10" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                    <Button Content="删除记录" Click="OnDeleteClick" Visibility="{Binding Source, Converter={StaticResource NullToVisibilityConverter}}"
+                    <TextBlock Grid.ColumnSpan="5" Text="{Binding ValidationMessage}" Foreground="{DynamicResource DangerBrush}" FontSize="12" Margin="0,0,0,10" TextWrapping="Wrap"
+                               AutomationProperties.Name="设计条件保存提示" AutomationProperties.LiveSetting="Assertive"
+                               Visibility="{Binding HasValidationMessage, Converter={StaticResource BooleanToVisibilityConverterEx}}" />
+                    <Button Grid.Row="1" Content="删除记录" Click="OnDeleteClick" Visibility="{Binding Source, Converter={StaticResource NullToVisibilityConverter}}"
                             Style="{StaticResource ConditionGhostButtonStyle}" Foreground="{DynamicResource DangerBrush}" />
-                    <Button Grid.Column="2" Content="取消" Click="OnCloseClick" Style="{StaticResource ConditionGhostButtonStyle}" />
-                    <Button Grid.Column="4" Content="保存" Click="OnSaveClick" Style="{StaticResource ConditionDialogPrimaryButtonStyle}" />
+                    <Button Grid.Row="1" Grid.Column="2" Content="取消" Click="OnCloseClick" Style="{StaticResource ConditionGhostButtonStyle}" />
+                    <Button Grid.Row="1" Grid.Column="4" Content="保存" Click="OnSaveClick" Style="{StaticResource ConditionDialogPrimaryButtonStyle}" />
                 </Grid>
             </Border>
         </Grid>

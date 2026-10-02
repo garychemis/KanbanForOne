@@ -12,7 +12,7 @@ public sealed record DesignConditionRestoreResult(string SourcePath, string Prot
 public sealed class DesignConditionBackupService
 {
     private const int BackupFormatVersion = 1;
-    private const int CurrentDatabaseSchemaVersion = 3;
+    private const int CurrentDatabaseSchemaVersion = DesignConditionDatabaseService.CurrentSchemaVersion;
     private const int MaxArchiveEntries = 20_000;
     private const long MaxArchiveEntryBytes = 2L * 1024 * 1024 * 1024;
     private const long MaxArchiveExpandedBytes = 10L * 1024 * 1024 * 1024;
@@ -101,13 +101,19 @@ public sealed class DesignConditionBackupService
     private async Task<DesignConditionBackupResult> CreateBackupCoreAsync(bool protective)
     {
         _paths.EnsureDirectories();
+        if (!File.Exists(_paths.DatabasePath))
+            throw new InvalidOperationException("设计条件数据库尚未初始化，无法创建备份。");
         await _database.CheckpointAsync();
         _database.ClearPool();
         var prefix = protective ? "DesignConditions_PreRestore" : "DesignConditions_Backup";
         var path = UniqueBackupPath(prefix);
+        // 与附件暂存分开，避免普通页面重载清理正在使用的数据库快照。
+        var snapshotRoot = Path.Combine(_paths.BackupRoot, $".snapshot-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(snapshotRoot);
+        var snapshotDatabase = Path.Combine(snapshotRoot, "DesignConditions.db");
         try
         {
-            var count = await Task.Run(() => CreateArchive(path));
+            var count = await Task.Run(() => CreateArchive(path, snapshotDatabase));
             _ = InspectArchive(path);
             return new DesignConditionBackupResult(path, count, new FileInfo(path).Length, DateTime.Now);
         }
@@ -116,16 +122,21 @@ public sealed class DesignConditionBackupService
             if (File.Exists(path)) File.Delete(path);
             throw;
         }
+        finally { TryDeleteDirectory(snapshotRoot); }
     }
 
-    private int CreateArchive(string output)
+    private int CreateArchive(string output, string snapshotDatabase)
     {
+        CreateDatabaseSnapshot(snapshotDatabase);
+        // 版本和校验均取自同一份快照；主库在此期间迁移也不会使清单和归档内容错配。
+        var schemaVersion = ReadDatabaseSchemaVersion(snapshotDatabase);
+        ValidateDatabase(snapshotDatabase, schemaVersion);
         using var archive = ZipFile.Open(output, ZipArchiveMode.Create);
-        archive.CreateEntryFromFile(_paths.DatabasePath, "DesignConditions.db", CompressionLevel.Optimal);
+        archive.CreateEntryFromFile(snapshotDatabase, "DesignConditions.db", CompressionLevel.Optimal);
         var manifest = archive.CreateEntry("manifest.json");
         using (var writer = new StreamWriter(manifest.Open()))
         {
-            writer.Write(JsonSerializer.Serialize(new DesignConditionBackupManifest("DesignConditions", BackupFormatVersion, CurrentDatabaseSchemaVersion, DateTime.Now)));
+            writer.Write(JsonSerializer.Serialize(new DesignConditionBackupManifest("DesignConditions", BackupFormatVersion, schemaVersion, DateTime.Now)));
         }
         archive.CreateEntry("attachments/");
         var count = 0;
@@ -136,6 +147,47 @@ public sealed class DesignConditionBackupService
             count++;
         }
         return count;
+    }
+
+    private void CreateDatabaseSnapshot(string snapshotDatabase)
+    {
+        using var source = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = _paths.DatabasePath,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false
+        }.ToString());
+        using var destination = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = snapshotDatabase,
+            Mode = SqliteOpenMode.ReadWriteCreate,
+            Pooling = false
+        }.ToString());
+        source.Open();
+        destination.Open();
+        source.BackupDatabase(destination);
+        // 快照入包只包含一个db文件，确保没有依赖未归档的WAL内容。
+        using var journal = destination.CreateCommand();
+        journal.CommandText = "PRAGMA journal_mode = DELETE";
+        if (!string.Equals(Convert.ToString(journal.ExecuteScalar()), "delete", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("无法生成独立的设计条件数据库快照。");
+    }
+
+    private static int ReadDatabaseSchemaVersion(string databasePath)
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = databasePath,
+            Mode = SqliteOpenMode.ReadOnly,
+            Pooling = false
+        }.ToString());
+        connection.Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "PRAGMA user_version";
+        var version = Convert.ToInt32(command.ExecuteScalar());
+        if (version is < 1 or > CurrentDatabaseSchemaVersion)
+            throw new InvalidDataException($"设计条件数据库版本 {version} 不受支持，无法创建备份。");
+        return version;
     }
 
     private static ArchiveInspection ExtractArchive(string source, string destination)
@@ -233,7 +285,7 @@ public sealed class DesignConditionBackupService
 
     private static void ValidateDatabase(string path, int expectedVersion)
     {
-        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly }.ToString());
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = path, Mode = SqliteOpenMode.ReadOnly, Pooling = false }.ToString());
         connection.Open();
         using var check = connection.CreateCommand();
         check.CommandText = "PRAGMA quick_check";
@@ -253,6 +305,22 @@ public sealed class DesignConditionBackupService
             using var drawingCounts = connection.CreateCommand();
             drawingCounts.CommandText = "SELECT COUNT(*) FROM pragma_table_info('DesignConditions') WHERE name='DrawingCounts' AND upper(type)='TEXT'";
             if (Convert.ToInt32(drawingCounts.ExecuteScalar()) != 1) throw new InvalidDataException("设计条件备份数据库缺少分图幅数量字段。");
+        }
+        if (expectedVersion >= 4)
+        {
+            using var archiveColumns = connection.CreateCommand();
+            archiveColumns.CommandText = """
+                SELECT COUNT(*) FROM pragma_table_info('DesignConditions')
+                WHERE (name='ArchiveKind' AND upper(type)='INTEGER')
+                   OR (name='ReceivedDate' AND upper(type)='TEXT')
+                """;
+            if (Convert.ToInt32(archiveColumns.ExecuteScalar()) != 2)
+                throw new InvalidDataException("设计条件备份数据库缺少归档类型或接受日期字段。");
+
+            using var archiveData = connection.CreateCommand();
+            archiveData.CommandText = $"SELECT COUNT(*) FROM DesignConditions WHERE {DesignConditionDatabaseService.InvalidArchiveDataSql}";
+            if (Convert.ToInt64(archiveData.ExecuteScalar()) != 0)
+                throw new InvalidDataException("设计条件备份数据库包含无效归档类型或接受日期。");
         }
     }
 

@@ -25,7 +25,7 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
         await using var connection = _database.CreateConnection();
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
-        command.CommandText = SelectSql + " ORDER BY IssuedDate DESC, UpdatedAt DESC, Id";
+        command.CommandText = SelectSql + $" ORDER BY ({DesignConditionDatabaseService.ArchiveDateSql}) DESC, UpdatedAt DESC, Id";
         await using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -50,7 +50,9 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
         await using var connection = _database.CreateConnection();
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
-        command.CommandText = SelectSql + " WHERE IssuedDate >= $startDate AND IssuedDate <= $endDate ORDER BY IssuedDate, ProjectNumber COLLATE NOCASE, ConditionName COLLATE NOCASE";
+        // 保留旧接口名称；V4 起按提出日期或接受日期查询对应归档。
+        var archiveDate = DesignConditionDatabaseService.ArchiveDateSql;
+        command.CommandText = SelectSql + $" WHERE ({archiveDate}) >= $startDate AND ({archiveDate}) <= $endDate ORDER BY ({archiveDate}), ProjectNumber COLLATE NOCASE, ConditionName COLLATE NOCASE";
         command.Parameters.AddWithValue("$startDate", DbDay(startDate));
         command.Parameters.AddWithValue("$endDate", DbDay(endDate));
         await using var reader = await command.ExecuteReaderAsync();
@@ -64,10 +66,13 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
 
     public async Task<IReadOnlyList<DesignConditionCalendarSummary>> GetCalendarSummariesAsync(DateTime startDate, DateTime endDate)
     {
+        if (startDate.Date > endDate.Date)
+            throw new ArgumentException("开始日期不能晚于结束日期。", nameof(startDate));
         await using var connection = _database.CreateConnection();
         await connection.OpenAsync();
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT IssuedDate, COUNT(*), COALESCE(SUM(DrawingCount), 0) FROM DesignConditions WHERE IssuedDate >= $startDate AND IssuedDate <= $endDate GROUP BY IssuedDate ORDER BY IssuedDate";
+        var archiveDate = DesignConditionDatabaseService.ArchiveDateSql;
+        command.CommandText = $"SELECT ({archiveDate}) AS ArchiveDate, COUNT(*), COALESCE(SUM(DrawingCount), 0) FROM DesignConditions WHERE ({archiveDate}) >= $startDate AND ({archiveDate}) <= $endDate GROUP BY ({archiveDate}) ORDER BY ArchiveDate";
         command.Parameters.AddWithValue("$startDate", DbDay(startDate));
         command.Parameters.AddWithValue("$endDate", DbDay(endDate));
         var result = new List<DesignConditionCalendarSummary>();
@@ -145,6 +150,10 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
 
     private static async Task UpsertAsync(SqliteConnection connection, SqliteTransaction? transaction, DesignConditionEntry entry)
     {
+        if (!Enum.IsDefined(entry.ArchiveKind))
+            throw new ArgumentException("归档类型无效。", nameof(entry));
+        if (entry.IsReceived && entry.ReceivedDate is null)
+            throw new ArgumentException("接受设计条件必须填写接受日期。", nameof(entry));
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText =
@@ -152,11 +161,11 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
             INSERT INTO DesignConditions (
                 Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver,
                 IssuedDate, ConditionName, Revision, DrawingSize, DrawingCounts, DrawingCount,
-                CreatedAt, UpdatedAt
+                CreatedAt, UpdatedAt, ArchiveKind, ReceivedDate
             ) VALUES (
                 $id, $projectNumber, $issuingDiscipline, $receivingDiscipline, $receiver,
                 $issuedDate, $conditionName, $revision, $drawingSize, $drawingCounts, $drawingCount,
-                $createdAt, $updatedAt
+                $createdAt, $updatedAt, $archiveKind, $receivedDate
             )
             ON CONFLICT(Id) DO UPDATE SET
                 ProjectNumber = excluded.ProjectNumber,
@@ -169,6 +178,8 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
                 DrawingSize = excluded.DrawingSize,
                 DrawingCounts = excluded.DrawingCounts,
                 DrawingCount = excluded.DrawingCount,
+                ArchiveKind = excluded.ArchiveKind,
+                ReceivedDate = excluded.ReceivedDate,
                 UpdatedAt = excluded.UpdatedAt
             """;
         AddParameters(command, entry);
@@ -214,6 +225,8 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
         command.Parameters.AddWithValue("$receivingDiscipline", entry.ReceivingDiscipline);
         command.Parameters.AddWithValue("$receiver", entry.Receiver);
         command.Parameters.AddWithValue("$issuedDate", DbDay(entry.IssuedDate));
+        command.Parameters.AddWithValue("$archiveKind", (int)entry.ArchiveKind);
+        command.Parameters.AddWithValue("$receivedDate", entry.ReceivedDate is { } receivedDate ? DbDay(receivedDate) : DBNull.Value);
         command.Parameters.AddWithValue("$conditionName", entry.ConditionName);
         command.Parameters.AddWithValue("$revision", entry.Revision);
         command.Parameters.AddWithValue("$drawingSize", entry.DrawingSize);
@@ -238,19 +251,22 @@ public sealed class DesignConditionRepository : IDesignConditionRepository
             IssuingDiscipline = reader.GetString(2),
             ReceivingDiscipline = reader.GetString(3),
             Receiver = reader.GetString(4),
-            IssuedDate = DateTime.ParseExact(reader.GetString(5), "yyyy-MM-dd", CultureInfo.InvariantCulture),
+            // 旧 ISO 字符串可能带时区；设计条件日期按原文字面日期读取，不换算成本地时间。
+            IssuedDate = DateTime.ParseExact(reader.GetString(5)[..10], "yyyy-MM-dd", CultureInfo.InvariantCulture),
             ConditionName = reader.GetString(6),
             Revision = reader.GetString(7),
             DrawingSize = drawingSizes,
             DrawingCounts = drawingCounts,
             DrawingCount = drawingCount,
             CreatedAt = SqliteMapper.ReadDate(reader, 11),
-            UpdatedAt = SqliteMapper.ReadDate(reader, 12)
+            UpdatedAt = SqliteMapper.ReadDate(reader, 12),
+            ArchiveKind = (DesignConditionArchiveKind)reader.GetInt32(13),
+            ReceivedDate = reader.IsDBNull(14) ? null : DateTime.ParseExact(reader.GetString(14), "yyyy-MM-dd", CultureInfo.InvariantCulture)
         };
     }
 
     private static string DbDay(DateTime date) => date.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
     private const string SelectSql =
-        "SELECT Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver, IssuedDate, ConditionName, Revision, DrawingSize, DrawingCounts, DrawingCount, CreatedAt, UpdatedAt FROM DesignConditions";
+        "SELECT Id, ProjectNumber, IssuingDiscipline, ReceivingDiscipline, Receiver, IssuedDate, ConditionName, Revision, DrawingSize, DrawingCounts, DrawingCount, CreatedAt, UpdatedAt, ArchiveKind, ReceivedDate FROM DesignConditions";
 }

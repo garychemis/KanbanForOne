@@ -4,7 +4,18 @@ namespace KanbanForOne.Modules.DesignConditions.Data;
 
 public sealed class DesignConditionDatabaseService
 {
-    private const int CurrentSchemaVersion = 3;
+    internal const int CurrentSchemaVersion = 4;
+    // 旧库可能保留 ISO 时间戳；日期查询取日部分，不改写历史原值。
+    internal const string ArchiveDateSql = "CASE WHEN ArchiveKind = 1 THEN COALESCE(ReceivedDate, substr(IssuedDate, 1, 10)) ELSE substr(IssuedDate, 1, 10) END";
+    internal const string InvalidArchiveDataSql = """
+        ArchiveKind IS NULL OR ArchiveKind NOT IN (0, 1)
+        OR (ArchiveKind = 1 AND ReceivedDate IS NULL)
+        OR (ReceivedDate IS NOT NULL AND (
+            length(ReceivedDate) <> 10
+            OR ReceivedDate < '0001-01-01' OR ReceivedDate > '9999-12-31'
+            OR date(ReceivedDate, '+0 days') IS NULL
+            OR date(ReceivedDate, '+0 days') <> ReceivedDate))
+        """;
     private readonly DesignConditionStorageOptions _paths;
 
     public DesignConditionDatabaseService(DesignConditionStorageOptions paths)
@@ -59,6 +70,14 @@ public sealed class DesignConditionDatabaseService
                 ReceivingDiscipline TEXT NOT NULL,
                 Receiver TEXT NOT NULL,
                 IssuedDate TEXT NOT NULL,
+                ArchiveKind INTEGER NOT NULL DEFAULT 0 CHECK (ArchiveKind IN (0, 1)),
+                ReceivedDate TEXT CHECK (
+                    (ArchiveKind = 0 OR ReceivedDate IS NOT NULL)
+                    AND (ReceivedDate IS NULL OR (
+                        length(ReceivedDate) = 10
+                        AND ReceivedDate BETWEEN '0001-01-01' AND '9999-12-31'
+                        AND date(ReceivedDate, '+0 days') IS NOT NULL
+                        AND date(ReceivedDate, '+0 days') = ReceivedDate))),
                 ConditionName TEXT NOT NULL,
                 Revision TEXT NOT NULL DEFAULT '',
                 DrawingSize TEXT NOT NULL DEFAULT '',
@@ -97,6 +116,8 @@ public sealed class DesignConditionDatabaseService
         string[] indexes =
         [
             "CREATE INDEX IF NOT EXISTS IX_DesignConditions_IssuedDate ON DesignConditions(IssuedDate)",
+            $"CREATE INDEX IF NOT EXISTS IX_DesignConditions_ArchiveDate ON DesignConditions(({ArchiveDateSql}))",
+            $"CREATE INDEX IF NOT EXISTS IX_DesignConditions_KindDate ON DesignConditions(ArchiveKind, ({ArchiveDateSql}))",
             "CREATE INDEX IF NOT EXISTS IX_DesignConditions_ProjectDate ON DesignConditions(ProjectNumber COLLATE NOCASE, IssuedDate)",
             "CREATE INDEX IF NOT EXISTS IX_DesignConditions_Grouping ON DesignConditions(ProjectNumber COLLATE NOCASE, IssuingDiscipline COLLATE NOCASE, ReceivingDiscipline COLLATE NOCASE, ConditionName COLLATE NOCASE)",
             "CREATE INDEX IF NOT EXISTS IX_DesignConditionAttachments_Owner ON DesignConditionAttachments(DesignConditionId, SortOrder)",
@@ -126,13 +147,37 @@ public sealed class DesignConditionDatabaseService
                 """, transaction);
         }
 
+        if (version < 4)
+        {
+            // V4 只追加字段：历史记录全部为提出，保留原日期、图纸及附件关联。
+            if (!await ColumnExistsAsync(connection, "DesignConditions", "ArchiveKind", transaction))
+            {
+                await ExecuteAsync(connection,
+                    "ALTER TABLE DesignConditions ADD COLUMN ArchiveKind INTEGER NOT NULL DEFAULT 0 CHECK (ArchiveKind IN (0, 1))", transaction);
+            }
+            if (!await ColumnExistsAsync(connection, "DesignConditions", "ReceivedDate", transaction))
+            {
+                await ExecuteAsync(connection,
+                    """
+                    ALTER TABLE DesignConditions ADD COLUMN ReceivedDate TEXT CHECK (
+                        (ArchiveKind = 0 OR ReceivedDate IS NOT NULL)
+                        AND (ReceivedDate IS NULL OR (
+                            length(ReceivedDate) = 10
+                            AND ReceivedDate BETWEEN '0001-01-01' AND '9999-12-31'
+                            AND date(ReceivedDate, '+0 days') IS NOT NULL
+                            AND date(ReceivedDate, '+0 days') = ReceivedDate)))
+                    """, transaction);
+            }
+        }
+
+        await ValidateAsync(connection, transaction);
+
         foreach (var index in indexes)
         {
             await ExecuteAsync(connection, index, transaction);
         }
 
         await SeedOptionsAsync(connection, transaction);
-        await ValidateAsync(connection, transaction);
         await SetVersionAsync(connection, CurrentSchemaVersion, transaction);
         await transaction.CommitAsync();
         await ExecuteAsync(connection, "PRAGMA journal_mode = WAL");
@@ -188,6 +233,18 @@ public sealed class DesignConditionDatabaseService
         if (!await ColumnExistsAsync(connection, "DesignConditions", "DrawingCounts", transaction))
         {
             throw new InvalidOperationException("设计条件数据库初始化失败：缺少分图幅数量字段。");
+        }
+        if (!await ColumnExistsAsync(connection, "DesignConditions", "ArchiveKind", transaction)
+            || !await ColumnExistsAsync(connection, "DesignConditions", "ReceivedDate", transaction))
+        {
+            throw new InvalidOperationException("设计条件数据库初始化失败：缺少归档类型或接受日期字段。");
+        }
+        await using var archiveData = connection.CreateCommand();
+        archiveData.Transaction = transaction;
+        archiveData.CommandText = $"SELECT COUNT(*) FROM DesignConditions WHERE {InvalidArchiveDataSql}";
+        if (Convert.ToInt64(await archiveData.ExecuteScalarAsync()) != 0)
+        {
+            throw new InvalidOperationException("设计条件数据库包含无效归档类型或接受日期。");
         }
     }
 

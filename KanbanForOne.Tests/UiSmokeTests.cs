@@ -2,6 +2,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Data;
 using System.Windows.Media;
 using KanbanForOne.Controls;
 using KanbanForOne.Models;
@@ -11,6 +13,7 @@ using KanbanForOne.Modules.DesignConditions.Data;
 using KanbanForOne.Modules.DesignConditions.Repositories;
 using KanbanForOne.Modules.DesignConditions.Services;
 using KanbanForOne.Modules.DesignConditions.Views;
+using KanbanForOne.Modules.DesignConditions.ViewModels;
 using KanbanForOne.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -102,12 +105,14 @@ public sealed class UiSmokeTests
             VerifySummaryPage(vm, summaryView);
             VerifyCalendarChipRefresh(vm, calendarView);
             VerifyDesignConditionPageAndCalendar(vm, designConditionView, calendarView);
+            VerifyConditionRowActivation(vm, designConditionView);
             VerifyUnifiedBackupRoundTrip();
             VerifyWorkspaceLayout(window, vm, notifications);
             VerifyEditors(window, vm);
             SaveCardPalettePreview();
             SaveModuleCardPreview(calendarView);
             VerifyThemeSwitching(window, vm, calendarView);
+            VerifyConditionReviewScenarios(window, vm, designConditionView);
 
             window.Close();
             app.Shutdown();
@@ -244,6 +249,7 @@ public sealed class UiSmokeTests
             window.UpdateLayout();
             SavePreview(window, page);
         }
+        VerifyReceivedArchiveTheme(window, vm, AppTheme.Dark);
         VerifyEditors(window, vm);
         SaveCardPalettePreview();
         SaveModuleCardPreview(calendar);
@@ -257,6 +263,58 @@ public sealed class UiSmokeTests
             Assert.Equal(((SolidColorBrush)light[key]).Color, brush.Color);
         }
         Assert.True(vm.Settings.Theme.IsLightTheme);
+        VerifyReceivedArchiveTheme(window, vm, AppTheme.Light);
+    }
+
+    private static void VerifyReceivedArchiveTheme(MainWindow window, MainWindowViewModel vm, AppTheme expectedTheme)
+    {
+        vm.ChangeFilterCommand.Execute("DesignConditions");
+        vm.DesignConditions.SelectedArchiveKind = DesignConditionArchiveKind.Received;
+        DoEvents();
+        var view = FindVisualChild<DesignConditionView>(window)!;
+        Assert.Equal("UI200", vm.DesignConditions.SelectedProject);
+        Assert.Equal("UI200", FindVisualChild<ComboBox>(view)!.SelectedItem);
+        Assert.True(IsVisibleText(view, "接受设计条件存档"));
+        Assert.True(IsVisibleText(view, "新增接受条件"));
+        var acceptedColor = ((SolidColorBrush)view.FindResource("DesignConditionModuleAccentBrush")).Color;
+        var issuedColor = ((SolidColorBrush)Application.Current.FindResource("DesignConditionModuleAccentBrush")).Color;
+        Assert.NotEqual(issuedColor, acceptedColor);
+        Assert.Equal(expectedTheme, App.Services.GetRequiredService<ThemeService>().CurrentTheme);
+        if (expectedTheme == AppTheme.Dark)
+        {
+            var theme = App.Services.GetRequiredService<ThemeService>();
+            theme.SetTheme(AppTheme.Light, persist: false);
+            DoEvents();
+            Assert.NotEqual(acceptedColor, ((SolidColorBrush)view.FindResource("DesignConditionModuleAccentBrush")).Color);
+            Assert.Equal(
+                ((SolidColorBrush)Application.Current.FindResource("ReceivedDesignConditionModuleAccentBrush")).Color,
+                ((SolidColorBrush)view.FindResource("DesignConditionModuleAccentBrush")).Color);
+            theme.SetTheme(AppTheme.Dark, persist: false);
+            DoEvents();
+            Assert.Equal(acceptedColor, ((SolidColorBrush)view.FindResource("DesignConditionModuleAccentBrush")).Color);
+        }
+        foreach (var width in new[] { 1100d, 1512d })
+        {
+            window.Width = width;
+            window.Height = width == 1100 ? 720 : 900;
+            DoEvents();
+            Assert.Equal("UI200", vm.DesignConditions.SelectedProject);
+            Assert.Equal("UI200", FindVisualChild<ComboBox>(view)!.SelectedItem);
+            var projectFilter = FindVisualChild<ComboBox>(view)!;
+            Assert.Equal("UI200", ((ContentPresenter)projectFilter.Template.FindName("ContentSite", projectFilter)).Content);
+            Assert.True(IsVisibleText(FindVisualChild<ComboBox>(view)!, "UI200"), "保留的项目筛选必须显示在下拉框中");
+            SavePreview(window, $"Received-conditions-{width:0}");
+        }
+        vm.DesignConditions.SetViewCommand.Execute("Summary");
+        DoEvents();
+        Assert.True(IsVisibleText(view, vm.DesignConditions.SummaryDescription));
+        SavePreview(window, "Received-condition-summary");
+        vm.DesignConditions.SetViewCommand.Execute("List");
+        vm.DesignConditions.SelectedArchiveKind = DesignConditionArchiveKind.Issued;
+        window.Width = 1512;
+        window.Height = 900;
+        DoEvents();
+        Assert.Equal(issuedColor, ((SolidColorBrush)view.FindResource("DesignConditionModuleAccentBrush")).Color);
     }
 
     private static void SaveCardPalettePreview()
@@ -497,7 +555,7 @@ public sealed class UiSmokeTests
         condition.Show();
         DoEvents();
         Assert.Equal(WindowStyle.None, condition.WindowStyle);
-        Assert.True(IsVisibleText(condition, "设计条件详情"));
+        Assert.True(IsVisibleText(condition, editorVm.EditorTitle));
         var combo = FindVisualChild<ComboBox>(condition)!;
         combo.IsDropDownOpen = true;
         DoEvents();
@@ -507,6 +565,34 @@ public sealed class UiSmokeTests
         Assert.Equal("工艺", editorVm.IssuingDiscipline);
         SavePreview(condition, "Design-condition-editor");
         condition.Close();
+
+        var receivedEditorVm = new KanbanForOne.Modules.DesignConditions.ViewModels.DesignConditionEditorViewModel(
+            null, DateTime.Today, new[] { "工艺", "设备" }, new[] { "测试人员" }, DesignConditionArchiveKind.Received);
+        var receivedDialog = (DesignConditionEditorDialog)Activator.CreateInstance(
+            typeof(DesignConditionEditorDialog), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
+            null, new object[] { receivedEditorVm, App.Services.GetRequiredService<DesignConditionAttachmentStorageService>() }, null)!;
+        receivedDialog.Owner = window;
+        receivedDialog.Show();
+        DoEvents();
+        Assert.True(IsVisibleText(receivedDialog, receivedEditorVm.EditorTitle));
+        Assert.True(IsVisibleText(receivedDialog, "提出日期 *"));
+        Assert.True(IsVisibleText(receivedDialog, "接受日期 *"));
+        Assert.NotEqual(
+            ((SolidColorBrush)Application.Current.FindResource("DesignConditionModuleAccentBrush")).Color,
+            ((SolidColorBrush)receivedDialog.FindResource("DesignConditionModuleAccentBrush")).Color);
+        SavePreview(receivedDialog, "Received-condition-editor");
+        FindButtons(receivedDialog).Single(button => Equals(button.Content, "保存"))
+            .RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+        DoEvents();
+        Assert.True(IsVisibleText(receivedDialog, "请输入项目。"));
+        var error = FindVisualChildren<TextBlock>(receivedDialog).Single(item => item.Text == "请输入项目。");
+        var errorBounds = error.TransformToAncestor(receivedDialog).TransformBounds(new Rect(error.RenderSize));
+        Assert.True(errorBounds.Top > 0 && errorBounds.Bottom < receivedDialog.ActualHeight,
+            "编辑器保存错误必须显示在当前窗口内");
+        Assert.False(FindVisualChildren<ScrollViewer>(receivedDialog).Any(scroll => scroll.IsAncestorOf(error)),
+            "编辑器保存错误应位于固定底栏，不应藏在滚动区中");
+        SavePreview(receivedDialog, "Received-condition-validation");
+        receivedDialog.Close();
 
         var hours = (WorkHourEntryDialog)Activator.CreateInstance(
             typeof(WorkHourEntryDialog), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic,
@@ -679,7 +765,12 @@ public sealed class UiSmokeTests
         vm.SearchText = string.Empty;
         vm.ChangeFilterCommand.Execute("DesignConditions");
         WaitUntil(() => IsVisibleText(designConditionView, "设计条件归档"));
-        Assert.True(IsVisibleText(designConditionView, "+ 新建设计条件"), "设计条件页面应提供创建入口");
+        Assert.True(IsVisibleText(designConditionView, vm.DesignConditions.NewConditionLabel), "设计条件页面应提供创建入口");
+        Assert.True(IsVisibleText(designConditionView, "提出设计条件归档"));
+        Assert.True(IsVisibleText(designConditionView, "接受设计条件存档"));
+        var archiveTabs = FindVisualChild<TabControl>(designConditionView);
+        Assert.NotNull(archiveTabs);
+        Assert.Equal(2, archiveTabs.Items.Count);
         Assert.True(IsVisibleText(designConditionView, "图纸量汇总"), "设计条件页面应提供汇总入口");
 
         var repository = App.Services.GetRequiredService<DesignConditionRepository>();
@@ -701,11 +792,53 @@ public sealed class UiSmokeTests
         WaitForTask(vm.DesignConditions.ReloadAsync());
         WaitUntil(() => IsVisibleText(designConditionView, "A1 × 1 · A4 × 2"));
 
+        var received = new DesignConditionEntry
+        {
+            ArchiveKind = DesignConditionArchiveKind.Received,
+            ProjectNumber = "UI200",
+            IssuingDiscipline = "设备",
+            ReceivingDiscipline = "工艺",
+            Receiver = "接收测试",
+            IssuedDate = DateTime.Today.AddDays(-2),
+            ReceivedDate = DateTime.Today.AddDays(1),
+            ConditionName = "接受归档界面验证",
+            DrawingSize = "A1",
+            DrawingCounts = "2",
+            DrawingCount = 2
+        };
+        WaitForTask(repository.UpsertAsync(received));
+        WaitForTask(vm.DesignConditions.ReloadAsync());
+        vm.DesignConditions.SelectedProject = "UI100";
+        vm.DesignConditions.Keyword = "日历";
+        DoEvents();
+        archiveTabs.SelectedIndex = 1;
+        DoEvents();
+        Assert.Equal(DesignConditionArchiveKind.Received, vm.DesignConditions.SelectedArchiveKind);
+        Assert.Equal(string.Empty, vm.DesignConditions.SelectedProject);
+        Assert.Equal(string.Empty, vm.DesignConditions.Keyword);
+        WaitUntil(() => IsVisibleText(designConditionView, received.ConditionName));
+        Assert.False(IsVisibleText(designConditionView, "日历设计条件"));
+        Assert.Equal(2, vm.DesignConditions.TotalDrawingCount);
+        vm.DesignConditions.SelectedProject = "UI200";
+        DoEvents();
+        archiveTabs.SelectedIndex = 0;
+        DoEvents();
+        Assert.Equal(DesignConditionArchiveKind.Issued, vm.DesignConditions.SelectedArchiveKind);
+        Assert.Equal("UI100", vm.DesignConditions.SelectedProject);
+        Assert.Equal("日历", vm.DesignConditions.Keyword);
+        Assert.False(IsVisibleText(designConditionView, received.ConditionName));
+        vm.DesignConditions.ClearFiltersCommand.Execute(null);
+
         vm.ChangeFilterCommand.Execute("Calendar");
         WaitForTask(vm.Calendar.DesignConditions.LoadRangeAsync(DateTime.Today.AddDays(-10), DateTime.Today.AddDays(31)));
         WaitForTask(vm.Calendar.DesignConditions.LoadSelectedDateAsync(DateTime.Today));
         WaitUntil(() => IsVisibleText(calendarView, "日历设计条件"));
         Assert.True(IsVisibleText(calendarView, "设计条件"), "日历详情应显示设计条件区域");
+        Assert.DoesNotContain(vm.Calendar.DesignConditions.SelectedEntries, item => item.Id == received.Id);
+        WaitForTask(vm.Calendar.DesignConditions.LoadSelectedDateAsync(received.ReceivedDate.Value));
+        WaitUntil(() => IsVisibleText(calendarView, received.ConditionName));
+        Assert.True(IsVisibleText(calendarView, "接受"));
+        WaitForTask(vm.Calendar.DesignConditions.LoadSelectedDateAsync(DateTime.Today));
     }
 
     private static void VerifyUnifiedBackupRoundTrip()
@@ -737,6 +870,8 @@ public sealed class UiSmokeTests
 
             var design = new DesignConditionEntry
             {
+                ArchiveKind = DesignConditionArchiveKind.Received,
+                ReceivedDate = DateTime.Today.AddDays(1),
                 ProjectNumber = "BACKUP100",
                 IssuingDiscipline = "工艺",
                 ReceivingDiscipline = "管道",
@@ -773,12 +908,182 @@ public sealed class UiSmokeTests
             Assert.True(File.Exists(attachmentStorage.GetAbsolutePath(restoredCoreAttachment)));
             var restoredDesign = Assert.Single(
                 WaitForTask(designRepository.GetAllAsync()), item => item.Id == design.Id);
+            Assert.Equal(DesignConditionArchiveKind.Received, restoredDesign.ArchiveKind);
+            Assert.Equal(design.ReceivedDate, restoredDesign.ReceivedDate);
             Assert.True(File.Exists(designStorage.GetAbsolutePath(Assert.Single(restoredDesign.Attachments))));
         }
         finally
         {
             if (Directory.Exists(sourceRoot)) Directory.Delete(sourceRoot, recursive: true);
         }
+    }
+
+    private static void VerifyConditionRowActivation(MainWindowViewModel main, DesignConditionView view)
+    {
+        main.ChangeFilterCommand.Execute("DesignConditions");
+        var dialogs = new RecordingConditionDialogs();
+        var module = new DesignConditionViewModel(
+            App.Services.GetRequiredService<DesignConditionDatabaseService>(),
+            App.Services.GetRequiredService<DesignConditionRepository>(),
+            App.Services.GetRequiredService<DesignConditionAttachmentStorageService>(),
+            App.Services.GetRequiredService<DesignConditionOptionRepository>(),
+            App.Services.GetRequiredService<DesignConditionExportService>(),
+            App.Services.GetRequiredService<DesignConditionOperationCoordinator>(),
+            App.Services.GetRequiredService<NotificationService>(), dialogs,
+            App.Services.GetRequiredService<IFilePickerService>());
+        var previousBinding = BindingOperations.GetBindingBase(view, FrameworkElement.DataContextProperty);
+        var previousContext = view.DataContext;
+        try
+        {
+            WaitForTask(module.EnsureLoadedAsync());
+            view.DataContext = module;
+            DoEvents();
+            foreach (var mode in new[] { "List", "Summary" })
+            {
+                module.SetViewCommand.Execute(mode);
+                DoEvents();
+                var grid = FindVisualChildren<DataGrid>(view).Single(item => item.IsVisible);
+                var entry = Assert.IsType<DesignConditionEntry>(grid.Items[0]);
+                grid.SelectedItem = entry;
+                grid.ScrollIntoView(entry);
+                DoEvents();
+                var row = Assert.IsType<DataGridRow>(grid.ItemContainerGenerator.ContainerFromItem(entry));
+                var header = FindVisualChild<DataGridColumnHeader>(grid)!;
+                var count = dialogs.Editors.Count;
+
+                void DoubleClick(object source, MouseButton button = MouseButton.Left)
+                {
+                    grid.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, button)
+                    {
+                        RoutedEvent = Control.MouseDoubleClickEvent,
+                        Source = source
+                    });
+                    WaitUntil(() => module.OpenCommand.CanExecute(entry));
+                    DoEvents();
+                }
+                DoubleClick(header);
+                DoubleClick(grid);
+                DoubleClick(row, MouseButton.Right);
+                Assert.Equal(count, dialogs.Editors.Count);
+                DoubleClick(row);
+                Assert.Equal(count + 1, dialogs.Editors.Count);
+                Assert.Equal(entry.Id, dialogs.Editors[^1].Id);
+
+                grid.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(grid)!, 0, Key.Enter)
+                {
+                    RoutedEvent = Keyboard.PreviewKeyDownEvent
+                });
+                WaitUntil(() => module.OpenCommand.CanExecute(entry));
+                Assert.Equal(count + 2, dialogs.Editors.Count);
+            }
+        }
+        finally
+        {
+            if (previousBinding is not null) BindingOperations.SetBinding(view, FrameworkElement.DataContextProperty, previousBinding);
+            else view.DataContext = previousContext;
+            DoEvents();
+        }
+    }
+
+    private static void VerifyConditionReviewScenarios(MainWindow window, MainWindowViewModel main, DesignConditionView view)
+    {
+        var module = main.DesignConditions;
+        var repository = App.Services.GetRequiredService<DesignConditionRepository>();
+        const string project = "P2026-INTERFACE-REVIEW-长项目编号";
+        for (var index = 0; index < 16; index++)
+            WaitForTask(repository.UpsertAsync(new DesignConditionEntry
+            {
+                ArchiveKind = DesignConditionArchiveKind.Received,
+                ProjectNumber = project,
+                ConditionName = $"{index + 1:00} · 装置设备基础与接口调整条件——包含管口方位、支架荷载和检修空间的补充说明",
+                IssuingDiscipline = "设备专业（工艺装置接口组）",
+                ReceivingDiscipline = "土建结构专业（基础设计组）",
+                Receiver = "接口条件接收与复核负责人",
+                IssuedDate = DateTime.Today.AddDays(-3),
+                ReceivedDate = DateTime.Today,
+                DrawingSize = "A0|A1|A2|A3|A4",
+                DrawingCounts = "1|2|3|4|5",
+                DrawingCount = 15
+            }));
+        WaitForTask(module.ReloadAsync());
+        main.ChangeFilterCommand.Execute("DesignConditions");
+        module.SelectedArchiveKind = DesignConditionArchiveKind.Received;
+        module.ClearFiltersCommand.Execute(null);
+        module.SelectedProject = project;
+        module.IssuedStartDate = DateTime.Today.AddDays(-1);
+        module.IssuedEndDate = DateTime.Today;
+        var theme = App.Services.GetRequiredService<ThemeService>();
+        foreach (var appearance in new[] { AppTheme.Light, AppTheme.Dark })
+        {
+            theme.SetTheme(appearance, persist: false);
+            _previewPrefix = appearance == AppTheme.Dark ? "Dark-" : string.Empty;
+            foreach (var width in new[] { 1100d, 1512d })
+            {
+                window.Width = width;
+                window.Height = width == 1100 ? 720 : 900;
+                module.SetViewCommand.Execute("List");
+                DoEvents();
+                foreach (var picker in FindVisualChildren<DatePicker>(view).Where(item => item.IsVisible))
+                {
+                    var textBox = (DatePickerTextBox)picker.Template.FindName("PART_TextBox", picker);
+                    var textWidth = new FormattedText(textBox.Text, System.Globalization.CultureInfo.CurrentCulture,
+                        FlowDirection.LeftToRight, new Typeface(textBox.FontFamily, textBox.FontStyle, textBox.FontWeight, textBox.FontStretch),
+                        textBox.FontSize, Brushes.Black, VisualTreeHelper.GetDpi(textBox).PixelsPerDip).WidthIncludingTrailingWhitespace;
+                    Assert.True(textBox.ActualWidth >= textWidth + textBox.Padding.Left + textBox.Padding.Right,
+                        $"{width}px: 日期 {textBox.Text} 应完整显示，文本宽{textWidth:0.0}，输入框宽{textBox.ActualWidth:0.0}");
+                }
+                Assert.Equal(16, module.Entries.Count);
+                var grid = FindVisualChildren<DataGrid>(view).Single(item => item.IsVisible);
+                grid.ScrollIntoView(grid.Items[0]);
+                DoEvents();
+                SavePreview(window, $"Received-long-list-{width:0}");
+                grid.ScrollIntoView(grid.Items[^1]);
+                DoEvents();
+                Assert.NotNull(grid.ItemContainerGenerator.ContainerFromItem(grid.Items[^1]));
+                module.SetViewCommand.Execute("Summary");
+                DoEvents();
+                Assert.True(IsVisibleText(view, module.SummaryDescription));
+                SavePreview(window, $"Received-long-summary-{width:0}");
+            }
+            module.Keyword = "不存在的条件关键字";
+            DoEvents();
+            Assert.Empty(module.Entries);
+            Assert.True(IsVisibleText(view, "没有匹配的条件"));
+            Assert.False(module.ExportCommand.CanExecute(null));
+            SavePreview(window, "Received-filter-empty");
+            var action = FindButtons(view).Last(button => button.IsVisible && ReferenceEquals(button.Command, module.EmptyStateActionCommand)
+                && Equals(button.Content, module.EmptyStateActionLabel));
+            action.Command.Execute(null);
+            DoEvents();
+            Assert.False(module.HasActiveFilters);
+            Assert.NotEmpty(module.Entries);
+            module.SelectedProject = project;
+            module.IssuedStartDate = DateTime.Today.AddDays(-1);
+            module.IssuedEndDate = DateTime.Today;
+        }
+        _previewPrefix = string.Empty;
+        theme.SetTheme(AppTheme.Light, persist: false);
+    }
+
+    private sealed class RecordingConditionDialogs : IDialogService
+    {
+        public List<DesignConditionEditorViewModel> Editors { get; } = [];
+        public DesignConditionEditorAction ShowDesignConditionEditor(DesignConditionEditorViewModel editor, DesignConditionAttachmentStorageService storage)
+        {
+            Editors.Add(editor);
+            return DesignConditionEditorAction.None;
+        }
+        public bool Confirm(string title, string message, string confirmText) => throw new NotSupportedException();
+        public ArchiveSectionDialogResult? PickArchiveSection(IEnumerable<ArchiveSection> sections, ArchiveSection defaultSection) => throw new NotSupportedException();
+        public ArchiveSectionDialogResult? PickExistingArchiveSection(IEnumerable<ArchiveSection> sections, ArchiveSection? selectedSection) => throw new NotSupportedException();
+        public WorkHourEntryDialogResult? EditWorkHourEntry(WorkHourEntry? entry, DateTime defaultDate, IReadOnlyList<string> disciplines, IReadOnlyList<string> workActivities) => throw new NotSupportedException();
+    }
+
+    private static IEnumerable<T> FindVisualChildren<T>(DependencyObject root) where T : DependencyObject
+    {
+        if (root is T match) yield return match;
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+            foreach (var child in FindVisualChildren<T>(VisualTreeHelper.GetChild(root, index))) yield return child;
     }
 
     private static bool ContainsText(Button button, string text)

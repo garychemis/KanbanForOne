@@ -7,11 +7,13 @@ namespace KanbanForOne.Modules.DesignConditions.Models;
 
 public sealed class DesignConditionEntry : ObservableObject
 {
+    private DesignConditionArchiveKind _archiveKind = DesignConditionArchiveKind.Issued;
     private string _projectNumber = string.Empty;
     private string _issuingDiscipline = string.Empty;
     private string _receivingDiscipline = string.Empty;
     private string _receiver = string.Empty;
     private DateTime _issuedDate = DateTime.Today;
+    private DateTime? _receivedDate;
     private string _conditionName = string.Empty;
     private string _revision = string.Empty;
     private string _drawingSize = string.Empty;
@@ -25,6 +27,22 @@ public sealed class DesignConditionEntry : ObservableObject
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    public DesignConditionArchiveKind ArchiveKind
+    {
+        get => _archiveKind;
+        set
+        {
+            if (!SetProperty(ref _archiveKind, value)) return;
+            OnPropertyChanged(nameof(IsReceived));
+            OnPropertyChanged(nameof(ArchiveKindDisplay));
+            OnPropertyChanged(nameof(ArchiveDate));
+        }
+    }
+
+    public bool IsReceived => ArchiveKind == DesignConditionArchiveKind.Received;
+
+    public string ArchiveKindDisplay => IsReceived ? "接受" : "提出";
+
     public string ProjectNumber { get => _projectNumber; set => SetProperty(ref _projectNumber, value); }
 
     public string IssuingDiscipline { get => _issuingDiscipline; set => SetProperty(ref _issuingDiscipline, value); }
@@ -33,7 +51,25 @@ public sealed class DesignConditionEntry : ObservableObject
 
     public string Receiver { get => _receiver; set => SetProperty(ref _receiver, value); }
 
-    public DateTime IssuedDate { get => _issuedDate; set => SetProperty(ref _issuedDate, value.Date); }
+    public DateTime IssuedDate
+    {
+        get => _issuedDate;
+        set
+        {
+            if (SetProperty(ref _issuedDate, value.Date)) OnPropertyChanged(nameof(ArchiveDate));
+        }
+    }
+
+    public DateTime? ReceivedDate
+    {
+        get => _receivedDate;
+        set
+        {
+            if (SetProperty(ref _receivedDate, value?.Date)) OnPropertyChanged(nameof(ArchiveDate));
+        }
+    }
+
+    public DateTime ArchiveDate => IsReceived ? ReceivedDate ?? IssuedDate : IssuedDate;
 
     public string ConditionName { get => _conditionName; set => SetProperty(ref _conditionName, value); }
 

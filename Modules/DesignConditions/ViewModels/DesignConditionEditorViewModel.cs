@@ -16,6 +16,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
     private string _receivingDiscipline = string.Empty;
     private string _receiver = string.Empty;
     private DateTime? _issuedDate = DateTime.Today;
+    private DateTime? _receivedDate;
     private string _conditionName = string.Empty;
     private string _revision = string.Empty;
     private string _validationMessage = string.Empty;
@@ -25,9 +26,11 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
         DesignConditionEntry? source,
         DateTime defaultIssuedDate,
         IReadOnlyList<string> disciplines,
-        IReadOnlyList<string> receivers)
+        IReadOnlyList<string> receivers,
+        DesignConditionArchiveKind archiveKind = DesignConditionArchiveKind.Issued)
     {
         Source = source;
+        ArchiveKind = source?.ArchiveKind ?? archiveKind;
         Disciplines = disciplines;
         Receivers = receivers;
         AttachFilesCommand = new RelayCommand(AttachDroppedFiles);
@@ -37,6 +40,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
         if (source is null)
         {
             _issuedDate = defaultIssuedDate.Date;
+            _receivedDate = IsReceived ? defaultIssuedDate.Date : null;
             Id = Guid.NewGuid();
             CreatedAt = DateTime.Now;
             DrawingRows.Add(new DesignConditionDrawingRow());
@@ -50,6 +54,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
             _receivingDiscipline = source.ReceivingDiscipline;
             _receiver = source.Receiver;
             _issuedDate = source.IssuedDate;
+            _receivedDate = source.ReceivedDate;
             _conditionName = source.ConditionName;
             _revision = source.Revision;
             LoadDrawingRows(source);
@@ -66,6 +71,14 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
     }
 
     public DesignConditionEntry? Source { get; }
+    public DesignConditionArchiveKind ArchiveKind { get; }
+    public bool IsReceived => ArchiveKind == DesignConditionArchiveKind.Received;
+    public string ArchiveKindDisplay => IsReceived ? "接受条件" : "提出条件";
+    public string EditorTitle => $"{(Source is null ? "新增" : "编辑")}{ArchiveKindDisplay}";
+    public string DateLabel => IsReceived ? "接受日期" : "提出日期";
+    public string EditorDescription => IsReceived
+        ? "记录接受的设计条件、提出日期与接受日期，并归档图纸及附件。"
+        : "记录提出的设计条件、专业流向，并归档图纸及附件。";
     public Guid Id { get; }
     public DateTime CreatedAt { get; }
     public IReadOnlyList<string> Disciplines { get; }
@@ -84,6 +97,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
     public string ReceivingDiscipline { get => _receivingDiscipline; set => SetProperty(ref _receivingDiscipline, value); }
     public string Receiver { get => _receiver; set => SetProperty(ref _receiver, value); }
     public DateTime? IssuedDate { get => _issuedDate; set => SetProperty(ref _issuedDate, value?.Date); }
+    public DateTime? ReceivedDate { get => _receivedDate; set => SetProperty(ref _receivedDate, value?.Date); }
     public string ConditionName { get => _conditionName; set => SetProperty(ref _conditionName, value); }
     public string Revision { get => _revision; set => SetProperty(ref _revision, value); }
     public int DrawingSpecificationCount => DrawingRows.Count(item => !string.IsNullOrWhiteSpace(item.DrawingSize));
@@ -156,6 +170,7 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
         if (string.IsNullOrWhiteSpace(ReceivingDiscipline)) return Fail("请输入接收专业。", out entry);
         if (string.IsNullOrWhiteSpace(Receiver)) return Fail("请输入接收人。", out entry);
         if (IssuedDate is null) return Fail("请选择提出日期。", out entry);
+        if (IsReceived && ReceivedDate is null) return Fail("请选择接受日期。", out entry);
         if (string.IsNullOrWhiteSpace(ConditionName)) return Fail("请输入条件名称。", out entry);
         if (!TryBuildDrawings(out var drawingStorage, out var drawingError)) return Fail(drawingError, out entry);
 
@@ -163,11 +178,13 @@ public sealed class DesignConditionEditorViewModel : ObservableObject
         entry = new DesignConditionEntry
         {
             Id = Id,
+            ArchiveKind = ArchiveKind,
             ProjectNumber = project,
             IssuingDiscipline = IssuingDiscipline.Trim(),
             ReceivingDiscipline = ReceivingDiscipline.Trim(),
             Receiver = Receiver.Trim(),
             IssuedDate = IssuedDate.Value,
+            ReceivedDate = IsReceived ? ReceivedDate : null,
             ConditionName = ConditionName.Trim(),
             Revision = Revision.Trim(),
             DrawingSize = drawingStorage.DrawingSizes,

@@ -18,12 +18,14 @@ public sealed class DesignConditionCalendarSectionViewModel : ObservableObject
         _notifications = notifications;
         _module.DataChanged += (_, _) => _ = RefreshSafelyAsync();
         AddCommand = new RelayCommand(AddAsync);
+        AddReceivedCommand = new RelayCommand(AddReceivedAsync);
         OpenCommand = new RelayCommand(Open);
     }
 
     public event EventHandler? SummariesChanged;
     public ObservableCollection<DesignConditionEntry> SelectedEntries { get; } = new();
     public RelayCommand AddCommand { get; }
+    public RelayCommand AddReceivedCommand { get; }
     public RelayCommand OpenCommand { get; }
     public DateTime SelectedDate { get; private set; } = DateTime.Today;
     public DateTime RangeStart { get; private set; }
@@ -77,6 +79,8 @@ public sealed class DesignConditionCalendarSectionViewModel : ObservableObject
     }
 
     private Task AddAsync(object? _) => _module.CreateForDateAsync(SelectedDate);
+
+    private Task AddReceivedAsync(object? _) => _module.CreateForDateAsync(SelectedDate, DesignConditionArchiveKind.Received);
 
     private void Open(object? parameter)
     {

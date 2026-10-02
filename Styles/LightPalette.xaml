@@ -66,6 +66,33 @@
     <SolidColorBrush x:Key="DesignConditionModuleBorderBrush" Color="#9DBEBA" po:Freeze="False" />
     <SolidColorBrush x:Key="DesignConditionModuleHoverBorderBrush" Color="#4F8781" po:Freeze="False" />
     <SolidColorBrush x:Key="DesignConditionModuleTextBrush" Color="#3D6D68" po:Freeze="False" />
+    <!-- Archive direction tokens remain stable when a page applies its local theme scope. -->
+    <SolidColorBrush x:Key="IssuedDesignConditionModuleTintBrush" Color="#F1F7F5" po:Freeze="False" />
+    <SolidColorBrush x:Key="IssuedDesignConditionModuleAccentBrush" Color="#4F8781" po:Freeze="False" />
+    <SolidColorBrush x:Key="IssuedDesignConditionModuleTextBrush" Color="#3D6D68" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleTintBrush" Color="#F4F1FA" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleHoverBrush" Color="#ECE6F6" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleAccentBrush" Color="#7562B0" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleAccentHoverBrush" Color="#625098" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleAccentPressedBrush" Color="#52417F" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleBorderBrush" Color="#B8ACD4" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleHoverBorderBrush" Color="#7562B0" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedDesignConditionModuleTextBrush" Color="#5B478E" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionDialogSurfaceBrush" Color="#F8F6FB" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionFieldBackgroundBrush" Color="#FDFCFE" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionFieldBorderBrush" Color="#DED7E9" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionFieldHoverBrush" Color="#EFEBF5" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionFieldSelectedBrush" Color="#E7DFF3" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionPrimaryTextBrush" Color="#383045" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionSecondaryTextBrush" Color="#6B6178" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionDrawingHeaderBrush" Color="#EEE9F5" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionDrawingAlternateRowBrush" Color="#F8F5FC" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionInputHoverBorderBrush" Color="#A999C2" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionRowHoverBrush" Color="#EEE8F7" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionTreeSecondaryBrush" Color="#9580BC" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionButtonBrush" Color="#625098" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionButtonPressedBrush" Color="#52417F" po:Freeze="False" />
+    <SolidColorBrush x:Key="ReceivedConditionButtonForegroundBrush" Color="#FFFFFF" po:Freeze="False" />
     <SolidColorBrush x:Key="ArchiveModuleTintBrush" Color="#F4EFE6" po:Freeze="False" />
     <SolidColorBrush x:Key="ArchiveModuleHoverBrush" Color="#EFE7D9" po:Freeze="False" />
     <SolidColorBrush x:Key="ArchiveModuleBorderBrush" Color="#E0D5C0" po:Freeze="False" />
