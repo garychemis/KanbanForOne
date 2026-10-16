@@ -189,7 +189,8 @@ public sealed class CalendarViewModel : ObservableObject
     public void RefreshTasks()
     {
         var calendarTasks = _board.AllTasks
-            .Where(task => !task.IsArchived && (task.StartDate.HasValue || task.EndDate.HasValue))
+            .Where(task => !task.IsArchived && task.Status != TaskStatus.Done
+                && (task.StartDate.HasValue || task.EndDate.HasValue))
             .Where(PassesTaskSearch)
             .OrderBy(task => task.StartDate ?? task.EndDate)
             .ThenBy(task => task.EndDate ?? task.StartDate)

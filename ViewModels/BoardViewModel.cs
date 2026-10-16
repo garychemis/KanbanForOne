@@ -2226,6 +2226,7 @@ public sealed class BoardViewModel : ObservableObject
 
         return propertyName is nameof(TaskItem.StartDate)
             or nameof(TaskItem.EndDate)
+            or nameof(TaskItem.Status)
             or nameof(TaskItem.IsArchived)
             or nameof(TaskItem.ArchiveSectionId)
             or nameof(TaskItem.ArchivedAt)

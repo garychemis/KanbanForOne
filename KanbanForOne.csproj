@@ -8,16 +8,17 @@
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icon\icon-transparent.ico</ApplicationIcon>
-    <Version>0.5.2.1</Version>
-    <AssemblyVersion>0.5.2.1</AssemblyVersion>
-    <FileVersion>0.5.2.1</FileVersion>
-    <InformationalVersion>v0.5.2.1</InformationalVersion>
+    <Version>0.5.2.2</Version>
+    <AssemblyVersion>0.5.2.2</AssemblyVersion>
+    <FileVersion>0.5.2.2</FileVersion>
+    <InformationalVersion>v0.5.2.2</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>Kanban41</Product>
     <Authors>闫飞</Authors>
     <Copyright>Copyright © 2026 闫飞</Copyright>
     <ReleaseNotes>
-       <![CDATA[v0.5.2.1|2026-10-02|设计条件归档扩展为提出与接受两个 Tab，分别保留筛选和列表/汇总状态，使用青绿色与靛紫色区分并适配亮暗主题；新增接受日期，支持两类条件的新建、编辑、日历展示及独立 Excel 导出；设计条件数据库升级至 V4，兼容 V1–V3 旧数据和备份，保留图幅信息及附件关联，回退旧程序需使用升级前完整备份；修复备份清单与数据库版本不一致、数据重置或加载失败后导出旧缓存、双击表头误开记录等问题；优化窄窗口日期显示、长文本表格间距、筛选空状态、键盘焦点及编辑器保存提示
+       <![CDATA[v0.5.2.2|2026-10-16|修复日历显示已完成项问题
+v0.5.2.1|2026-10-02|设计条件归档扩展为提出与接受两个 Tab，分别保留筛选和列表/汇总状态，使用青绿色与靛紫色区分并适配亮暗主题；新增接受日期，支持两类条件的新建、编辑、日历展示及独立 Excel 导出；设计条件数据库升级至 V4，兼容 V1–V3 旧数据和备份，保留图幅信息及附件关联，回退旧程序需使用升级前完整备份；修复备份清单与数据库版本不一致、数据重置或加载失败后导出旧缓存、双击表头误开记录等问题；优化窄窗口日期显示、长文本表格间距、筛选空状态、键盘焦点及编辑器保存提示
 v0.5.2|2026-09-24|新增卡片折叠效果，新增暗色模式UI
 v0.5.1|2026-09-22|优化了UI
 V0.5.0.5|2026-08-27|重构对话框、文件选择与剪贴板为接口并抽取附件事务编排；修复设计条件加载在数据整体恢复时的版本竞态、附件原始文件名被改写及资源管理器定位参数转义问题；补充相应单元测试

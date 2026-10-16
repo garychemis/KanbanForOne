@@ -25,20 +25,23 @@ public sealed class ReleaseNotesServiceTests
     {
         var releases = ReleaseNotesService.FromAssembly(typeof(MainWindowViewModel).Assembly);
 
-        Assert.Equal(14, releases.Count);
-        Assert.Equal("v0.5.2.1", releases[0].Version);
-        Assert.Equal("2026-10-02", releases[0].Date);
-        Assert.Contains(releases[0].Items, item => item.Contains("提出与接受两个 Tab"));
-        Assert.Contains(releases[0].Items, item => item.Contains("数据库升级至 V4"));
-        Assert.Contains(releases[0].Items, item => item.Contains("备份清单与数据库版本不一致"));
-        Assert.Equal("v0.5.2", releases[1].Version);
-        Assert.Equal("2026-09-24", releases[1].Date);
-        Assert.Equal("新增卡片折叠效果，新增暗色模式UI", Assert.Single(releases[1].Items));
-        Assert.Equal("v0.5.1", releases[2].Version);
-        Assert.Equal("2026-09-22", releases[2].Date);
-        Assert.Equal("优化了UI", Assert.Single(releases[2].Items));
+        Assert.Equal(15, releases.Count);
+        Assert.Equal("v0.5.2.2", releases[0].Version);
+        Assert.Equal("2026-10-16", releases[0].Date);
+        Assert.Equal("修复日历显示已完成项问题", Assert.Single(releases[0].Items));
+        Assert.Equal("v0.5.2.1", releases[1].Version);
+        Assert.Equal("2026-10-02", releases[1].Date);
+        Assert.Contains(releases[1].Items, item => item.Contains("提出与接受两个 Tab"));
+        Assert.Contains(releases[1].Items, item => item.Contains("数据库升级至 V4"));
+        Assert.Contains(releases[1].Items, item => item.Contains("备份清单与数据库版本不一致"));
+        Assert.Equal("v0.5.2", releases[2].Version);
+        Assert.Equal("2026-09-24", releases[2].Date);
+        Assert.Equal("新增卡片折叠效果，新增暗色模式UI", Assert.Single(releases[2].Items));
+        Assert.Equal("v0.5.1", releases[3].Version);
+        Assert.Equal("2026-09-22", releases[3].Date);
+        Assert.Equal("优化了UI", Assert.Single(releases[3].Items));
 
-        IReadOnlyList<ReleaseNoteEntry> entries = releases.Skip(3).ToArray();
+        IReadOnlyList<ReleaseNoteEntry> entries = releases.Skip(4).ToArray();
 
         Assert.Equal(11, entries.Count);
         Assert.Equal("V0.5.0.5", entries[0].Version);
